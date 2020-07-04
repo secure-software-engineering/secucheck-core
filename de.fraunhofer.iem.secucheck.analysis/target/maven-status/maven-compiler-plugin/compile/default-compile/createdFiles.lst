@@ -1,0 +1,9 @@
+de/fraunhofer/iem/secucheck/analysis/SecuCheckAnalysis$1.class
+de/fraunhofer/iem/secucheck/analysis/Server.class
+de/fraunhofer/iem/secucheck/analysis/internal/taint/TaintAnalysis$1.class
+de/fraunhofer/iem/secucheck/analysis/SpottyTestingFramework$1.class
+de/fraunhofer/iem/secucheck/analysis/SpottyTestingFramework.class
+de/fraunhofer/iem/secucheck/analysis/SecuCheckAnalysis.class
+de/fraunhofer/iem/secucheck/analysis/internal/taint/TaintAnalysis.class
+de/fraunhofer/iem/secucheck/analysis/internal/taint/TaintAnalysisOptions.class
+de/fraunhofer/iem/secucheck/analysis/internal/taint/TaintAnalysis$2.class

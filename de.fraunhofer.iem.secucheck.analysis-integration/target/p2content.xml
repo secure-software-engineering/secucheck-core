@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='de.fraunhofer.iem.secucheck.analysis-integration' version='0.0.1.202006281207' singleton='false' generation='2'>
+    <update id='de.fraunhofer.iem.secucheck.analysis-integration' range='[0.0.0,0.0.1.202006281207)' severity='0'/>
+    <properties size='5'>
+      <property name='org.eclipse.equinox.p2.name' value='SecuCheck Analysis Plugin'/>
+      <property name='org.eclipse.equinox.p2.provider' value='Fraunhofer IEM, Software Campus'/>
+      <property name='maven-groupId' value='de.fraunhofer.iem.secucheck'/>
+      <property name='maven-artifactId' value='de.fraunhofer.iem.secucheck.analysis-integration'/>
+      <property name='maven-version' value='0.0.1-SNAPSHOT'/>
+    </properties>
+    <provides size='5'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='de.fraunhofer.iem.secucheck.analysis-integration' version='0.0.1.202006281207'/>
+      <provided namespace='osgi.bundle' name='de.fraunhofer.iem.secucheck.analysis-integration' version='0.0.1.202006281207'/>
+      <provided namespace='java.package' name='de.fraunhofer.iem.secucheck.analysis' version='0.0.0'/>
+      <provided namespace='osgi.identity' name='de.fraunhofer.iem.secucheck.analysis-integration' version='0.0.1.202006281207'>
+        <properties size='1'>
+          <property name='type' value='osgi.bundle'/>
+        </properties>
+      </provided>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='6'>
+      <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='de.fraunhofer.iem.secucheck.query' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.ecore.xmi' range='2.15.0'/>
+      <required namespace='osgi.bundle' name='org.apache.commons.io' range='2.2.0'/>
+      <requiredProperties namespace='osgi.ee' match='(&amp;(osgi.ee=JavaSE)(version=1.8))'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='de.fraunhofer.iem.secucheck.analysis-integration' version='0.0.1.202006281207'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: de.fraunhofer.iem.secucheck.analysis-integration&#xA;Bundle-Version: 0.0.1.202006281207&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>
