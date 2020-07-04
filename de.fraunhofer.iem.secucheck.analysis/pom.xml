@@ -13,13 +13,10 @@
 
 	<artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
 	<packaging>jar</packaging>
-
-	<name>SecuCheck Analysis</name>
+	<name>SecuCheck Analysis Core</name>
 
 	<properties>
-		<tycho-version>1.3.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<xtext.version>2.16.0</xtext.version>
 	</properties>
 
 	<dependencies>
@@ -63,27 +60,14 @@
 			<artifactId>WPDS</artifactId>
 			<version>2.2</version>
 		</dependency>
-
 		<dependency>
 			<version>1.7.5</version>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>de.fraunhofer.iem.secucheck</groupId>
-			<artifactId>de.fraunhofer.iem.secucheck.analysis.query</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-
-
 	</dependencies>
 
 	<repositories>
-		<!-- <repository> <id>eclipse</id> <layout>p2</layout> <url>http://download.eclipse.org/releases/2018-12/</url> 
-			</repository> <repository> <id>Xtext Update Site</id> <layout>p2</layout> 
-			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/${xtext.version}/</url> 
-			</repository> -->
 		<repository>
 			<id>soot-snapshot</id>
 			<name>soot snapshot</name>
@@ -112,7 +96,6 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
@@ -128,7 +111,6 @@
 					</filesets>
 				</configuration>
 			</plugin>
-
 			<!-- create a runnable jar -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

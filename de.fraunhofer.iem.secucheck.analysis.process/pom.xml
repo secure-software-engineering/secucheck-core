@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<relativePath>../de.fraunhofer.iem.secucheck.analysis.releng/pom.xml</relativePath>
+		<groupId>de.fraunhofer.iem.secucheck</groupId>
+		<artifactId>de.fraunhofer.iem.secucheck.analysis.releng</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>de.fraunhofer.iem.secucheck.analysis-integration</artifactId>
+	<packaging>jar</packaging>
+	<name>SecuCheck Analysis Core Process</name>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>de.fraunhofer.iem.secucheck</groupId>
+			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- copy runnable analysis jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.fraunhofer.iem.secucheck</groupId>
+									<artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
+									<version>0.0.1-SNAPSHOT</version>
+									<type>jar</type>
+									<classifier>jar-with-dependencies</classifier>
+									<destFileName>analysis.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>src/main/resources</outputDirectory>
+							<stripVersion>true</stripVersion>
+	
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>

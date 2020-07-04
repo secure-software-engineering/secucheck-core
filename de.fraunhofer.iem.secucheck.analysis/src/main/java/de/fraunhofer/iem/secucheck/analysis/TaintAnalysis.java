@@ -1,0 +1,141 @@
+package de.fraunhofer.iem.secucheck.analysis;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import boomerang.preanalysis.BoomerangPretransformer;
+import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.WholeTaintFlowsAnalysisResult;
+import soot.G;
+import soot.PackManager;
+import soot.Scene;
+import soot.SceneTransformer;
+import soot.SootClass;
+import soot.SootMethod;
+import soot.Transform;
+import soot.Unit;
+import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
+import soot.options.Options;
+import test.core.selfrunning.ImprecisionException;
+
+public abstract class TaintAnalysis implements Analysis {
+
+	protected long analysisTime;
+	protected BiDiInterproceduralCFG<Unit, SootMethod> icfg;
+	
+	private final String sootClassPath;
+	private final List<String> canonicalClasses;
+	private final List<CompositeTaintFlowQuery> flowQueries;
+	private final AnalysisResultListener resultListener;
+	private final WholeTaintFlowsAnalysisResult result;
+	
+	public TaintAnalysis(String sootClassPath, List<String> canonicalClassNames,
+			List<CompositeTaintFlowQuery> flowQueries, AnalysisResultListener resultListener) {
+		this.sootClassPath = sootClassPath;
+		this.canonicalClasses = canonicalClassNames;
+		this.flowQueries = flowQueries;
+		this.resultListener = resultListener;
+		this.result = new WholeTaintFlowsAnalysisResult();
+	}
+	
+	@Override
+	public AnalysisResult run() {
+		this.initializeSootWithEntryPoint(sootClassPath, this.canonicalClasses);
+		return this.analyze();
+	}
+	
+	private void initializeSootWithEntryPoint(String sootClassPath, List<String> entryPoints) {
+		G.v().reset();
+
+		Options.v().set_keep_line_number(true);
+
+		Options.v().setPhaseOption("cg.cha", "on");
+		Options.v().setPhaseOption("cg", "all-reachable:true");
+		Options.v().set_output_format(Options.output_format_none);
+
+		Options.v().set_no_bodies_for_excluded(true);
+		Options.v().set_allow_phantom_refs(true);
+		Options.v().setPhaseOption("jb", "use-original-names:true");
+
+		Options.v().set_exclude(excludedPackages());
+		Options.v().set_soot_classpath(sootClassPath);
+		Options.v().set_prepend_classpath(true);
+		Options.v().set_whole_program(true);
+
+		Scene.v().addBasicClass("java.lang.StringBuilder", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.System", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.ThreadGroup", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.ClassLoader", SootClass.BODIES);
+		Scene.v().addBasicClass("java.security.PrivilegedActionException", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.Thread", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.AbstractStringBuilder", SootClass.BODIES);
+
+		try {
+			for (String entry : entryPoints) {
+				SootClass sootTestClass = Scene.v().forceResolve(entry, SootClass.BODIES);
+				sootTestClass.setApplicationClass();
+			}
+		} catch (Error | Exception e) {
+			// Normally the "Error" class indicates problems that are outside of application
+			// scope to deal with (OutOfMemoryError etc).
+			// But soot throws instances of class "Error" in case of problems. So we are
+			// forced to catch it here.
+			throw new RuntimeException("Could not find entry point.");
+		}
+		Scene.v().forceResolve("java.lang.Thread", SootClass.BODIES).setApplicationClass();
+		Scene.v().loadNecessaryClasses();
+
+	}
+
+	protected boolean includeJDK() {
+		return true;
+	}
+
+	protected List<String> excludedPackages() {
+		List<String> excludedPackages = new LinkedList<>();
+		excludedPackages.add("sun.*");
+		excludedPackages.add("javax.*");
+		excludedPackages.add("com.sun.*");
+		excludedPackages.add("com.ibm.*");
+		excludedPackages.add("org.xml.*");
+		excludedPackages.add("org.w3c.*");
+		excludedPackages.add("apple.awt.*");
+		excludedPackages.add("com.apple.*");
+		return excludedPackages;
+	}
+
+	private AnalysisResult analyze() {
+		Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());
+		PackManager.v().getPack("wjtp").add(transform);
+		PackManager.v().getPack("cg").apply();
+		PackManager.v().getPack("wjtp").apply();
+		return this.result;
+	}
+	
+	private SceneTransformer createAnalysisTransformer() throws ImprecisionException {
+		return new SceneTransformer() {
+			protected void internalTransform(String phaseName, Map options) {
+				BoomerangPretransformer.v().apply();
+				icfg = new JimpleBasedInterproceduralCFG(true);
+				executeAnalysis();
+			}
+		};
+	}
+
+	private void executeAnalysis() {
+		for (CompositeTaintFlowQuery flowQuery : this.flowQueries) {
+			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery);
+			AnalysisResult singleResult = analysis.run();
+			this.result.addResult(flowQuery, singleResult);
+			if (resultListener != null) {
+				resultListener.reportCompositeFlowResult(singleResult);
+			}
+		}
+	}
+}
