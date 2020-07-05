@@ -3,8 +3,6 @@ package de.fraunhofer.iem.secucheck.analysis.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import boomerang.seedfactory.Method;
-
 public final class TaintFlowQueryImpl implements TaintFlowQuery {
 
 	private final List<Method> froms;

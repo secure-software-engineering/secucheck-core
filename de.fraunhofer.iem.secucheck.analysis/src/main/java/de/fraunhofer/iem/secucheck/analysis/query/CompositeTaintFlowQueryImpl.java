@@ -11,12 +11,22 @@ public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuer
 		this.taintFlowQueries = new ArrayList<TaintFlowQuery>();
 	}
 	
+	public void addQuery(TaintFlowQuery query) {
+		this.taintFlowQueries.add(query);
+	}
+	
 	@Override
 	public List<TaintFlowQuery> getTaintFlowQueries() {
 		return this.taintFlowQueries;
 	}
 	
-	public void addQuery(TaintFlowQuery query) {
-		this.taintFlowQueries.add(query);
+	@Override
+	public int getReportLocation() {
+		return 0;
+	}
+	
+	@Override
+	public String getReportMessage() {
+		return null;
 	}
 }

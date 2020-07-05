@@ -11,8 +11,7 @@ public final class CompositeTaintFlowQueryResult implements AnalysisResult {
 
 	private final Map<TaintFlowQuery, AnalysisResult> results;
 	
-	public CompositeTaintFlowQueryResult()
-	{
+	public CompositeTaintFlowQueryResult(){
 		this.results = new HashMap<TaintFlowQuery, AnalysisResult>();
 	}
 	
@@ -22,6 +21,16 @@ public final class CompositeTaintFlowQueryResult implements AnalysisResult {
 	
 	public Iterator<Entry<TaintFlowQuery, AnalysisResult>> getResults(){
 		return this.results.entrySet().iterator();
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public void clear() {
+		results.clear();
 	}
 	
 }

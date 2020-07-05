@@ -23,4 +23,14 @@ public final class WholeTaintFlowsAnalysisResult implements AnalysisResult {
 	public Iterator<Entry<CompositeTaintFlowQuery, AnalysisResult>> getResults(){
 		return this.results.entrySet().iterator();
 	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public void clear() {
+		results.clear();
+	}
 }

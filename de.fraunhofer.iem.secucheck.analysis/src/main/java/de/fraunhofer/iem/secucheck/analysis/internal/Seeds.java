@@ -1,6 +1,5 @@
 package de.fraunhofer.iem.secucheck.analysis.internal;
 
-
 import java.util.Set;
 
 import boomerang.BackwardQuery;
