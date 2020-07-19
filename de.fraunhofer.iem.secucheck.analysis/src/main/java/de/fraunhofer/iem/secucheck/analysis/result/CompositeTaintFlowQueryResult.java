@@ -19,8 +19,8 @@ public final class CompositeTaintFlowQueryResult implements AnalysisResult {
 		this.results.put(flowQuery, result);
 	}
 	
-	public Iterator<Entry<TaintFlowQuery, AnalysisResult>> getResults(){
-		return this.results.entrySet().iterator();
+	public Map<TaintFlowQuery, AnalysisResult> getResults(){
+		return this.results;
 	}
 
 	@Override

@@ -44,7 +44,7 @@ import soot.jimple.Stmt;
 import soot.jimple.internal.JNopStmt;
 import wpds.impl.Weight.NoWeight;
 
-public class SingleFlowAnalysis implements Analysis {
+class SingleFlowAnalysis implements Analysis {
 
 	private final TaintFlowQuery singleFlow;
 	private final ObservableICFG<Unit, SootMethod> icfg;

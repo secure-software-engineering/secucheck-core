@@ -3,6 +3,8 @@ package de.fraunhofer.iem.secucheck.analysis.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.fraunhofer.iem.secucheck.analysis.datastructures.Copyable;
+
 public final class TaintFlowQueryImpl implements TaintFlowQuery {
 
 	private final List<Method> froms;
@@ -26,4 +28,5 @@ public final class TaintFlowQueryImpl implements TaintFlowQuery {
 	public void addTo(Method to) { this.tos.add(to);}
 	public void addNotThrough(Method through) { this.notThroughs.add(through);}
 	public void addThrough(Method notThrough) { this.throughs.add(notThrough);}
+
 }

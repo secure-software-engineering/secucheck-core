@@ -7,11 +7,11 @@ import java.util.Map.Entry;
 
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 
-public final class WholeTaintFlowsAnalysisResult implements AnalysisResult {
+public final class SecucheckTaintAnalysisResult implements AnalysisResult {
 	
 	private final Map<CompositeTaintFlowQuery, AnalysisResult> results;
 	
-	public WholeTaintFlowsAnalysisResult()
+	public SecucheckTaintAnalysisResult()
 	{
 		this.results = new HashMap<CompositeTaintFlowQuery, AnalysisResult>();
 	}

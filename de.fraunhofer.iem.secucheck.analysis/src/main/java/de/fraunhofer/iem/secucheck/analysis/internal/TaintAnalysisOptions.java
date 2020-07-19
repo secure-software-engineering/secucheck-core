@@ -2,7 +2,7 @@ package de.fraunhofer.iem.secucheck.analysis.internal;
 
 import boomerang.DefaultBoomerangOptions;
 
-public class TaintAnalysisOptions extends DefaultBoomerangOptions {
+class TaintAnalysisOptions extends DefaultBoomerangOptions {
 	
 	@Override
 	public boolean trackStrings() {

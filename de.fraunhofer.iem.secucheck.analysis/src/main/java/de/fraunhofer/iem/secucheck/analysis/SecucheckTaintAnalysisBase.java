@@ -3,6 +3,7 @@ package de.fraunhofer.iem.secucheck.analysis;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import boomerang.preanalysis.BoomerangPretransformer;
 import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
@@ -10,7 +11,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
-import de.fraunhofer.iem.secucheck.analysis.result.WholeTaintFlowsAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 import soot.G;
 import soot.PackManager;
 import soot.Scene;
@@ -24,30 +25,57 @@ import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.options.Options;
 import test.core.selfrunning.ImprecisionException;
 
-public abstract class TaintAnalysis implements Analysis {
+public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
+	protected final ReentrantLock lock;  
+	
 	protected long analysisTime;
 	protected BiDiInterproceduralCFG<Unit, SootMethod> icfg;
 	
-	private final String sootClassPath;
-	private final List<String> canonicalClasses;
-	private final List<CompositeTaintFlowQuery> flowQueries;
-	private final AnalysisResultListener resultListener;
-	private final WholeTaintFlowsAnalysisResult result;
+	private String sootClassPath;
+	private List<String> canonicalClasses;
+	private List<CompositeTaintFlowQuery> flowQueries;
+	private AnalysisResultListener resultListener;
+	private SecucheckTaintAnalysisResult result;
 	
-	public TaintAnalysis(String sootClassPath, List<String> canonicalClassNames,
-			List<CompositeTaintFlowQuery> flowQueries, AnalysisResultListener resultListener) {
+	public SecucheckTaintAnalysisBase() { 
+		this.lock = new ReentrantLock();
+	}
+	
+	public SecucheckTaintAnalysisBase(String sootClassPath, List<String> canonicalClassNames,
+			AnalysisResultListener resultListener) {
+		this();
 		this.sootClassPath = sootClassPath;
 		this.canonicalClasses = canonicalClassNames;
-		this.flowQueries = flowQueries;
 		this.resultListener = resultListener;
-		this.result = new WholeTaintFlowsAnalysisResult();
 	}
 	
 	@Override
-	public AnalysisResult run() {
-		this.initializeSootWithEntryPoint(sootClassPath, this.canonicalClasses);
-		return this.analyze();
+	public void setSootClassPath(String sootClassPath) {
+		this.sootClassPath = sootClassPath;
+	}
+	
+	@Override
+	public void setAnalysisClasses(List<String> canonicalClassNames) {
+		this.canonicalClasses = canonicalClassNames;
+	}
+	
+	@Override
+	public void setListener(AnalysisResultListener resultListener) {
+		this.resultListener = resultListener;
+	}
+	
+	@Override
+	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQuery> flowQueries) {
+		lock.lock();
+		try {
+			this.flowQueries = flowQueries;
+			this.result = new SecucheckTaintAnalysisResult();
+			this.initializeSootWithEntryPoint(sootClassPath, this.canonicalClasses);
+			return this.analyze();
+		} finally {
+			lock.unlock();
+		}
 	}
 	
 	private void initializeSootWithEntryPoint(String sootClassPath, List<String> entryPoints) {
@@ -110,7 +138,7 @@ public abstract class TaintAnalysis implements Analysis {
 		return excludedPackages;
 	}
 
-	private AnalysisResult analyze() {
+	private SecucheckTaintAnalysisResult analyze() {
 		Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());
 		PackManager.v().getPack("wjtp").add(transform);
 		PackManager.v().getPack("cg").apply();

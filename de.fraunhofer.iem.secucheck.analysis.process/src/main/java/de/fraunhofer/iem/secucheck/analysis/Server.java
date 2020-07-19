@@ -5,32 +5,29 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.emf.common.util.BasicEList;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
 
-import de.fraunhofer.iem.secucheck.custom.ProgressReporter;
-import de.fraunhofer.iem.secucheck.custom.XMLHelper;
-import de.fraunhofer.iem.secucheck.marker.AnalysisResult;
-import de.fraunhofer.iem.secucheck.marker.ProgressReport;
-import de.fraunhofer.iem.secucheck.query.Flow;
-import de.fraunhofer.iem.secucheck.query.TaintFlow;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.serializable.ReportType;
+import de.fraunhofer.iem.secucheck.analysis.serializable.query.CompleteQuery;
+import de.fraunhofer.iem.secucheck.analysis.serializable.result.CompleteResult;
+import de.fraunhofer.iem.secucheck.analysis.serializable.result.ListenerResult;
 
-public class Server implements ProgressReporter {
-	private ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	private PrintStream systemOut = System.out;
-
-	private SecuCheckAnalysis analysis = new SecuCheckAnalysis();
-
+public class Server {
+	
+	private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	private final PrintStream systemOut = System.out;
+	private final Logger logger;
+	
 	public Server() {
 		System.setOut(new PrintStream(baos));
-		final Logger logger = LogManager.getLogger();
-		logger.debug("X");
+		logger = LogManager.getLogger();
+		logger.debug("X");	
 	}
 
 	public static void main(String[] args) {
@@ -43,39 +40,57 @@ public class Server implements ProgressReporter {
 
 	private void run() throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-		String sootClassPath = br.readLine();
-		List<String> canonicalClassNames = Arrays.asList(br.readLine().split(";"));
-		EList<? extends EObject> elements = XMLHelper.deserializeList(br.readLine());
-		List<TaintFlow> flowQueries = filterType(elements, TaintFlow.class);
-		List<Flow> flows = filterType(elements, Flow.class);
-
-		AnalysisResult result = analysis.run(sootClassPath, canonicalClassNames, flowQueries, flows);
-		systemOut.println(XMLHelper.serialize(result));
-
+		
+		CompleteQuery queryDetails = 
+				(CompleteQuery) Serializer.deserializeFromJsonString(br.readLine());
+		
+		AnalysisResultListener resultListener = queryDetails.hasResultListener() ? 
+				new SimpleResultListener() : null;
+				
+		SecucheckAnalysis analysis = new SecucheckTaintAnalysis(
+				queryDetails.getSootClassPath(), 
+				queryDetails.getCanonicalClasses(), resultListener);
+		
+		SecucheckTaintAnalysisResult result = analysis.run(queryDetails.getFlowQueries());
+		CompleteResult completeResult = new CompleteResult(result);
+		systemOut.println(Serializer.serializeToJsonString(completeResult));
 		System.err.print(baos.toString());
+		
+		if (logger.isInfoEnabled()) {
+			logger.log(Level.INFO, "Successfully analyzed a query.");
+		}
 	}
+	
 
-	@SuppressWarnings("unchecked")
-	private <T> EList<T> filterType(EList<? extends EObject> list, Class<T> type) {
-		EList<T> result = new BasicEList<T>();
-		for (EObject element : list) {
-			if (type.isInstance(element)) {
-				result.add((T) element);
+	class SimpleResultListener implements AnalysisResultListener {
+		
+		public void reportFlowResult(AnalysisResult result) {
+			sendResult(ReportType.SingleResult, result);
+		}
+		
+		public void reportCompositeFlowResult(AnalysisResult result) {
+			sendResult(ReportType.CompositeResult, result);
+		}
+		
+		public void reportCompleteResult(AnalysisResult result) {
+			sendResult(ReportType.CompleteResult, result);
+		}
+		
+		public boolean isCancelled() {
+			return false;
+		}
+		
+		private void sendResult(ReportType reportType, AnalysisResult result) {
+			ListenerResult listenResult = new ListenerResult();
+			listenResult.setReportType(reportType);
+			listenResult.setResult(result);
+			Server.this.systemOut.println(Serializer.serializeToJsonString(listenResult));
+			System.err.print(Server.this.baos.toString());
+			
+			if (logger.isInfoEnabled()) {
+				logger.log(Level.INFO, "Successfully sent a result report.");
 			}
 		}
-		return result;
-		
-	}
-
-
-	@Override
-	public void reportProgress(ProgressReport report) {
-		systemOut.println(XMLHelper.serialize(report));
-	}
-
-	@Override
-	public boolean isCanceled() {
-		return false;
-	}
+	};
+	
 }

@@ -5,11 +5,6 @@ Bundle-SymbolicName: de.fraunhofer.iem.secucheck.analysis.process
 Bundle-Version: 0.0.1.qualifier
 Bundle-Vendor: Fraunhofer IEM, Software Campus
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Automatic-Module-Name: de.fraunhofer.iem.secucheck.analysis-integration
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- de.fraunhofer.iem.secucheck.query,
- org.eclipse.emf.ecore.xmi;bundle-version="2.15.0",
- org.apache.commons.io;bundle-version="2.2.0"
+Automatic-Module-Name: de.fraunhofer.iem.secucheck.analysis.process
 Bundle-ClassPath: .
 Export-Package: de.fraunhofer.iem.secucheck.analysis

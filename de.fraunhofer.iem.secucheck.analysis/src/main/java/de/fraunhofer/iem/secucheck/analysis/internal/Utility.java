@@ -12,7 +12,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 
-public class Utility {
+class Utility {
 	
 	static List<Method> getMethods(CompositeTaintFlowQuery flowQuery) {
 		List<Method> methods = new ArrayList<Method>();
