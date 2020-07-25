@@ -14,7 +14,6 @@
 	<modules>
  		<module>../de.fraunhofer.iem.secucheck.analysis</module>
  		<module>../de.fraunhofer.iem.secucheck.analysis.process</module>
- 		<module>target-definition</module>
 	</modules>
 
 	<properties>

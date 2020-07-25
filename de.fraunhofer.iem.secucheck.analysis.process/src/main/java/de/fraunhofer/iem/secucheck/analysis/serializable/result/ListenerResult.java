@@ -3,15 +3,17 @@ package de.fraunhofer.iem.secucheck.analysis.serializable.result;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.MessageType;
+import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ReportType;
 
-public final class ListenerResult implements AnalysisMessage {
+public final class ListenerResult extends ProcessMessage implements AnalysisMessage {
 	
 	private ReportType reportType;
 	private AnalysisResult result;
 	
 	public ListenerResult() {
-		// TODO Auto-generated constructor stub
+		super.messageType = getMessageType();
+		super.analysisMessage = this;
 	}
 	
 	public void setReportType(ReportType reportType) {
@@ -33,5 +35,4 @@ public final class ListenerResult implements AnalysisMessage {
 	public MessageType getMessageType() {
 		return MessageType.ListenerResult;
 	}
-
 }

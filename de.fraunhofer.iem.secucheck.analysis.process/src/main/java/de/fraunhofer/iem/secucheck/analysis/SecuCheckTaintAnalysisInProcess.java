@@ -18,8 +18,10 @@ import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
-import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
+import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
+import de.fraunhofer.iem.secucheck.analysis.serializable.Serializer;
 import de.fraunhofer.iem.secucheck.analysis.serializable.query.CompleteQuery;
+import de.fraunhofer.iem.secucheck.analysis.serializable.result.CompleteResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.ListenerResult;
 
 public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis {
@@ -113,14 +115,14 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 				e.printStackTrace();
 				break;
 			}
-			handleReceived(Serializer.deserializeFromJsonString(line));
+			handleProccessMessage(Serializer.deserializeFromJsonString(line));
 		}
 	}
 
-	private void handleReceived(AnalysisMessage message) {
+	private void handleProccessMessage(ProcessMessage message) {
 		switch(message.getMessageType()) {
 			case ListenerResult:
-				ListenerResult interResult = (ListenerResult)message;
+				ListenerResult interResult = (ListenerResult) message.getAnalysisMessage();
 				switch(interResult.getReportType()) {
 					case SingleResult:
 						this.resultListener.reportFlowResult(interResult.getResult());
@@ -134,7 +136,8 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 				}
 				break;
 			case AnalysisResult:
-				this.result = (SecucheckTaintAnalysisResult) (Object) message;
+				CompleteResult completeResult = (CompleteResult) message.getAnalysisMessage();
+				this.result = completeResult.getResult();
 				break;
 			default: break;
 		}

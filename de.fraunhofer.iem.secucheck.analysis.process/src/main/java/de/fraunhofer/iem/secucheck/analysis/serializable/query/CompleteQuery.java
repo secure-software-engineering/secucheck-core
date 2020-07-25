@@ -3,19 +3,21 @@ package de.fraunhofer.iem.secucheck.analysis.serializable.query;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.MessageType;
+import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 
-public final class CompleteQuery implements AnalysisMessage {
+public final class CompleteQuery extends ProcessMessage implements AnalysisMessage {
+	
+	private boolean hasResultListener;
 	private String sootClassPath;
 	private List<String> canonicalClasses;
-	private boolean hasResultListener;
 	private List<CompositeTaintFlowQuery> flowQueries;
 	
 	public CompleteQuery(String sootClassPath, List<String> canonicalClassNames,
 			List<CompositeTaintFlowQuery> flowQueries, boolean hasResultListener) {
+		super.messageType = getMessageType();
+		super.analysisMessage = this;
 		this.sootClassPath = sootClassPath;
 		this.flowQueries = flowQueries;
 		this.canonicalClasses = canonicalClassNames;

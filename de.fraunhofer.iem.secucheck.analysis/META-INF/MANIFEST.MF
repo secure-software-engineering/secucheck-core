@@ -10,3 +10,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  de.fraunhofer.iem.secucheck.query
 Bundle-ClassPath: .
+Export-Package: de.fraunhofer.iem.secucheck.analysis.query,
+ de.fraunhofer.iem.secucheck.analysis.result
