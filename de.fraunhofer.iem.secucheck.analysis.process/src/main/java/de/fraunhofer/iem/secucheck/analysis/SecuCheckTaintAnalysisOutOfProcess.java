@@ -24,7 +24,7 @@ import de.fraunhofer.iem.secucheck.analysis.serializable.query.CompleteQuery;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.CompleteResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.ListenerResult;
 
-public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis {
+public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalysis {
 	
 	private final ReentrantLock lock;
 	
@@ -34,13 +34,18 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 	private SecucheckTaintAnalysisResult result;
 	
 	private static File analysisJarFile;
-
-	public SecuCheckTaintAnalysisInProcess(String sootClassPath, List<String> canonicalClassNames,
+	
+	public SecuCheckTaintAnalysisOutOfProcess() {
+		super();
+		this.lock = new ReentrantLock();
+	}
+	
+	public SecuCheckTaintAnalysisOutOfProcess(String sootClassPath, List<String> canonicalClassNames,
 				AnalysisResultListener resultListener) {
+		this();
 		this.sootClassPath = sootClassPath;
 		this.canonicalClasses = canonicalClassNames;
 		this.resultListener = resultListener;
-		this.lock = new ReentrantLock();
 	}
 	
 	public void setSootClassPath(String sootClassPath) {
@@ -144,15 +149,15 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 	}
 
 	private static File getAnalysisJarFile() throws IOException {
-		if (SecuCheckTaintAnalysisInProcess.analysisJarFile == null 
-				|| !SecuCheckTaintAnalysisInProcess.analysisJarFile.exists()) {
-			SecuCheckTaintAnalysisInProcess.analysisJarFile = provideResource("/analysis.jar");
+		if (SecuCheckTaintAnalysisOutOfProcess.analysisJarFile == null 
+				|| !SecuCheckTaintAnalysisOutOfProcess.analysisJarFile.exists()) {
+			SecuCheckTaintAnalysisOutOfProcess.analysisJarFile = provideResource("/analysis.jar");
 		}
-		return SecuCheckTaintAnalysisInProcess.analysisJarFile;
+		return SecuCheckTaintAnalysisOutOfProcess.analysisJarFile;
 	}
 
 	private static File provideResource(String resourcePath) throws IOException {
-		InputStream is = SecuCheckTaintAnalysisInProcess.class.getResourceAsStream(resourcePath);
+		InputStream is = SecuCheckTaintAnalysisOutOfProcess.class.getResourceAsStream(resourcePath);
 		File file = File.createTempFile("SecuCheck", resourcePath.replace('/', '-'));
 		FileUtils.copyInputStreamToFile(is, file);
 		file.deleteOnExit();

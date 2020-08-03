@@ -1,139 +1,236 @@
 package de.fraunhofer.iem.secucheck.analysis.sample;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import de.fraunhofer.iem.secucheck.analysis.SecuCheckTaintAnalysisOutOfProcess;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckTaintAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
+import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 public class Main {
 
+	enum OS { Windows, LinuxOrMac }
+	
 	public static void main(String[] args) {
 		try {
-			secucheckAnalysisByLibrary();
-//			secucheckAnalysisByProcess();
+			// Run the in-process hosted instance of the SecucheckTaintAnalysis.
+			runSecucheckAnalysis(new SecucheckTaintAnalysis());
+			
+			// Run the out-of-process hosted instance of the SecucheckTaintAnalysis.
+			runSecucheckAnalysis(new SecuCheckTaintAnalysisOutOfProcess());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private static void secucheckAnalysisByLibrary() {
-//		List<?> elements = XMLHelper.deserializeList(getXmlAnalysisSpecs());
-//		List<TaintFlow> flowQueries = filterType(elements, TaintFlow.class);
-//		List<Flow> flows = filterType(elements, Flow.class);
-//		List<String> canonicalClassNames = Arrays.asList(getClassesToAnalyze().split(";"));			
-//		AnalysisResult result = SpottyTestingFramework.run(getSootClassPath(), canonicalClassNames, flowQueries, flows, null);
-//		System.out.println("Issue count:" + result.getIssues().size());
+	private static void runSecucheckAnalysis(SecucheckAnalysis secucheckAnalysis) {
 	
-		MethodImpl	source = getSourceMethod(), 
-					sanitizer = getSanitizerMethod(), 
-					propogator = getPropogatorMethod() , 
-					sink = getSinkMethod();
+		List<CompositeTaintFlowQueryImpl> compositesOfFirst = getInList(
+				getCompositeOf(0, "1", getTaintFlowQuery1()));
 		
+		List<CompositeTaintFlowQueryImpl> compositesOfFirstTwo = getInList(
+				getCompositeOf(0, "1 & 2", getTaintFlowQuery1(),
+						getTaintFlowQuery2()));
 		
+		List<CompositeTaintFlowQueryImpl> compositesOfFirstThree = getInList(
+				getCompositeOf(0, "1,2 & 3", getTaintFlowQuery1(),
+						getTaintFlowQuery2(), getTaintFlowQuery3()));
+		
+		List<CompositeTaintFlowQueryImpl> compositesOfAll = getInList(
+				getCompositeOf(0, "1,2,3 & 4", getTaintFlowQuery1(),
+						getTaintFlowQuery2(), getTaintFlowQuery3(),
+						getTaintFlowQuery4()));
+		
+		List<String> classesToAnalyse = Arrays.asList(getClassesToAnalyze().split(";"));
+		String sootClassPath = getSootClassPath(OS.LinuxOrMac);
+		AnalysisResultListener resultListener = getConsoleResultListener();
+		
+		secucheckAnalysis.setAnalysisClasses(classesToAnalyse);
+		secucheckAnalysis.setSootClassPath(sootClassPath);
+		secucheckAnalysis.setListener(resultListener);
+		
+		SecucheckTaintAnalysisResult result1 = secucheckAnalysis.run(compositesOfFirst);
+		System.out.println("Result1: " + result1);
+		
+		// For demonstration purposes the listener is set to null.
+		secucheckAnalysis.setListener(null);
+		SecucheckTaintAnalysisResult result2 = secucheckAnalysis.run(compositesOfFirstTwo);
+		System.out.println("Result2: " + result2);
+		
+		SecucheckTaintAnalysisResult result3 = secucheckAnalysis.run(compositesOfFirstThree);
+		System.out.println("Result3: " + result3);
+		
+		// For demonstration purposes the listener is set to null.
+		secucheckAnalysis.setListener(null);
+		SecucheckTaintAnalysisResult result4 = secucheckAnalysis.run(compositesOfAll);
+		System.out.println("Result4: " + result4);
 	}
-	
-	private static void secucheckAnalysisByProcess() {
 		
-		
-//		File javaFile = getJavaBinaryFile();
-//		File analysisJarFile = getAnalysisJarFile();
-//		
-//		if (javaFile != null && analysisJarFile != null) {
-//			ProcessBuilder builder = new ProcessBuilder()
-//					.command(javaFile.toString(), "-jar", analysisJarFile.toString())
-//					.redirectError(Redirect.INHERIT);
-//			Process process = builder.start();
-//			PrintWriter pw = new PrintWriter(process.getOutputStream());
-//			pw.println(getSootClassPath());
-//			pw.println(getClassesToAnalyze());
-//			pw.println(getXmlAnalysisSpecs());
-//			pw.flush();
-//			BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//			while (!process.waitFor(1000, TimeUnit.MILLISECONDS)) {
-//				System.out.print(readInput(br));
-//			}
-//			System.out.print(readInput(br));
-//		}		
-	}
-	
 	private static MethodImpl getSourceMethod() {
-		return null;
+		List<InputParameter> inputs = new ArrayList<InputParameter>();
+		List<OutputParameter> outputs = new ArrayList<OutputParameter>();
+		ReturnValue returnValue = new ReturnValue();
+		
+		MethodImpl method = new MethodImpl();
+		method.setName("getSecret");
+		method.setSignature("Signature");
+		method.setInputParameters(inputs);
+		method.setOutputParameters(outputs);
+		method.setReturnValue(returnValue);
+		return method;
 	}
 	
 	private static MethodImpl getSanitizerMethod() {
-		return null;
+		InputParameter input = new InputParameter();
+		input.setNumber(0);
+		
+		List<InputParameter> inputs = new ArrayList<InputParameter>();
+		inputs.add(input);
+		
+		List<OutputParameter> outputs = null;
+		ReturnValue returnValue = null;
+		
+		MethodImpl method = new MethodImpl();
+		method.setName("sanatizer");
+		method.setSignature("Signature");
+		method.setInputParameters(inputs);
+		method.setOutputParameters(outputs);
+		method.setReturnValue(returnValue);
+		return method;
 	}
 	
 	private static MethodImpl getPropogatorMethod() {
-		return null;
+		InputParameter input = new InputParameter();
+		input.setNumber(0);
+		
+		List<InputParameter> inputs = new ArrayList<InputParameter>();
+		inputs.add(input);
+		
+		List<OutputParameter> outputs = null;
+		ReturnValue returnValue = null;
+		
+		MethodImpl method = new MethodImpl();
+		method.setName("propogator");
+		method.setSignature("Signature");
+		method.setInputParameters(inputs);
+		method.setOutputParameters(outputs);
+		method.setReturnValue(returnValue);
+		return method;
 	}
 	
 	private static MethodImpl getSinkMethod() {
+		InputParameter input = new InputParameter();
+		input.setNumber(0);
+		
+		List<InputParameter> inputs = new ArrayList<InputParameter>();
+		inputs.add(input);
+		
+		List<OutputParameter> outputs = null;
+		ReturnValue returnValue = null;
+		
+		MethodImpl method = new MethodImpl();
+		method.setName("publish");
+		method.setSignature("Signature");
+		method.setInputParameters(inputs);
+		method.setOutputParameters(outputs);
+		method.setReturnValue(returnValue);
+		return method;
+	}
+	
+	private static TaintFlowQueryImpl getTaintFlowQuery1() {		
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(getSourceMethod());
+		taintFlowQuery.addTo(getSinkMethod());		
 		return null;
 	}
 	
-	    // Use ';' for Windows and ':' for Linux or Mac.
-//		private static String pathSeparator= ";";
-//		private static String getSootClassPath() {
-//			return 	System.getProperty("java.home") + File.separator + "lib" + File.separator +"rt.jar" + 
-//					pathSeparator +
-//					System.getProperty("user.dir") + File.separator +"bin";
-//		}
+	private static TaintFlowQueryImpl getTaintFlowQuery2() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(getSourceMethod());
+		taintFlowQuery.addNotThrough(getSanitizerMethod());
+		taintFlowQuery.addTo(getSinkMethod());
+		return null;
+	}
+	
+	private static TaintFlowQueryImpl getTaintFlowQuery3() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(getSourceMethod());
+		taintFlowQuery.addThrough(getPropogatorMethod());
+		taintFlowQuery.addTo(getSinkMethod());
+		return null;
+	}
+	
+	private static TaintFlowQueryImpl getTaintFlowQuery4() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(getSourceMethod());
+		taintFlowQuery.addNotThrough(getSanitizerMethod());
+		taintFlowQuery.addThrough(getPropogatorMethod());
+		taintFlowQuery.addTo(getSinkMethod());
+		return null;
+	}
+	
+	private static CompositeTaintFlowQueryImpl getCompositeOf(int reportLoc, 
+			String message, TaintFlowQueryImpl ...flowQueryImpls) {
+		CompositeTaintFlowQueryImpl compositeQuery = new CompositeTaintFlowQueryImpl();
+		compositeQuery.setReportLocation(reportLoc);
+		compositeQuery.setReportMessage(message);		
+		for (TaintFlowQueryImpl flowQuery : flowQueryImpls) {
+			compositeQuery.addQuery(flowQuery);
+		}		
+		return compositeQuery;
+	}
+	
+	private static <T> List<T> getInList(T ... ts){
+		List<T> list = new ArrayList<T>();
+		for (T t:ts) {
+			list.add(t);
+		}
+		return list;
+	}
+		
+	private static String getSootClassPath(OS os) {		
+		// Use ';' for Windows and ':' for Linux or Mac.
+		String pathSeparator= os == OS.Windows ? ";" : ":";
+		return 	System.getProperty("java.home") + File.separator + "lib" + File.separator +"rt.jar" + 
+				pathSeparator +
+				System.getProperty("user.dir") + File.separator +"bin";
+	}
 			
-//		private static String getClassesToAnalyze() {
-//			return "Test;";
-//		}
-		
-//		private static String getXmlAnalysisSpecs() {
-//			return "<xmi:XMI xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:query=\"http://iem.fraunhofer.de/secucheck/query\">   <query:TaintFlow reportMessage=\"Invalid Information Flow\">     <partialTaintFlows from=\"/3\" notThrough=\"/2\" to=\"/1\"/>   </query:TaintFlow>   <query:Method name=\"m2\" signature=\"Test: void publish(int)\">     <inputDeclaration>       <inputs xsi:type=\"query:Parameter\"/>     </inputDeclaration>   </query:Method>   <query:Method name=\"s1\" signature=\"Test: int sanatizer(int)\"/>   <query:Method name=\"m1\" signature=\"Test: int getSecret()\">     <outputDeclaration>       <outputs xsi:type=\"query:ReturnValue\"/>     </outputDeclaration>   </query:Method> </xmi:XMI> ";
-//		}
-		
-//		private static File getAnalysisJarFile() throws IOException {
-//			return provideResource("/de.fraunhofer.iem.secucheck.analysis-0.0.1-SNAPSHOT-jar-with-dependencies.jar");
-//		}
-		
-//		private static File provideResource(String resourcePath) throws IOException {
-//			InputStream is = (InputStream) SecuCheckAnalysis.class.getResourceAsStream(resourcePath);
-//			File file = File.createTempFile("SecuCheck", resourcePath.replace('/', '-'));
-//			FileUtils.copyInputStreamToFile(is, file);
-//			file.deleteOnExit();
-//			return file;
-//		}
-		
-//		private static File getJavaBinaryFile() {
-//			File javaHome = new File(System.getProperty("java.home"));
-//			File javaFiles[] = new File[] { new File(javaHome, "/bin/java.exe"), new File(javaHome, "/bin/java") };
-//			for (File javaFile : javaFiles) {
-//				if (javaFile.exists()) {
-//					return javaFile;
-//				}
-//			}
-//			return null;
-//		}
-		
-//		@SuppressWarnings("unchecked")
-//		private static <T> List<T> filterType(List<? extends Object> list, Class<T> type) {
-//			List<T> result = new BasicEList<T>();
-//			for (Object element : list) {
-//				if (type.isInstance(element)) {
-//					result.add((T) element);
-//				}
-//			}
-//			return result;
-//		}
-		
-//		private static String readInput(BufferedReader br) throws IOException {
-//			String input = "";
-//			while (br.ready()) {
-//				try {
-//					String line = null;
-//					if ((line = br.readLine())== null) break; 
-//						input += line;
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//					break;
-//				}
-//			}
-//			return input;
-//		}
+	private static String getClassesToAnalyze() {
+		return "Test;";
+	}
+	
+	private static AnalysisResultListener getConsoleResultListener() {
+		return new AnalysisResultListener() {
+			
+			public void reportFlowResult(AnalysisResult result) {
+				System.out.println("Recieved single flow result:" + result.toString());
+			}
+			
+			public void reportCompositeFlowResult(AnalysisResult result) {
+				System.out.println("Recieved composite flow result:" + result.toString());
+			}
+			
+			public void reportCompleteResult(AnalysisResult result) {
+				System.out.println("Recieved complete result:" + result.toString());
+			}
+			
+			public boolean isCancelled() {
+				return false;
+			}
+		};
+	}
+	
 }
