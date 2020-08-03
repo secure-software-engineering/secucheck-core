@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -12,11 +14,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ReportType;
-import de.fraunhofer.iem.secucheck.analysis.serializable.Serializer;
+import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessageSerializer;
 import de.fraunhofer.iem.secucheck.analysis.serializable.query.CompleteQuery;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.CompleteResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.ListenerResult;
@@ -45,18 +48,18 @@ public class SecuCheckAnalysisServer {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
 		CompleteQuery queryDetails = 
-				(CompleteQuery) Serializer.deserializeFromJsonString(br.readLine());
+				(CompleteQuery) ProcessMessageSerializer.deserializeFromJsonString(br.readLine());
 		
 		AnalysisResultListener resultListener = queryDetails.hasResultListener() ? 
 				new SimpleResultListener() : null;
 				
 		SecucheckAnalysis analysis = new SecucheckTaintAnalysis(
 				queryDetails.getSootClassPath(), 
-				queryDetails.getCanonicalClasses(), resultListener);
+				queryDetails.getCanonicalClasses(), resultListener);	
 		
 		SecucheckTaintAnalysisResult result = analysis.run(queryDetails.getFlowQueries());
 		CompleteResult completeResult = new CompleteResult(result);
-		systemOut.println(Serializer.serializeToJsonString(completeResult));
+		systemOut.println(ProcessMessageSerializer.serializeToJsonString(completeResult));
 		System.err.print(baos.toString());
 		
 		if (logger.isInfoEnabled()) {
@@ -89,8 +92,10 @@ public class SecuCheckAnalysisServer {
 			listenResult.setResult(result);
 			
 			try {
-				SecuCheckAnalysisServer.this.systemOut.println(Serializer.serializeToJsonString(listenResult));
-			} catch (JsonProcessingException e) { e.printStackTrace();}
+				SecuCheckAnalysisServer.this.systemOut.println(ProcessMessageSerializer.serializeToJsonString(listenResult));
+			} catch (Exception e) { e.printStackTrace();}
+			
+			// TEMP CHANGE
 			
 			System.err.print(SecuCheckAnalysisServer.this.baos.toString());
 			

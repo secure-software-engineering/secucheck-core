@@ -6,20 +6,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 
 public final class CompositeTaintFlowQueryResult implements AnalysisResult {
 
-	private final Map<TaintFlowQuery, AnalysisResult> results;
+	private final Map<TaintFlowQueryImpl, TaintFlowQueryResult> results;
 	
 	public CompositeTaintFlowQueryResult(){
-		this.results = new HashMap<TaintFlowQuery, AnalysisResult>();
+		this.results = new HashMap<TaintFlowQueryImpl, TaintFlowQueryResult>();
 	}
 	
-	public void addResult(TaintFlowQuery flowQuery, AnalysisResult result) {
+	public void addResult(TaintFlowQueryImpl flowQuery, TaintFlowQueryResult result) {
 		this.results.put(flowQuery, result);
 	}
 	
-	public Map<TaintFlowQuery, AnalysisResult> getResults(){
+	public Map<TaintFlowQueryImpl, TaintFlowQueryResult> getResults(){
 		return this.results;
 	}
 

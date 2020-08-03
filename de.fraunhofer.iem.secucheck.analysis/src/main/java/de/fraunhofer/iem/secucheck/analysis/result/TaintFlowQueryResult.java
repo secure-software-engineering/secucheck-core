@@ -6,23 +6,24 @@ import java.util.Map;
 import boomerang.Query;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.Pair;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 
 public class TaintFlowQueryResult implements AnalysisResult {
 	
-	private final Map<TaintFlowQuery, Pair<Query,Query>> resultMap;
+	private final Map<TaintFlowQueryImpl, Pair<Query,Query>> resultMap;
 	
 	public TaintFlowQueryResult()
 	{
-		resultMap = new HashMap<TaintFlowQuery, Pair<Query,Query>>();
+		resultMap = new HashMap<TaintFlowQueryImpl, Pair<Query,Query>>();
 	}
 	
-	public void addQueryResultPair(TaintFlowQuery query,
+	public void addQueryResultPair(TaintFlowQueryImpl query,
 			Pair<Query,Query> result) {
 		resultMap.put(query, result);
 	}
 	
 	public void addQueryResultPairs(
-			Map<TaintFlowQuery, Pair<Query,Query>> pairs) {
+			Map<TaintFlowQueryImpl, Pair<Query,Query>> pairs) {
 		resultMap.putAll(pairs);
 	}
 	
@@ -35,7 +36,7 @@ public class TaintFlowQueryResult implements AnalysisResult {
 		return 0;
 	}
 	
-	public Map<TaintFlowQuery, Pair<Query,Query>> getQueryResultMap(){
+	public Map<TaintFlowQueryImpl, Pair<Query,Query>> getQueryResultMap(){
 		return resultMap;
 	}
 }

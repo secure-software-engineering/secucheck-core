@@ -23,10 +23,10 @@ import boomerang.seedfactory.SeedFactory;
 import de.fraunhofer.iem.secucheck.analysis.Analysis;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.Pair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.query.Input;
+import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
-import de.fraunhofer.iem.secucheck.analysis.query.Output;
-import de.fraunhofer.iem.secucheck.analysis.query.Parameter;
+import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
@@ -46,10 +46,10 @@ import wpds.impl.Weight.NoWeight;
 
 class SingleFlowAnalysis implements Analysis {
 
-	private final TaintFlowQuery singleFlow;
+	private final TaintFlowQueryImpl singleFlow;
 	private final ObservableICFG<Unit, SootMethod> icfg;
 	
-	public SingleFlowAnalysis(TaintFlowQuery singleFlow,
+	public SingleFlowAnalysis(TaintFlowQueryImpl singleFlow,
 			ObservableICFG<Unit, SootMethod> icfg) {
 		this.singleFlow = singleFlow;
 		this.icfg = icfg;
@@ -59,7 +59,7 @@ class SingleFlowAnalysis implements Analysis {
 	public AnalysisResult run() {
 		TaintFlowQueryResult result = new TaintFlowQueryResult();
 		
-		for (TaintFlowQuery flowQuery : getLogicalSubFlows(singleFlow)) {
+		for (TaintFlowQueryImpl flowQuery : getLogicalSubFlows(singleFlow)) {
 			SeedFactory<NoWeight> seedFactory = getSeedFactory(flowQuery);
 			Boomerang boomerang = getBoomerang(seedFactory);
 			Seeds seeds = computeSeeds(seedFactory);
@@ -67,8 +67,8 @@ class SingleFlowAnalysis implements Analysis {
 			if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
 				List<Method> sanitizers = getSanitizers(flowQuery);
 				Map<SootMethod, Body> oldMethodBodies = new HashMap<SootMethod, Body>();
-				Map<TaintFlowQuery, Pair<Query, Query>> reachMap =
-						new HashMap<TaintFlowQuery, Pair<Query, Query>>();
+				Map<TaintFlowQueryImpl, Pair<Query, Query>> reachMap =
+						new HashMap<TaintFlowQueryImpl, Pair<Query, Query>>();
 				try	{
 					oldMethodBodies = setEmptySootBodies(sanitizers);
 					reachMap = analyzeInternal(boomerang, flowQuery, seeds.getSources(),
@@ -87,12 +87,12 @@ class SingleFlowAnalysis implements Analysis {
 		return result;
 	}
 	
-	private Map<TaintFlowQuery, Pair<Query, Query>> analyzeInternal(Boomerang boomerang, 
-			TaintFlowQuery partialFlow, Set<ForwardQuery> sources,
+	private Map<TaintFlowQueryImpl, Pair<Query, Query>> analyzeInternal(Boomerang boomerang, 
+			TaintFlowQueryImpl partialFlow, Set<ForwardQuery> sources,
 			Set<BackwardQuery> sinks) {
 		
-		Map<TaintFlowQuery, Pair<Query, Query>> reachMap = 
-				new HashMap<TaintFlowQuery, Pair<Query, Query>>();
+		Map<TaintFlowQueryImpl, Pair<Query, Query>> reachMap = 
+				new HashMap<TaintFlowQueryImpl, Pair<Query, Query>>();
 		
 		if (sources.size() != 0 && sinks.size() != 0) {
 			// Found more sinks than sources, running forward analysis
@@ -111,16 +111,17 @@ class SingleFlowAnalysis implements Analysis {
 	/* Each occurance of a propogator/desanitizer would break a single
 	 * TaintFlow into two logical TaintFlows, this method generates 
 	 * these TaintFlows. */
-	private List<TaintFlowQuery> getLogicalSubFlows(
-			TaintFlowQuery partialFlow) {
-		List<TaintFlowQuery> subFlows = new ArrayList<TaintFlowQuery>();
+	private List<TaintFlowQueryImpl> getLogicalSubFlows(
+			TaintFlowQueryImpl partialFlow) {
+		List<TaintFlowQueryImpl> subFlows = new ArrayList<TaintFlowQueryImpl>();
 		if (partialFlow.getThrough() == null || partialFlow.getThrough().size() == 0){
 			subFlows.add(partialFlow);
 			return subFlows;
 		}
-		for (Method propogator:partialFlow.getThrough()) {
-			TaintFlowQuery	newQuery1 = new TaintFlowQueryImpl(), 
-					newQuery2 = new TaintFlowQueryImpl();
+		
+		for (MethodImpl propogator : partialFlow.getThrough()) {
+			TaintFlowQueryImpl	newQuery1 = new TaintFlowQueryImpl(), 
+							newQuery2 = new TaintFlowQueryImpl();
 			newQuery1.getFrom().addAll(partialFlow.getFrom());
 			newQuery1.getNotThrough().addAll(partialFlow.getNotThrough());
 			newQuery1.getTo().add(propogator);
@@ -130,14 +131,15 @@ class SingleFlowAnalysis implements Analysis {
 			subFlows.add(newQuery1);
 			subFlows.add(newQuery2);
 		}
+		
 		return subFlows;
 	}
 	
-	private Map<TaintFlowQuery, Pair<Query,Query>> getReachingPairs(Boomerang boomerang, 
-			TaintFlowQuery flowQuery, Set<? extends Query> queries,
+	private Map<TaintFlowQueryImpl, Pair<Query,Query>> getReachingPairs(Boomerang boomerang, 
+			TaintFlowQueryImpl flowQuery, Set<? extends Query> queries,
 			Set<? extends Query> reachable) {
-		Map<TaintFlowQuery, Pair<Query,Query>> reachMap = 
-				new HashMap<TaintFlowQuery, Pair<Query, Query>>();
+		Map<TaintFlowQueryImpl, Pair<Query,Query>> reachMap = 
+				new HashMap<TaintFlowQueryImpl, Pair<Query, Query>>();
 		
 		for (Query start : queries) {
 			for (Query end : reachable) {
@@ -219,7 +221,7 @@ class SingleFlowAnalysis implements Analysis {
 
 	private List<Method> getSanitizers(TaintFlowQuery partFlow) {
 		List<Method> sanitizers = new ArrayList<Method>();	
-		sanitizers.addAll(partFlow.getNotThrough());
+		partFlow.getNotThrough().forEach(y -> sanitizers.add((Method)y));
 		return sanitizers;
 	}
 	
@@ -259,7 +261,8 @@ class SingleFlowAnalysis implements Analysis {
 	protected Collection<Value> generateSourceVariables(TaintFlowQuery partialFlow, 
 			SootMethod method, Stmt actualStatement) {
 		
-		for (Method sourceMethod : partialFlow.getFrom()) {
+		for (Object object : partialFlow.getFrom()) {
+			Method sourceMethod = (Method) object;
 			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
 			Collection<Value> out = Sets.newHashSet();
 
@@ -270,13 +273,11 @@ class SingleFlowAnalysis implements Analysis {
 				Value right = identity.getRightOp();
 				if (right instanceof ParameterRef) {
 					ParameterRef parameterRef = (ParameterRef) right;
-					for (Output output : sourceMethod.getOutputs()) {
-						if (output instanceof Parameter) {
-							int parameterIndex = ((Parameter) output).getNumber();
-							if (parameterRef.getIndex() == parameterIndex
-									&& method.getParameterCount() >= parameterIndex) {
-								out.add(identity.getLeftOp());
-							}
+					for (OutputParameter output : sourceMethod.getOutputParameters()) {
+						int parameterIndex = output.getNumber();
+						if (parameterRef.getIndex() == parameterIndex
+								&& method.getParameterCount() >= parameterIndex) {
+							out.add(identity.getLeftOp());
 						}
 					}
 				}
@@ -286,15 +287,15 @@ class SingleFlowAnalysis implements Analysis {
 					&& actualStatement.toString().contains(sourceSootSignature)) {
 
 				// taint the return value
-			
-				for (Output output : sourceMethod.getOutputs()) {
-					if (output instanceof ReturnValue && actualStatement instanceof AssignStmt) {
-						out.add(((AssignStmt) actualStatement).getLeftOp());
-					} else if (output instanceof Parameter) {
-						int parameterIndex = ((Parameter) output).getNumber();
-						if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
-							out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
-						}
+				
+				if (sourceMethod.getReturnValue() != null && actualStatement instanceof AssignStmt) {
+					out.add(((AssignStmt) actualStatement).getLeftOp());
+				} 
+				
+				for (OutputParameter output : sourceMethod.getOutputParameters()) {
+					int parameterIndex =  output.getNumber();
+					if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
+						out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
 					}
 				}
 				
@@ -320,19 +321,18 @@ class SingleFlowAnalysis implements Analysis {
 
 	protected Collection<Value> generatedSinkVariables(TaintFlowQuery partialFlow, 
 			SootMethod method, Stmt actualStatement) {
-		for (Method sourceMethod : partialFlow.getTo()) {
+		for (Object object : partialFlow.getTo()) {
+			Method sourceMethod = (Method) object;
 			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
 			Collection<Value> out = Sets.newHashSet();
 
 			if (actualStatement.containsInvokeExpr() 
 					&& actualStatement.toString().contains(sourceSootSignature)) {
 				// taint the return value
-				for (Input input : sourceMethod.getInputs()) {
-					if (input instanceof Parameter) {
-						int parameterIndex = ((Parameter) input).getNumber();
-						if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
-							out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
-						}
+				for (InputParameter input : sourceMethod.getInputParameters()) {
+					int parameterIndex = input.getNumber();
+					if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
+						out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
 					}
 				}
 

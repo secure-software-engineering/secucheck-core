@@ -8,7 +8,7 @@ public interface CompositeTaintFlowQuery extends Copyable<CompositeTaintFlowQuer
 	
 	int getReportLocation();
 	String getReportMessage();
-	List<TaintFlowQuery> getTaintFlowQueries();
+	List<TaintFlowQueryImpl> getTaintFlowQueries();
 	void setReportLocation(int loc);
 	void setReportMessage(String message);
 }

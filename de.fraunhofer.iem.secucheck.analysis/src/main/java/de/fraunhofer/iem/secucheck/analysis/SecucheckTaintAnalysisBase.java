@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import boomerang.preanalysis.BoomerangPretransformer;
 import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
@@ -34,7 +35,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	
 	private String sootClassPath;
 	private List<String> canonicalClasses;
-	private List<CompositeTaintFlowQuery> flowQueries;
+	private List<? super CompositeTaintFlowQueryImpl> flowQueries;
 	private AnalysisResultListener resultListener;
 	private SecucheckTaintAnalysisResult result;
 	
@@ -66,7 +67,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	}
 	
 	@Override
-	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQuery> flowQueries) {
+	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) {
 		lock.lock();
 		try {
 			this.flowQueries = flowQueries;
@@ -157,10 +158,11 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	}
 
 	private void executeAnalysis() {
-		for (CompositeTaintFlowQuery flowQuery : this.flowQueries) {
+		for (Object object : this.flowQueries) {
+			CompositeTaintFlowQuery flowQuery = (CompositeTaintFlowQuery) object;
 			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery);
 			AnalysisResult singleResult = analysis.run();
-			this.result.addResult(flowQuery, singleResult);
+			this.result.addResult(flowQuery, (CompositeTaintFlowQueryResult) singleResult);
 			if (resultListener != null) {
 				resultListener.reportCompositeFlowResult(singleResult);
 			}

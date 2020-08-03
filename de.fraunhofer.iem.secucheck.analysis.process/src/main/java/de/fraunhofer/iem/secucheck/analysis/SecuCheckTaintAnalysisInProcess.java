@@ -19,7 +19,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
-import de.fraunhofer.iem.secucheck.analysis.serializable.Serializer;
+import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessageSerializer;
 import de.fraunhofer.iem.secucheck.analysis.serializable.query.CompleteQuery;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.CompleteResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.ListenerResult;
@@ -55,7 +55,7 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 		this.resultListener = resultListener;
 	}
 	
-	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQuery> flowQueries) {
+	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) {
 		lock.lock();
 		try {
 					
@@ -79,7 +79,7 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 			CompleteQuery analysisQuery = new CompleteQuery(sootClassPath, canonicalClasses,
 					flowsClone, resultListener == null);
 
-			pw.println(Serializer.serializeToJsonString(analysisQuery));
+			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));
 			pw.flush();
 
 			BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -115,14 +115,14 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 				e.printStackTrace();
 				break;
 			}
-			handleProccessMessage(Serializer.deserializeFromJsonString(line));
+			handleProccessMessage(ProcessMessageSerializer.deserializeFromJsonString(line));
 		}
 	}
 
 	private void handleProccessMessage(ProcessMessage message) {
 		switch(message.getMessageType()) {
 			case ListenerResult:
-				ListenerResult interResult = (ListenerResult) message.getAnalysisMessage();
+				ListenerResult interResult = (ListenerResult) message;
 				switch(interResult.getReportType()) {
 					case SingleResult:
 						this.resultListener.reportFlowResult(interResult.getResult());
@@ -136,7 +136,7 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 				}
 				break;
 			case AnalysisResult:
-				CompleteResult completeResult = (CompleteResult) message.getAnalysisMessage();
+				CompleteResult completeResult = (CompleteResult) message;
 				this.result = completeResult.getResult();
 				break;
 			default: break;
@@ -171,7 +171,7 @@ public final class SecuCheckTaintAnalysisInProcess implements SecucheckAnalysis 
 		return null;
 	}
 	
-	private static List<CompositeTaintFlowQuery> cloneList(List<? super CompositeTaintFlowQuery> list){
+	private static List<CompositeTaintFlowQuery> cloneList(List<? super CompositeTaintFlowQueryImpl> list){
 		final List<CompositeTaintFlowQuery> flowsClone = 
 				new ArrayList<CompositeTaintFlowQuery>();
 		CompositeTaintFlowQueryImpl copyQuery;

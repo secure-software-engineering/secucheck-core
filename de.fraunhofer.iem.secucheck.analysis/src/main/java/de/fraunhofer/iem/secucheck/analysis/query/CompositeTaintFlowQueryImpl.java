@@ -5,22 +5,21 @@ import java.util.List;
 
 public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuery {
 	
-	private final List<TaintFlowQuery> taintFlowQueries;
+	private final List<TaintFlowQueryImpl> taintFlowQueries;
 
 	private int reportLocation;
 	private String message;
 	
 	public CompositeTaintFlowQueryImpl() { 
-		this.taintFlowQueries = new ArrayList<TaintFlowQuery>();
+		this.taintFlowQueries = new ArrayList<TaintFlowQueryImpl>();
 	}
 	
-	public void addQuery(TaintFlowQuery query) {
+	public void addQuery(TaintFlowQueryImpl query) {
 		this.taintFlowQueries.add(query);
 	}
 	
-	@Override
-	public List<TaintFlowQuery> getTaintFlowQueries() {
-		return this.taintFlowQueries;
+	public List<TaintFlowQueryImpl> getTaintFlowQueries() {
+		return taintFlowQueries;
 	}
 	
 	@Override

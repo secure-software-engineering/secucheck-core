@@ -4,6 +4,7 @@ import java.security.Permission;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
@@ -20,7 +21,7 @@ public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
 	}
 	
 	@Override
-	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQuery> flowQueries) {	
+	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) {	
 		super.lock.lock();
 		try {
 			// soot calls System.exit() in case of problems. This shuts down the process.

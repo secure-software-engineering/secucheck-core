@@ -1,7 +1,9 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -9,19 +11,19 @@ import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 
 public final class SecucheckTaintAnalysisResult implements AnalysisResult {
 	
-	private final Map<CompositeTaintFlowQuery, AnalysisResult> results;
+	private Map<CompositeTaintFlowQuery, CompositeTaintFlowQueryResult> results;
 	
 	public SecucheckTaintAnalysisResult()
 	{
-		this.results = new HashMap<CompositeTaintFlowQuery, AnalysisResult>();
+		this.results = new HashMap<CompositeTaintFlowQuery, CompositeTaintFlowQueryResult>();
 	}
 	
-	public void addResult(CompositeTaintFlowQuery compositeQuery, AnalysisResult result) {
+	public void addResult(CompositeTaintFlowQuery compositeQuery, CompositeTaintFlowQueryResult result) {		
 		this.results.put(compositeQuery, result);
 	}
-	
-	public Iterator<Entry<CompositeTaintFlowQuery, AnalysisResult>> getResults(){
-		return this.results.entrySet().iterator();
+
+	public Map<CompositeTaintFlowQuery, CompositeTaintFlowQueryResult> getResults(){
+		return this.results;
 	}
 
 	@Override

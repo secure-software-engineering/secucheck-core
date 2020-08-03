@@ -13,7 +13,6 @@ public final class ListenerResult extends ProcessMessage implements AnalysisMess
 	
 	public ListenerResult() {
 		super.messageType = getMessageType();
-		super.analysisMessage = this;
 	}
 	
 	public void setReportType(ReportType reportType) {

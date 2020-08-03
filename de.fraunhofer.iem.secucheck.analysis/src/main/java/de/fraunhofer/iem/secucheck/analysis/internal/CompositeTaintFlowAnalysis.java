@@ -1,13 +1,17 @@
 package de.fraunhofer.iem.secucheck.analysis.internal;
 
+import java.util.List;
+
 import boomerang.callgraph.ObservableICFG;
 import boomerang.callgraph.ObservableStaticICFG;
 import de.fraunhofer.iem.secucheck.analysis.Analysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
@@ -33,14 +37,15 @@ public class CompositeTaintFlowAnalysis implements Analysis {
 	@Override
 	public AnalysisResult run() {	
 		CompositeTaintFlowQueryResult result = new CompositeTaintFlowQueryResult();
-		for (TaintFlowQuery originalFlow : flowQuery.getTaintFlowQueries()) {
+		List<TaintFlowQueryImpl> flows = flowQuery.getTaintFlowQueries();
+		for (TaintFlowQueryImpl originalFlow : flows) {
 			Analysis analysis = new SingleFlowAnalysis(originalFlow, icfg);
 			AnalysisResult retResult = analysis.run();
 			if (retResult.size() == 0) {
 				result.clear();
 				break;
 			}
-			result.addResult(originalFlow, retResult);		
+			result.addResult((TaintFlowQueryImpl) originalFlow, (TaintFlowQueryResult) retResult);		
 		}		
 		return result;		
 	}	

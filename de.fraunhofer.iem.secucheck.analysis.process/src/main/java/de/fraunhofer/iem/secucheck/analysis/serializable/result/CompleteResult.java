@@ -9,9 +9,12 @@ public final class CompleteResult extends ProcessMessage implements AnalysisMess
 	
 	private final SecucheckTaintAnalysisResult result;
 	
+	public CompleteResult() {
+		this.result = null;
+	}
+	
 	public CompleteResult(SecucheckTaintAnalysisResult result) {
 		super.messageType = getMessageType();
-		super.analysisMessage = this;
 		this.result = result;
 	}
 

@@ -7,26 +7,26 @@ import de.fraunhofer.iem.secucheck.analysis.datastructures.Copyable;
 
 public final class TaintFlowQueryImpl implements TaintFlowQuery {
 
-	private final List<Method> froms;
-	private final List<Method> tos;
-	private final List<Method> notThroughs;
-	private final List<Method> throughs;
+	private final List<MethodImpl> froms;
+	private final List<MethodImpl> tos;
+	private final List<MethodImpl> notThroughs;
+	private final List<MethodImpl> throughs;
 	
 	public TaintFlowQueryImpl() {
-		this.froms = new ArrayList<Method>();
-		this.tos = new ArrayList<Method>();
-		this.notThroughs = new ArrayList<Method>();
-		this.throughs = new ArrayList<Method>();
+		this.froms = new ArrayList<MethodImpl>();
+		this.tos = new ArrayList<MethodImpl>();
+		this.notThroughs = new ArrayList<MethodImpl>();
+		this.throughs = new ArrayList<MethodImpl>();
 	}
 	
-	@Override public List<Method> getFrom() { return this.froms; }
-	@Override public List<Method> getTo() { return this.tos; }
-	@Override public List<Method> getNotThrough() { return this.notThroughs; }
-	@Override public List<Method> getThrough() { return this.throughs;}
+	@Override public List<MethodImpl> getFrom() { return this.froms; }
+	@Override public List<MethodImpl> getTo() { return this.tos; }
+	@Override public List<MethodImpl> getNotThrough() { return this.notThroughs; }
+	@Override public List<MethodImpl> getThrough() { return this.throughs;}
 	
-	public void addFrom(Method from) { this.froms.add(from); }
-	public void addTo(Method to) { this.tos.add(to);}
-	public void addNotThrough(Method through) { this.notThroughs.add(through);}
-	public void addThrough(Method notThrough) { this.throughs.add(notThrough);}
-
+	public void addFrom(MethodImpl from) { this.froms.add(from); }
+	public void addTo(MethodImpl to) { this.tos.add(to);}
+	public void addNotThrough(MethodImpl through) { this.notThroughs.add(through);}
+	public void addThrough(MethodImpl notThrough) { this.throughs.add(notThrough);}
+	
 }
