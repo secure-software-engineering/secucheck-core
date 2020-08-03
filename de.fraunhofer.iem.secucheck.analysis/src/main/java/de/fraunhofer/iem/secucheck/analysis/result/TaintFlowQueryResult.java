@@ -12,31 +12,30 @@ public class TaintFlowQueryResult implements AnalysisResult {
 	
 	private final Map<TaintFlowQueryImpl, Pair<Query,Query>> resultMap;
 	
-	public TaintFlowQueryResult()
-	{
-		resultMap = new HashMap<TaintFlowQueryImpl, Pair<Query,Query>>();
+	public TaintFlowQueryResult(){
+		this.resultMap = new HashMap<TaintFlowQueryImpl, Pair<Query,Query>>();
 	}
 	
 	public void addQueryResultPair(TaintFlowQueryImpl query,
 			Pair<Query,Query> result) {
-		resultMap.put(query, result);
+		this.resultMap.put(query, result);
 	}
 	
 	public void addQueryResultPairs(
 			Map<TaintFlowQueryImpl, Pair<Query,Query>> pairs) {
-		resultMap.putAll(pairs);
+		this.resultMap.putAll(pairs);
 	}
 	
 	public void clear() {
-		resultMap.clear();
+		this.resultMap.clear();
 	}
 	
 	@Override
 	public int size() {
-		return 0;
+		return this.resultMap.size();
 	}
 	
 	public Map<TaintFlowQueryImpl, Pair<Query,Query>> getQueryResultMap(){
-		return resultMap;
+		return this.resultMap;
 	}
 }

@@ -16,6 +16,9 @@ public interface SecucheckAnalysis {
 	void setSootClassPath(String sootClassPath);
 	void setAnalysisClasses(List<String> canonicalClassNames);
 	void setListener(AnalysisResultListener resultListener);
-	SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries);
+	
+	SecucheckTaintAnalysisResult run
+		(List<? super CompositeTaintFlowQueryImpl> flowQueries) 
+				throws Exception ;
 
 }

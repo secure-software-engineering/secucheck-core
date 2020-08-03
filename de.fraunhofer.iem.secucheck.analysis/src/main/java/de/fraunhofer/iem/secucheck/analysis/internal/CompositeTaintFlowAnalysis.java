@@ -10,6 +10,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import soot.SootMethod;
@@ -20,12 +21,14 @@ public class CompositeTaintFlowAnalysis implements Analysis {
 
 	private final CompositeTaintFlowQuery flowQuery;
 	private final ObservableICFG<Unit, SootMethod> icfg;
+	private final AnalysisResultListener resultListener;
 	
 	public CompositeTaintFlowAnalysis(BiDiInterproceduralCFG<Unit, SootMethod> icfg, 
-			CompositeTaintFlowQuery flowQuery) {
+			CompositeTaintFlowQuery flowQuery, AnalysisResultListener resultListener) 
+					throws Exception {
 		this.flowQuery = flowQuery;
 		this.icfg = new ObservableStaticICFG(icfg);
-		
+		this.resultListener = resultListener;
 		// Resolve all methods. This is necessary if a flow participant is not part of
 		// the user code...
 		// See: https://github.com/secure-software-engineering/secucheck/issues/11
@@ -39,11 +42,17 @@ public class CompositeTaintFlowAnalysis implements Analysis {
 		CompositeTaintFlowQueryResult result = new CompositeTaintFlowQueryResult();
 		List<TaintFlowQueryImpl> flows = flowQuery.getTaintFlowQueries();
 		for (TaintFlowQueryImpl originalFlow : flows) {
-			Analysis analysis = new SingleFlowAnalysis(originalFlow, icfg);
+			if (this.resultListener != null && this.resultListener.isCancelled()) {
+				break;
+			}
+			Analysis analysis = new SingleFlowAnalysis(originalFlow, icfg, this.resultListener);
 			AnalysisResult retResult = analysis.run();
 			if (retResult.size() == 0) {
 				result.clear();
 				break;
+			}
+			if (this.resultListener != null) {
+				this.resultListener.reportFlowResult(retResult);
 			}
 			result.addResult((TaintFlowQueryImpl) originalFlow, (TaintFlowQueryResult) retResult);		
 		}		

@@ -25,7 +25,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			// Run the in-process hosted instance of the SecucheckTaintAnalysis.
-			runSecucheckAnalysis(new SecucheckTaintAnalysis());
+			//runSecucheckAnalysis(new SecucheckTaintAnalysis());
 			
 			// Run the out-of-process hosted instance of the SecucheckTaintAnalysis.
 			runSecucheckAnalysis(new SecuCheckTaintAnalysisOutOfProcess());
@@ -35,20 +35,21 @@ public class Main {
 		}
 	}
 	
-	private static void runSecucheckAnalysis(SecucheckAnalysis secucheckAnalysis) {
+	private static void runSecucheckAnalysis(SecucheckAnalysis secucheckAnalysis) 
+			throws Exception {
 	
-		List<CompositeTaintFlowQueryImpl> compositesOfFirst = getInList(
+		List<CompositeTaintFlowQueryImpl> compositeOfFirst = getInList(
 				getCompositeOf(0, "1", getTaintFlowQuery1()));
 		
-		List<CompositeTaintFlowQueryImpl> compositesOfFirstTwo = getInList(
+		List<CompositeTaintFlowQueryImpl> compositeOfFirstTwo = getInList(
 				getCompositeOf(0, "1 & 2", getTaintFlowQuery1(),
 						getTaintFlowQuery2()));
 		
-		List<CompositeTaintFlowQueryImpl> compositesOfFirstThree = getInList(
+		List<CompositeTaintFlowQueryImpl> compositeOfFirstThree = getInList(
 				getCompositeOf(0, "1,2 & 3", getTaintFlowQuery1(),
 						getTaintFlowQuery2(), getTaintFlowQuery3()));
 		
-		List<CompositeTaintFlowQueryImpl> compositesOfAll = getInList(
+		List<CompositeTaintFlowQueryImpl> compositeOfAll = getInList(
 				getCompositeOf(0, "1,2,3 & 4", getTaintFlowQuery1(),
 						getTaintFlowQuery2(), getTaintFlowQuery3(),
 						getTaintFlowQuery4()));
@@ -61,21 +62,25 @@ public class Main {
 		secucheckAnalysis.setSootClassPath(sootClassPath);
 		secucheckAnalysis.setListener(resultListener);
 		
-		SecucheckTaintAnalysisResult result1 = secucheckAnalysis.run(compositesOfFirst);
-		System.out.println("Result1: " + result1);
+		SecucheckTaintAnalysisResult result1 = secucheckAnalysis.run(compositeOfFirst);
+		System.out.println();
+		System.out.println("Result-1 size: " + result1.size());
 		
 		// For demonstration purposes the listener is set to null.
 		secucheckAnalysis.setListener(null);
-		SecucheckTaintAnalysisResult result2 = secucheckAnalysis.run(compositesOfFirstTwo);
-		System.out.println("Result2: " + result2);
+		SecucheckTaintAnalysisResult result2 = secucheckAnalysis.run(compositeOfFirstTwo);
+		System.out.println();
+		System.out.println("Result-2 size: " + result2.size());
 		
-		SecucheckTaintAnalysisResult result3 = secucheckAnalysis.run(compositesOfFirstThree);
-		System.out.println("Result3: " + result3);
+		SecucheckTaintAnalysisResult result3 = secucheckAnalysis.run(compositeOfFirstThree);
+		System.out.println();
+		System.out.println("Result-3 size: " + result3.size());
 		
 		// For demonstration purposes the listener is set to null.
 		secucheckAnalysis.setListener(null);
-		SecucheckTaintAnalysisResult result4 = secucheckAnalysis.run(compositesOfAll);
-		System.out.println("Result4: " + result4);
+		SecucheckTaintAnalysisResult result4 = secucheckAnalysis.run(compositeOfAll);
+		System.out.println();
+		System.out.println("Result-4 size: " + result4.size());
 	}
 		
 	private static MethodImpl getSourceMethod() {
@@ -85,7 +90,7 @@ public class Main {
 		
 		MethodImpl method = new MethodImpl();
 		method.setName("getSecret");
-		method.setSignature("Signature");
+		method.setSignature("AnalyzeMe: int getSecret()");
 		method.setInputParameters(inputs);
 		method.setOutputParameters(outputs);
 		method.setReturnValue(returnValue);
@@ -104,7 +109,7 @@ public class Main {
 		
 		MethodImpl method = new MethodImpl();
 		method.setName("sanatizer");
-		method.setSignature("Signature");
+		method.setSignature("AnalyzeMe: int sanatizer(int)");
 		method.setInputParameters(inputs);
 		method.setOutputParameters(outputs);
 		method.setReturnValue(returnValue);
@@ -123,7 +128,7 @@ public class Main {
 		
 		MethodImpl method = new MethodImpl();
 		method.setName("propogator");
-		method.setSignature("Signature");
+		method.setSignature("AnalyzeMe: int propogator(int)");
 		method.setInputParameters(inputs);
 		method.setOutputParameters(outputs);
 		method.setReturnValue(returnValue);
@@ -142,7 +147,7 @@ public class Main {
 		
 		MethodImpl method = new MethodImpl();
 		method.setName("publish");
-		method.setSignature("Signature");
+		method.setSignature("AnalyzeMe: void publish(int)");
 		method.setInputParameters(inputs);
 		method.setOutputParameters(outputs);
 		method.setReturnValue(returnValue);
@@ -153,7 +158,7 @@ public class Main {
 		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
 		taintFlowQuery.addFrom(getSourceMethod());
 		taintFlowQuery.addTo(getSinkMethod());		
-		return null;
+		return taintFlowQuery;
 	}
 	
 	private static TaintFlowQueryImpl getTaintFlowQuery2() {
@@ -161,7 +166,7 @@ public class Main {
 		taintFlowQuery.addFrom(getSourceMethod());
 		taintFlowQuery.addNotThrough(getSanitizerMethod());
 		taintFlowQuery.addTo(getSinkMethod());
-		return null;
+		return taintFlowQuery;
 	}
 	
 	private static TaintFlowQueryImpl getTaintFlowQuery3() {
@@ -169,7 +174,7 @@ public class Main {
 		taintFlowQuery.addFrom(getSourceMethod());
 		taintFlowQuery.addThrough(getPropogatorMethod());
 		taintFlowQuery.addTo(getSinkMethod());
-		return null;
+		return taintFlowQuery;
 	}
 	
 	private static TaintFlowQueryImpl getTaintFlowQuery4() {
@@ -178,7 +183,7 @@ public class Main {
 		taintFlowQuery.addNotThrough(getSanitizerMethod());
 		taintFlowQuery.addThrough(getPropogatorMethod());
 		taintFlowQuery.addTo(getSinkMethod());
-		return null;
+		return taintFlowQuery;
 	}
 	
 	private static CompositeTaintFlowQueryImpl getCompositeOf(int reportLoc, 
@@ -205,26 +210,29 @@ public class Main {
 		String pathSeparator= os == OS.Windows ? ";" : ":";
 		return 	System.getProperty("java.home") + File.separator + "lib" + File.separator +"rt.jar" + 
 				pathSeparator +
-				System.getProperty("user.dir") + File.separator +"bin";
+				System.getProperty("user.dir") + File.separator + "target" + File.separator + "classes";
 	}
 			
 	private static String getClassesToAnalyze() {
-		return "Test;";
+		return "AnalyzeMe";
 	}
 	
 	private static AnalysisResultListener getConsoleResultListener() {
 		return new AnalysisResultListener() {
 			
 			public void reportFlowResult(AnalysisResult result) {
-				System.out.println("Recieved single flow result:" + result.toString());
+				System.out.println();
+				System.out.println("Recieved single flow result, size:" + result.size());
 			}
 			
 			public void reportCompositeFlowResult(AnalysisResult result) {
-				System.out.println("Recieved composite flow result:" + result.toString());
+				System.out.println();
+				System.out.println("Recieved composite flow result, size:" + result.size());
 			}
 			
 			public void reportCompleteResult(AnalysisResult result) {
-				System.out.println("Recieved complete result:" + result.toString());
+				System.out.println();
+				System.out.println("Recieved complete result, size:" + result.size());
 			}
 			
 			public boolean isCancelled() {

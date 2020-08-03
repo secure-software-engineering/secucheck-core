@@ -1,11 +1,8 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+
 
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 
@@ -28,7 +25,7 @@ public final class SecucheckTaintAnalysisResult implements AnalysisResult {
 
 	@Override
 	public int size() {
-		return 0;
+		return this.results.size();
 	}
 
 	@Override

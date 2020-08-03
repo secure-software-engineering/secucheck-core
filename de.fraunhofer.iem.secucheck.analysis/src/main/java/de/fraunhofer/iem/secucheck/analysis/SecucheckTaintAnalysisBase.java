@@ -67,7 +67,9 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	}
 	
 	@Override
-	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) {
+	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) 
+			throws Exception  {		
+		Utility.ValidateCompositeFlowQueries(flowQueries);
 		lock.lock();
 		try {
 			this.flowQueries = flowQueries;
@@ -108,6 +110,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		try {
 			for (String entry : entryPoints) {
 				SootClass sootTestClass = Scene.v().forceResolve(entry, SootClass.BODIES);
+				if (sootTestClass.isPhantom()) throw new Exception();
 				sootTestClass.setApplicationClass();
 			}
 		} catch (Error | Exception e) {
@@ -144,6 +147,9 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		PackManager.v().getPack("wjtp").add(transform);
 		PackManager.v().getPack("cg").apply();
 		PackManager.v().getPack("wjtp").apply();
+		if (resultListener != null) {
+			resultListener.reportCompleteResult(this.result);
+		}
 		return this.result;
 	}
 	
@@ -152,15 +158,20 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 			protected void internalTransform(String phaseName, Map options) {
 				BoomerangPretransformer.v().apply();
 				icfg = new JimpleBasedInterproceduralCFG(true);
-				executeAnalysis();
+				try {
+					executeAnalysis();
+				} catch (Exception e) {	}
 			}
 		};
 	}
 
-	private void executeAnalysis() {
+	private void executeAnalysis() throws Exception {
 		for (Object object : this.flowQueries) {
+			if (resultListener != null && resultListener.isCancelled()) {
+				break;
+			}
 			CompositeTaintFlowQuery flowQuery = (CompositeTaintFlowQuery) object;
-			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery);
+			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery, resultListener);
 			AnalysisResult singleResult = analysis.run();
 			this.result.addResult(flowQuery, (CompositeTaintFlowQueryResult) singleResult);
 			if (resultListener != null) {
@@ -168,4 +179,5 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 			}
 		}
 	}
+
 }

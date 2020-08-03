@@ -26,12 +26,11 @@ public final class CompositeTaintFlowQueryResult implements AnalysisResult {
 
 	@Override
 	public int size() {
-		return 0;
+		return this.results.size();
 	}
 
 	@Override
 	public void clear() {
-		results.clear();
+		this.results.clear();
 	}
-	
 }

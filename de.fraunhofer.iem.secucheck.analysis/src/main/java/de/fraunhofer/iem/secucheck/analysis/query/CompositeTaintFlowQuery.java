@@ -5,7 +5,6 @@ import java.util.List;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.Copyable;
 
 public interface CompositeTaintFlowQuery extends Copyable<CompositeTaintFlowQuery> {
-	
 	int getReportLocation();
 	String getReportMessage();
 	List<TaintFlowQueryImpl> getTaintFlowQueries();

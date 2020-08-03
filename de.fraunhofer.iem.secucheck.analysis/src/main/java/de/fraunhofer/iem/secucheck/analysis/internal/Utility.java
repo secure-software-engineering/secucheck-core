@@ -17,8 +17,9 @@ class Utility {
 	
 	static List<Method> getMethods(CompositeTaintFlowQuery flowQuery) {
 		List<Method> methods = new ArrayList<Method>();
-		flowQuery.getTaintFlowQueries().forEach(
-				flow -> methods.addAll(getMethods((TaintFlowQuery)flow)));
+		for (TaintFlowQuery singleFlow: flowQuery.getTaintFlowQueries()) {
+			methods.addAll(getMethods(singleFlow));
+		}
 		return methods;
 	}
 		
@@ -26,8 +27,13 @@ class Utility {
 		List<Method> methods = new ArrayList<Method>();
 		flowQuery.getFrom().forEach(y -> methods.add((Method)y));
 		flowQuery.getTo().forEach(y -> methods.add((Method)y));
-		flowQuery.getNotThrough().forEach(y -> methods.add((Method)y));
-		flowQuery.getThrough().forEach(y -> methods.add((Method)y));
+		
+		if (flowQuery.getNotThrough() != null)
+			flowQuery.getNotThrough().forEach(y -> methods.add((Method)y));
+		
+		if (flowQuery.getThrough() != null)
+			flowQuery.getThrough().forEach(y -> methods.add((Method)y));
+		
 		return methods;
 	}
 	
@@ -55,7 +61,6 @@ class Utility {
 		return null;
 	}
 	
-
 	static SootMethod findSinkMethodDefinition(TaintFlowQuery partialFlow,
 			SootMethod method, Stmt actualStatement) {
 		for (Object object : partialFlow.getTo()) {
@@ -68,6 +73,4 @@ class Utility {
 		}
 		return null;
 	}
-	
-
 }

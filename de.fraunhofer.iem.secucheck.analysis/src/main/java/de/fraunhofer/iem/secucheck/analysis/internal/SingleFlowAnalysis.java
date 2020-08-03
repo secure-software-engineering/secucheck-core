@@ -31,6 +31,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import soot.Body;
 import soot.SootMethod;
@@ -48,11 +49,14 @@ class SingleFlowAnalysis implements Analysis {
 
 	private final TaintFlowQueryImpl singleFlow;
 	private final ObservableICFG<Unit, SootMethod> icfg;
+	private final AnalysisResultListener resultListener;
 	
 	public SingleFlowAnalysis(TaintFlowQueryImpl singleFlow,
-			ObservableICFG<Unit, SootMethod> icfg) {
+			ObservableICFG<Unit, SootMethod> icfg, 
+			AnalysisResultListener resultListener) {
 		this.singleFlow = singleFlow;
 		this.icfg = icfg;
+		this.resultListener = resultListener;
 	}
 	
 	@Override
@@ -60,6 +64,9 @@ class SingleFlowAnalysis implements Analysis {
 		TaintFlowQueryResult result = new TaintFlowQueryResult();
 		
 		for (TaintFlowQueryImpl flowQuery : getLogicalSubFlows(singleFlow)) {
+			if (this.resultListener != null && this.resultListener.isCancelled()) {
+				break;
+			}
 			SeedFactory<NoWeight> seedFactory = getSeedFactory(flowQuery);
 			Boomerang boomerang = getBoomerang(seedFactory);
 			Seeds seeds = computeSeeds(seedFactory);
@@ -123,10 +130,16 @@ class SingleFlowAnalysis implements Analysis {
 			TaintFlowQueryImpl	newQuery1 = new TaintFlowQueryImpl(), 
 							newQuery2 = new TaintFlowQueryImpl();
 			newQuery1.getFrom().addAll(partialFlow.getFrom());
-			newQuery1.getNotThrough().addAll(partialFlow.getNotThrough());
+			
+			if (partialFlow.getNotThrough() != null)
+				newQuery1.getNotThrough().addAll(partialFlow.getNotThrough());
+			
 			newQuery1.getTo().add(propogator);
 			newQuery2.getFrom().add(propogator);
-			newQuery2.getNotThrough().addAll(partialFlow.getNotThrough());
+			
+			if (partialFlow.getNotThrough() != null)
+				newQuery2.getNotThrough().addAll(partialFlow.getNotThrough());
+			
 			newQuery2.getTo().addAll(partialFlow.getTo());
 			subFlows.add(newQuery1);
 			subFlows.add(newQuery2);
@@ -221,7 +234,8 @@ class SingleFlowAnalysis implements Analysis {
 
 	private List<Method> getSanitizers(TaintFlowQuery partFlow) {
 		List<Method> sanitizers = new ArrayList<Method>();	
-		partFlow.getNotThrough().forEach(y -> sanitizers.add((Method)y));
+		if (partFlow.getNotThrough() != null)
+			partFlow.getNotThrough().forEach(y -> sanitizers.add((Method)y));
 		return sanitizers;
 	}
 	

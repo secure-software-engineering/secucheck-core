@@ -60,10 +60,12 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 		this.resultListener = resultListener;
 	}
 	
-	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) {
+	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries)
+			throws Exception {
+		Utility.ValidateCompositeFlowQueries(flowQueries);
 		lock.lock();
 		try {
-					
+			
 			File javaFile = getJavaBinaryFile();
 			File analysisJarFile = getAnalysisJarFile();
 	

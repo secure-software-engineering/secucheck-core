@@ -39,12 +39,12 @@ public class SecuCheckAnalysisServer {
 	public static void main(String[] args) {
 		try {
 			new SecuCheckAnalysisServer().run();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void run() throws IOException {
+	private void run() throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
 		CompleteQuery queryDetails = 
