@@ -1,25 +1,28 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-
+import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 
 public final class SecucheckTaintAnalysisResult implements AnalysisResult {
 	
-	private Map<CompositeTaintFlowQuery, CompositeTaintFlowQueryResult> results;
+	private List<DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>> results;
 	
 	public SecucheckTaintAnalysisResult()
 	{
-		this.results = new HashMap<CompositeTaintFlowQuery, CompositeTaintFlowQueryResult>();
+		this.results = new ArrayList<DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>>();
 	}
 	
-	public void addResult(CompositeTaintFlowQuery compositeQuery, CompositeTaintFlowQueryResult result) {		
-		this.results.put(compositeQuery, result);
+	public void addResult(CompositeTaintFlowQueryImpl compositeQuery, CompositeTaintFlowQueryResult result) {		
+		this.results.add(
+				new DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>
+					(compositeQuery, result));
 	}
 
-	public Map<CompositeTaintFlowQuery, CompositeTaintFlowQueryResult> getResults(){
+	public List<DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>> getResults(){
 		return this.results;
 	}
 

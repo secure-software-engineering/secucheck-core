@@ -13,12 +13,12 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 	private boolean hasResultListener;
 	private String sootClassPath;
 	private List<String> canonicalClasses;
-	private List<? super CompositeTaintFlowQueryImpl> flowQueries;
+	private List<CompositeTaintFlowQueryImpl> flowQueries;
 	
 	public CompleteQuery() { }
 	
 	public CompleteQuery(String sootClassPath, List<String> canonicalClassNames,
-			List<? super CompositeTaintFlowQueryImpl> flowQueries, boolean hasResultListener) {
+			List<CompositeTaintFlowQueryImpl> flowQueries, boolean hasResultListener) {
 		super.messageType = getMessageType();
 		this.sootClassPath = sootClassPath;
 		this.flowQueries = flowQueries;
@@ -34,7 +34,7 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 		return canonicalClasses;
 	}
 	
-	public List<? super CompositeTaintFlowQueryImpl> getFlowQueries() {
+	public List<CompositeTaintFlowQueryImpl> getFlowQueries() {
 		return flowQueries;
 	}
 	

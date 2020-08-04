@@ -5,6 +5,8 @@ public class DifferentTypedPair<T, V> implements Pair<T, V> {
 	private T first;
 	private V second;
 	
+	public DifferentTypedPair() { }
+	
 	public DifferentTypedPair(T first, V second) {
 		this.first = first;
 		this.second = second;

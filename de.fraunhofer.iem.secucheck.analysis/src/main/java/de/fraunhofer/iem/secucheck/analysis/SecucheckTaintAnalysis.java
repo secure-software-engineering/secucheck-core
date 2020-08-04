@@ -21,7 +21,7 @@ public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
 	}
 	
 	@Override
-	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) 
+	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries) 
 			throws Exception {	
 		super.lock.lock();
 		try {

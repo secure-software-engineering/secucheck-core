@@ -35,7 +35,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	
 	private String sootClassPath;
 	private List<String> canonicalClasses;
-	private List<? super CompositeTaintFlowQueryImpl> flowQueries;
+	private List<CompositeTaintFlowQueryImpl> flowQueries;
 	private AnalysisResultListener resultListener;
 	private SecucheckTaintAnalysisResult result;
 	
@@ -67,7 +67,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	}
 	
 	@Override
-	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries) 
+	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries) 
 			throws Exception  {		
 		Utility.ValidateCompositeFlowQueries(flowQueries);
 		lock.lock();
@@ -110,7 +110,6 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		try {
 			for (String entry : entryPoints) {
 				SootClass sootTestClass = Scene.v().forceResolve(entry, SootClass.BODIES);
-				if (sootTestClass.isPhantom()) throw new Exception();
 				sootTestClass.setApplicationClass();
 			}
 		} catch (Error | Exception e) {
@@ -166,11 +165,10 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	}
 
 	private void executeAnalysis() throws Exception {
-		for (Object object : this.flowQueries) {
+		for (CompositeTaintFlowQueryImpl flowQuery : this.flowQueries) {
 			if (resultListener != null && resultListener.isCancelled()) {
 				break;
 			}
-			CompositeTaintFlowQuery flowQuery = (CompositeTaintFlowQuery) object;
 			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery, resultListener);
 			AnalysisResult singleResult = analysis.run();
 			this.result.addResult(flowQuery, (CompositeTaintFlowQueryResult) singleResult);

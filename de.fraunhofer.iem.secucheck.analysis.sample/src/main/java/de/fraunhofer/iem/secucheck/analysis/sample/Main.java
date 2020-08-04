@@ -25,7 +25,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			// Run the in-process hosted instance of the SecucheckTaintAnalysis.
-			//runSecucheckAnalysis(new SecucheckTaintAnalysis());
+			runSecucheckAnalysis(new SecucheckTaintAnalysis());
 			
 			// Run the out-of-process hosted instance of the SecucheckTaintAnalysis.
 			runSecucheckAnalysis(new SecuCheckTaintAnalysisOutOfProcess());
@@ -72,6 +72,7 @@ public class Main {
 		System.out.println();
 		System.out.println("Result-2 size: " + result2.size());
 		
+		secucheckAnalysis.setListener(resultListener);
 		SecucheckTaintAnalysisResult result3 = secucheckAnalysis.run(compositeOfFirstThree);
 		System.out.println();
 		System.out.println("Result-3 size: " + result3.size());

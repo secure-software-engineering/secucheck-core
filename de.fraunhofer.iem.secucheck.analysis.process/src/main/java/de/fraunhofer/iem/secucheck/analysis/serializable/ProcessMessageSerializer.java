@@ -47,25 +47,14 @@ public class ProcessMessageSerializer {
 	    objectMapper.registerModule(module);
 	}
 	
-	public static String serializeToJsonString(ProcessMessage message) throws Exception {
-			//throws JsonProcessingException {
-		try {
+	public static String serializeToJsonString(ProcessMessage message)
+			throws JsonProcessingException {
 			return objectMapper.writeValueAsString(message);
-		} catch (Exception e) {
-			throw e;
-		}
 	}
 	
-	public static ProcessMessage deserializeFromJsonString(String string) throws Exception {
-			//throws JsonParseException, JsonMappingException, IOException {
-			try {
+	public static ProcessMessage deserializeFromJsonString(String string) 
+			throws JsonParseException, JsonMappingException, IOException {
 				return objectMapper.readValue(string, ProcessMessage.class);
-			
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				throw e;
-			}
-
 	}	
 }
 

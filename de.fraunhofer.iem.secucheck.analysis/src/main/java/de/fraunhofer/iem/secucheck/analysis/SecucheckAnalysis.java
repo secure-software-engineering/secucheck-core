@@ -18,7 +18,7 @@ public interface SecucheckAnalysis {
 	void setListener(AnalysisResultListener resultListener);
 	
 	SecucheckTaintAnalysisResult run
-		(List<? super CompositeTaintFlowQueryImpl> flowQueries) 
-				throws Exception ;
+		(List<CompositeTaintFlowQueryImpl> flowQueries) 
+				throws Exception;
 
 }

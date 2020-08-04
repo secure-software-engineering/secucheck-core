@@ -1,27 +1,31 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
+import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.Pair;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 
 public class TaintFlowQueryResult implements AnalysisResult {
 	
-	private final Map<TaintFlowQueryImpl, Pair<LocationDetails,LocationDetails>> resultMap;
+	private final List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> resultMap;
 	
 	public TaintFlowQueryResult(){
-		this.resultMap = new HashMap<TaintFlowQueryImpl, Pair<LocationDetails,LocationDetails>>();
+		this.resultMap = 
+				new ArrayList<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> ();
 	}
 	
 	public void addQueryResultPair(TaintFlowQueryImpl query,
-			Pair<LocationDetails,LocationDetails> result) {
-		this.resultMap.put(query, result);
+			SameTypedPair<LocationDetails> result) {
+		this.resultMap.add(
+				new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(query, result));
 	}
 	
 	public void addQueryResultPairs(
-			Map<TaintFlowQueryImpl, Pair<LocationDetails,LocationDetails>> pairs) {
-		this.resultMap.putAll(pairs);
+			List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> pairs) {
+		this.resultMap.addAll(pairs);
 	}
 	
 	public void clear() {
@@ -33,7 +37,8 @@ public class TaintFlowQueryResult implements AnalysisResult {
 		return this.resultMap.size();
 	}
 	
-	public Map<TaintFlowQueryImpl, Pair<LocationDetails,LocationDetails>> getQueryResultMap(){
+	public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
+		getQueryResultMap(){
 		return this.resultMap;
 	}
 }

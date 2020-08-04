@@ -64,7 +64,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 		this.resultListener = resultListener;
 	}
 	
-	public SecucheckTaintAnalysisResult run(List<? super CompositeTaintFlowQueryImpl> flowQueries)
+	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries)
 			throws Exception {
 		Utility.ValidateCompositeFlowQueries(flowQueries);
 		lock.lock();
@@ -86,9 +86,8 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			// PrintStream pw = System.out;
 			PrintWriter pw = new PrintWriter(process.getOutputStream());
 			
-			List<CompositeTaintFlowQuery> flowsClone = cloneList(flowQueries);
 			CompleteQuery analysisQuery = new CompleteQuery(sootClassPath, canonicalClasses,
-					flowsClone, resultListener == null);
+					flowQueries, resultListener == null);
 
 			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));
 			pw.flush();
@@ -96,7 +95,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
 			while (!process.waitFor(50, TimeUnit.MILLISECONDS)) {
-				if (resultListener.isCancelled())
+				if (resultListener != null && resultListener.isCancelled())
 					process.destroyForcibly();
 				readInput(br);
 			}
@@ -112,7 +111,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 		return result;
 	}
 	
-	private void readInput(BufferedReader br) throws IOException {
+	private void readInput(BufferedReader br) throws Exception {
 		while (br.ready()) {
 			String line = null;
 			try {
@@ -176,17 +175,5 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			}
 		}
 		return null;
-	}
-	
-	private static List<CompositeTaintFlowQuery> cloneList(List<? super CompositeTaintFlowQueryImpl> list){
-		final List<CompositeTaintFlowQuery> flowsClone = 
-				new ArrayList<CompositeTaintFlowQuery>();
-		CompositeTaintFlowQueryImpl copyQuery;
-		for (Object query : list) {			
-			copyQuery = new CompositeTaintFlowQueryImpl();
-			((CompositeTaintFlowQuery)query).copyTo(copyQuery);			
-			flowsClone.add(copyQuery);
-		}
-		return flowsClone;
 	}
 }
