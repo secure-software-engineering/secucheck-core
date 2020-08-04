@@ -16,7 +16,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 
 public class Main {
 
@@ -221,17 +223,17 @@ public class Main {
 	private static AnalysisResultListener getConsoleResultListener() {
 		return new AnalysisResultListener() {
 			
-			public void reportFlowResult(AnalysisResult result) {
+			public void reportFlowResult(TaintFlowQueryResult result) {
 				System.out.println();
 				System.out.println("Recieved single flow result, size:" + result.size());
 			}
 			
-			public void reportCompositeFlowResult(AnalysisResult result) {
+			public void reportCompositeFlowResult(CompositeTaintFlowQueryResult result) {
 				System.out.println();
 				System.out.println("Recieved composite flow result, size:" + result.size());
 			}
 			
-			public void reportCompleteResult(AnalysisResult result) {
+			public void reportCompleteResult(SecucheckTaintAnalysisResult result) {
 				System.out.println();
 				System.out.println("Recieved complete result, size:" + result.size());
 			}

@@ -17,7 +17,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ReportType;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessageSerializer;
@@ -79,16 +81,25 @@ public class SecuCheckAnalysisServer {
 		
 		private boolean isCancelled = false;
 		
-		public void reportFlowResult(AnalysisResult result) {
-			sendResult(ReportType.SingleResult, result);
+		public void reportFlowResult(TaintFlowQueryResult result) {
+			ListenerResult listenerResult = new ListenerResult();
+			listenerResult.setSingleResult(result);
+			listenerResult.setReportType(ReportType.SingleResult);
+			sendResult(listenerResult);
 		}
 		
-		public void reportCompositeFlowResult(AnalysisResult result) {
-			sendResult(ReportType.CompositeResult, result);
+		public void reportCompositeFlowResult(CompositeTaintFlowQueryResult result) {
+			ListenerResult listenerResult = new ListenerResult();
+			listenerResult.setCompositeResult(result);
+			listenerResult.setReportType(ReportType.CompositeResult);
+			sendResult(listenerResult);
 		}
 		
-		public void reportCompleteResult(AnalysisResult result) {
-			sendResult(ReportType.CompleteResult, result);
+		public void reportCompleteResult(SecucheckTaintAnalysisResult result) {
+			ListenerResult listenerResult = new ListenerResult();
+			listenerResult.setCompleteResult(result);
+			listenerResult.setReportType(ReportType.CompleteResult);
+			sendResult(listenerResult);
 		}
 		
 		public boolean isCancelled() {
@@ -99,13 +110,10 @@ public class SecuCheckAnalysisServer {
 			return isCancelled = true;
 		}
 		
-		private void sendResult(ReportType reportType, AnalysisResult result) {
-			ListenerResult listenResult = new ListenerResult();
-			listenResult.setReportType(reportType);
-			listenResult.setResult(result);
+		private void sendResult(ListenerResult listenerResult) {
 			try {
 				SecuCheckAnalysisServer.this.systemOut.println(
-						ProcessMessageSerializer.serializeToJsonString(listenResult));
+						ProcessMessageSerializer.serializeToJsonString(listenerResult));
 			} catch (Exception e) { e.printStackTrace();}
 			System.err.print(SecuCheckAnalysisServer.this.baos.toString());
 			if (logger.isInfoEnabled()) {

@@ -170,10 +170,10 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 				break;
 			}
 			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery, resultListener);
-			AnalysisResult singleResult = analysis.run();
-			this.result.addResult(flowQuery, (CompositeTaintFlowQueryResult) singleResult);
+			CompositeTaintFlowQueryResult singleResult = (CompositeTaintFlowQueryResult) analysis.run();
+			this.result.addResult(flowQuery, singleResult);
 			if (resultListener != null) {
-				resultListener.reportCompositeFlowResult(singleResult);
+				resultListener.reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
 			}
 		}
 	}

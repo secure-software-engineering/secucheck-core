@@ -87,7 +87,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			PrintWriter pw = new PrintWriter(process.getOutputStream());
 			
 			CompleteQuery analysisQuery = new CompleteQuery(sootClassPath, canonicalClasses,
-					flowQueries, resultListener == null);
+					flowQueries, resultListener != null);
 
 			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));
 			pw.flush();
@@ -102,13 +102,9 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			
 			readInput(br);
 			return this.result;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} finally {
 			lock.unlock();
 		}
-		return result;
 	}
 	
 	private void readInput(BufferedReader br) throws Exception {
@@ -131,13 +127,13 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 				ListenerResult interResult = (ListenerResult) message;
 				switch(interResult.getReportType()) {
 					case SingleResult:
-						this.resultListener.reportFlowResult(interResult.getResult());
+						this.resultListener.reportFlowResult(interResult.getSingleResult());
 						break;
 					case CompositeResult:
-						this.resultListener.reportCompositeFlowResult(interResult.getResult());
+						this.resultListener.reportCompositeFlowResult(interResult.getCompositeResult());
 						break;
 				case CompleteResult:
-					this.resultListener.reportCompleteResult(interResult.getResult());
+					this.resultListener.reportCompleteResult(interResult.getCompleteResult());
 					break;
 				}
 				break;
@@ -159,6 +155,9 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 
 	private static File provideResource(String resourcePath) throws IOException {
 		InputStream is = SecuCheckTaintAnalysisOutOfProcess.class.getResourceAsStream(resourcePath);
+		if (is == null || is.available() == 0) {
+			throw new IOException("Could not find the analysis process jar");
+		}
 		File file = File.createTempFile("SecuCheck", resourcePath.replace('/', '-'));
 		FileUtils.copyInputStreamToFile(is, file);
 		file.deleteOnExit();

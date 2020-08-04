@@ -46,7 +46,7 @@ public class CompositeTaintFlowAnalysis implements Analysis {
 				break;
 			}
 			Analysis analysis = new SingleFlowAnalysis(originalFlow, icfg, this.resultListener);
-			AnalysisResult retResult = analysis.run();
+			TaintFlowQueryResult retResult = (TaintFlowQueryResult) analysis.run();
 			if (retResult.size() == 0) {
 				result.clear();
 				break;
@@ -54,7 +54,7 @@ public class CompositeTaintFlowAnalysis implements Analysis {
 			if (this.resultListener != null) {
 				this.resultListener.reportFlowResult(retResult);
 			}
-			result.addResult((TaintFlowQueryImpl) originalFlow, (TaintFlowQueryResult) retResult);		
+			result.addResult((TaintFlowQueryImpl) originalFlow, retResult);		
 		}		
 		return result;		
 	}	

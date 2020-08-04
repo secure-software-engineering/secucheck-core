@@ -2,7 +2,8 @@ package de.fraunhofer.iem.secucheck.analysis.serializable.query;
 
 import java.util.List;
 
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.MessageType;
@@ -38,6 +39,7 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 		return flowQueries;
 	}
 	
+	@JsonProperty(value="hasResultListener")
 	public boolean hasResultListener() {
 		return hasResultListener;
 	}
