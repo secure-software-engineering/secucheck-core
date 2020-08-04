@@ -1,12 +1,14 @@
-package de.fraunhofer.iem.secucheck.analysis;
+package de.fraunhofer.iem.secucheck.analysis.client;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
 
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
@@ -74,7 +78,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			}
 			
 			ProcessBuilder builder = new ProcessBuilder().command(//
-							javaFile.toString(), // "-Xdebug",
+							javaFile.toString(),  //"-Xdebug",
 							//"-Xrunjdwp:transport=dt_socket,address=127.0.0.1:9000,suspend=y",
 							"-jar", analysisJarFile.toString()).redirectError(Redirect.INHERIT);
 			
@@ -99,11 +103,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			
 			readInput(br);
 			return this.result;
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
@@ -150,10 +150,10 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 		}
 	}
 
-	private static File getAnalysisJarFile() throws IOException {
+	private static File getAnalysisJarFile() throws IOException, URISyntaxException {
 		if (SecuCheckTaintAnalysisOutOfProcess.analysisJarFile == null 
 				|| !SecuCheckTaintAnalysisOutOfProcess.analysisJarFile.exists()) {
-			SecuCheckTaintAnalysisOutOfProcess.analysisJarFile = provideResource("/analysis.jar");
+			 SecuCheckTaintAnalysisOutOfProcess.analysisJarFile = provideResource("/analysis.jar");
 		}
 		return SecuCheckTaintAnalysisOutOfProcess.analysisJarFile;
 	}

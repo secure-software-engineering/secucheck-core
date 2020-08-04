@@ -36,5 +36,6 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/de.fraunhofer.iem.secucheck.analysis"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/de.fraunhofer.iem.secucheck.analysis.process"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/de.fraunhofer.iem.secucheck.analysis.process.client"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

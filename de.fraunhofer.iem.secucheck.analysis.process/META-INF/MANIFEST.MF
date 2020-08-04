@@ -8,3 +8,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: de.fraunhofer.iem.secucheck.analysis.process
 Bundle-ClassPath: .
 Export-Package: de.fraunhofer.iem.secucheck.analysis
+Main-Class: de.fraunhofer.iem.secucheck.analysis.SecuCheckAnalysisServer 

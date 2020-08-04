@@ -10,7 +10,8 @@
 		<groupId>de.fraunhofer.iem.secucheck</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-
+	
+	<groupId>de.fraunhofer.iem.secucheck</groupId>
 	<artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
 	<packaging>jar</packaging>
 	<name>SecuCheck Analysis Core</name>
@@ -98,6 +99,24 @@
 					<compilerArgument>-proc:none</compilerArgument>
 				</configuration>
 			</plugin>
+			
+		    <plugin>
+	         <artifactId>maven-assembly-plugin</artifactId>
+	         <executions>
+	          <execution>
+	            <phase>package</phase>
+	            <goals>
+	              <goal>single</goal>
+	            </goals>
+	          </execution>
+	         </executions>
+	         <configuration>
+	          <descriptorRefs>
+	            <descriptorRef>jar-with-dependencies</descriptorRef>
+	          </descriptorRefs>
+	         </configuration>
+	        </plugin>
+			
 		</plugins>
 	</build>
 
