@@ -4,26 +4,33 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.fraunhofer.iem.secucheck.analysis.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.MessageType;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 
 public final class CompleteQuery extends ProcessMessage implements AnalysisMessage {
 	
+	private OS os;
 	private boolean hasResultListener;
+	private String appClassPath;
 	private String sootClassPath;
-	private List<String> canonicalClasses;
+	private List<EntryPoint> entryPoints;
 	private List<CompositeTaintFlowQueryImpl> flowQueries;
 	
 	public CompleteQuery() { }
 	
-	public CompleteQuery(String sootClassPath, List<String> canonicalClassNames,
-			List<CompositeTaintFlowQueryImpl> flowQueries, boolean hasResultListener) {
+	public CompleteQuery(OS os, String appClassPath, String sootClassPath,
+			List<EntryPoint> entryPoints, List<CompositeTaintFlowQueryImpl> flowQueries,
+			boolean hasResultListener) {
 		super.messageType = getMessageType();
+		this.os = os;
+		this.appClassPath = appClassPath;
 		this.sootClassPath = sootClassPath;
 		this.flowQueries = flowQueries;
-		this.canonicalClasses = canonicalClassNames;
+		this.entryPoints = entryPoints;
 		this.hasResultListener = hasResultListener;
 	}
 	
@@ -31,8 +38,8 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 		return MessageType.CompleteQuery;
 	}
 	
-	public List<String> getCanonicalClasses() {
-		return canonicalClasses;
+	public List<EntryPoint> getAnalysisEntryPoints() {
+		return entryPoints;
 	}
 	
 	public List<CompositeTaintFlowQueryImpl> getFlowQueries() {
@@ -44,12 +51,20 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 		return hasResultListener;
 	}
 	
+	public OS getOs() {
+		return os;
+	}
+	
+	public String getAppClassPath() {
+		return appClassPath;
+	}
+	
 	public String getSootClassPath() {
 		return sootClassPath;
 	}
 	
-	public void setCanonicalClasses(List<String> canonicalClasses) {
-		this.canonicalClasses = canonicalClasses;
+	public void setAnalysisEntryPoints(List<EntryPoint> entryPoints) {
+		this.entryPoints = entryPoints;
 	}
 	
 	public void setFlowQueries(List<CompositeTaintFlowQueryImpl> flowQueries) {
@@ -60,7 +75,19 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 		this.hasResultListener = hasResultListener;
 	}
 	
+	public void setOs(OS os) {
+		this.os = os;
+	}
+	
+	public void setAppClassPath(String appClassPath) {
+		this.appClassPath = appClassPath;
+	}
+	
 	public void setSootClassPath(String sootClassPath) {
 		this.sootClassPath = sootClassPath;
-	}	
+	}
+	
+	public void setEntryPoints(List<EntryPoint> entryPoints) {
+		this.entryPoints = entryPoints;
+	}
 }

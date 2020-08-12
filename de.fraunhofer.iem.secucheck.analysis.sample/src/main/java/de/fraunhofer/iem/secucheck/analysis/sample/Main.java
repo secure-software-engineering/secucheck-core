@@ -6,9 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.client.SecuCheckTaintAnalysisOutOfProcess;
+import de.fraunhofer.iem.secucheck.analysis.OS;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckTaintAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
@@ -21,8 +23,6 @@ import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 
 public class Main {
-
-	enum OS { Windows, LinuxOrMac }
 	
 	public static void main(String[] args) {
 		try {
@@ -56,12 +56,12 @@ public class Main {
 						getTaintFlowQuery2(), getTaintFlowQuery3(),
 						getTaintFlowQuery4()));
 		
-		List<String> classesToAnalyse = Arrays.asList(getClassesToAnalyze().split(";"));
-		String sootClassPath = getSootClassPath(OS.LinuxOrMac);
 		AnalysisResultListener resultListener = getConsoleResultListener();
 		
-		secucheckAnalysis.setAnalysisClasses(classesToAnalyse);
-		secucheckAnalysis.setSootClassPath(sootClassPath);
+		secucheckAnalysis.setOs(OS.Linux);
+		secucheckAnalysis.setAnalysisEntryPoints(getEntryPoints());
+		secucheckAnalysis.setApplicationClassPath(getAppClassPath());
+		secucheckAnalysis.setSootClassPathJars(getSootClassPath());
 		secucheckAnalysis.setListener(resultListener);
 		
 		SecucheckTaintAnalysisResult result1 = secucheckAnalysis.run(compositeOfFirst);
@@ -207,17 +207,23 @@ public class Main {
 		}
 		return list;
 	}
-		
-	private static String getSootClassPath(OS os) {		
-		// Use ';' for Windows and ':' for Linux or Mac.
-		String pathSeparator= os == OS.Windows ? ";" : ":";
-		return 	System.getProperty("java.home") + File.separator + "lib" + File.separator +"rt.jar" + 
-				pathSeparator +
-				System.getProperty("user.dir") + File.separator + "target" + File.separator + "classes";
+	
+	private static String getAppClassPath() {
+		return System.getProperty("user.dir") + File.separator + "target" + File.separator + "classes";
 	}
-			
-	private static String getClassesToAnalyze() {
-		return "AnalyzeMe";
+	
+	private static String getSootClassPath() {		
+		return 	System.getProperty("java.home") + File.separator + "lib" + File.separator +"rt.jar" ;
+				
+	}
+	
+	private static List<EntryPoint> getEntryPoints(){
+		List<EntryPoint> entryPoints = new ArrayList<EntryPoint>();
+		EntryPoint entryPoint = new EntryPoint();
+		entryPoint.setCanonicalClassName("AnalyzeMe");
+		entryPoint.setAllMethods(true);
+		entryPoints.add(entryPoint);
+		return entryPoints;
 	}
 	
 	private static AnalysisResultListener getConsoleResultListener() {

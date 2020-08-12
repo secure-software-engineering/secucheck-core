@@ -2,24 +2,23 @@ package de.fraunhofer.iem.secucheck.analysis.client;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
 
+import de.fraunhofer.iem.secucheck.analysis.OS;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.Utility;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
@@ -32,8 +31,10 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 	
 	private final ReentrantLock lock;
 	
+	private OS os;
+	private String appClassPath;
 	private String sootClassPath;
-	private List<String> canonicalClasses;
+	private List<EntryPoint> entryPoints;
 	private AnalysisResultListener resultListener;
 	private SecucheckTaintAnalysisResult result;
 	
@@ -44,20 +45,35 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 		this.lock = new ReentrantLock();
 	}
 	
-	public SecuCheckTaintAnalysisOutOfProcess(String sootClassPath, List<String> canonicalClassNames,
+	public SecuCheckTaintAnalysisOutOfProcess(OS os, String appClassPath, 
+			String sootClassPath, List<EntryPoint> entryPoints,
 				AnalysisResultListener resultListener) {
 		this();
+		this.os = os;
+		this.appClassPath = appClassPath;
 		this.sootClassPath = sootClassPath;
-		this.canonicalClasses = canonicalClassNames;
+		this.entryPoints = entryPoints;
 		this.resultListener = resultListener;
+	}
+	
+	public void setOs(OS os) {
+		this.os = os;
+	}
+
+	public void setSootClassPathJars(String sootClassPath) {
+		this.sootClassPath = sootClassPath;
+	}
+
+	public void setApplicationClassPath(String appClassPath) {
+		this.appClassPath = appClassPath;	
 	}
 	
 	public void setSootClassPath(String sootClassPath) {
 		this.sootClassPath = sootClassPath;
 	}
 	
-	public void setAnalysisClasses(List<String> canonicalClassNames) {
-		this.canonicalClasses = canonicalClassNames;
+	public void setAnalysisEntryPoints(List<EntryPoint> entryPoints) {
+		this.entryPoints = entryPoints;
 	}
 	
 	public void setListener(AnalysisResultListener resultListener) {
@@ -86,8 +102,8 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			// PrintStream pw = System.out;
 			PrintWriter pw = new PrintWriter(process.getOutputStream());
 			
-			CompleteQuery analysisQuery = new CompleteQuery(sootClassPath, canonicalClasses,
-					flowQueries, resultListener != null);
+			CompleteQuery analysisQuery = new CompleteQuery(os, appClassPath, sootClassPath,
+					entryPoints, flowQueries, resultListener != null);
 
 			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));
 			pw.flush();

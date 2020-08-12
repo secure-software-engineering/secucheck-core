@@ -1,14 +1,18 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import boomerang.preanalysis.BoomerangPretransformer;
 import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
@@ -33,8 +37,10 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	protected long analysisTime;
 	protected BiDiInterproceduralCFG<Unit, SootMethod> icfg;
 	
+	private OS os;
+	private String appClassPath;
 	private String sootClassPath;
-	private List<String> canonicalClasses;
+	private List<EntryPoint> entryPoints;
 	private List<CompositeTaintFlowQueryImpl> flowQueries;
 	private AnalysisResultListener resultListener;
 	private SecucheckTaintAnalysisResult result;
@@ -43,22 +49,35 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		this.lock = new ReentrantLock();
 	}
 	
-	public SecucheckTaintAnalysisBase(String sootClassPath, List<String> canonicalClassNames,
+	public SecucheckTaintAnalysisBase(OS os, String appClassPath,
+			String sootClassPath, List<EntryPoint> entryPoints,
 			AnalysisResultListener resultListener) {
 		this();
+		this.os = os;
+		this.appClassPath = appClassPath;
 		this.sootClassPath = sootClassPath;
-		this.canonicalClasses = canonicalClassNames;
+		this.entryPoints = entryPoints;
 		this.resultListener = resultListener;
 	}
 	
 	@Override
-	public void setSootClassPath(String sootClassPath) {
-		this.sootClassPath = sootClassPath;
+	public void setOs(OS os) {
+		this.os = os;
 	}
 	
 	@Override
-	public void setAnalysisClasses(List<String> canonicalClassNames) {
-		this.canonicalClasses = canonicalClassNames;
+	public void setApplicationClassPath(String appClassPath) {
+		this.appClassPath = appClassPath;
+	}
+
+	@Override
+	public void setSootClassPathJars(String sootClassPath) {
+		this.sootClassPath = sootClassPath;
+	}	
+	
+	@Override
+	public void setAnalysisEntryPoints(List<EntryPoint> entryPoints) {
+		this.entryPoints = entryPoints;
 	}
 	
 	@Override
@@ -74,14 +93,21 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		try {
 			this.flowQueries = flowQueries;
 			this.result = new SecucheckTaintAnalysisResult();
-			this.initializeSootWithEntryPoint(sootClassPath, this.canonicalClasses);
+			
+			this.initializeSootWithEntryPoints(
+					Utility.getCombinedSootClassPath(this.os, 
+							this.appClassPath, this.sootClassPath),
+					this.entryPoints);
+			
 			return this.analyze();
 		} finally {
 			lock.unlock();
 		}
 	}
 	
-	private void initializeSootWithEntryPoint(String sootClassPath, List<String> entryPoints) {
+	private void initializeSootWithEntryPoints(String sootClassPath, List<EntryPoint> entryPoints) 
+			throws Exception {
+		
 		G.v().reset();
 
 		Options.v().set_keep_line_number(true);
@@ -107,23 +133,29 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		Scene.v().addBasicClass("java.lang.Thread", SootClass.BODIES);
 		Scene.v().addBasicClass("java.lang.AbstractStringBuilder", SootClass.BODIES);
 
-		try {
-			for (String entry : entryPoints) {
-				SootClass sootTestClass = Scene.v().forceResolve(entry, SootClass.BODIES);
-				sootTestClass.setApplicationClass();
+		Runnable runnable = () -> {
+			List<SootMethod> entries = new ArrayList<SootMethod>();
+			for (EntryPoint entry : entryPoints) {
+				SootClass sootClass = Scene.v().forceResolve(entry.getCanonicalClassName(),
+						SootClass.BODIES);
+				sootClass.setApplicationClass();
+				if (entry.isAllMethods()) {
+					entries.addAll(sootClass.getMethods());
+				} else {
+					entry.getMethods().forEach(y -> 
+						entries.add(sootClass.getMethodByName(y)));
+				}
 			}
-		} catch (Error | Exception e) {
-			// Normally the "Error" class indicates problems that are outside of application
-			// scope to deal with (OutOfMemoryError etc).
-			// But soot throws instances of class "Error" in case of problems. So we are
-			// forced to catch it here.
-			throw new RuntimeException("Could not find entry point.");
-		}
+			Scene.v().setEntryPoints(entries);
+		};
+		
+		Utility.executeSootRunnable(runnable, "Could not find entry point.");
+		
 		Scene.v().forceResolve("java.lang.Thread", SootClass.BODIES).setApplicationClass();
 		Scene.v().loadNecessaryClasses();
-
 	}
 
+	
 	protected boolean includeJDK() {
 		return true;
 	}

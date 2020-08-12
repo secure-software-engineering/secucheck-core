@@ -2,20 +2,13 @@ package de.fraunhofer.iem.secucheck.analysis;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
@@ -58,9 +51,13 @@ public class SecuCheckAnalysisServer {
 					CompleteQuery queryDetails = (CompleteQuery)message;
 					this.resultListener = queryDetails.hasResultListener() ? 
 							new SimpleResultListener() : null;
+					
 					SecucheckAnalysis analysis = new SecucheckTaintAnalysis(
+							queryDetails.getOs(),
+							queryDetails.getAppClassPath(),
 							queryDetails.getSootClassPath(), 
-							queryDetails.getCanonicalClasses(), resultListener);	
+							queryDetails.getAnalysisEntryPoints(), resultListener);	
+					
 					SecucheckTaintAnalysisResult result = analysis.run(queryDetails.getFlowQueries());
 					CompleteResult completeResult = new CompleteResult(result);
 					systemOut.println(ProcessMessageSerializer.serializeToJsonString(completeResult));
