@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.client.SecuCheckTaintAnalysisOutOfProcess;
-import de.fraunhofer.iem.secucheck.analysis.OS;
+import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckTaintAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
@@ -14,9 +14,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
+import de.fraunhofer.iem.secucheck.analysis.query.ReportSite;
 import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
@@ -41,18 +41,18 @@ public class Main {
 			throws Exception {
 	
 		List<CompositeTaintFlowQueryImpl> compositeOfFirst = getInList(
-				getCompositeOf(0, "1", getTaintFlowQuery1()));
+				getCompositeOf(ReportSite.SourceAndSink, "1", getTaintFlowQuery1()));
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfFirstTwo = getInList(
-				getCompositeOf(0, "1 & 2", getTaintFlowQuery1(),
+				getCompositeOf(ReportSite.SourceAndSink, "1 & 2", getTaintFlowQuery1(),
 						getTaintFlowQuery2()));
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfFirstThree = getInList(
-				getCompositeOf(0, "1,2 & 3", getTaintFlowQuery1(),
+				getCompositeOf(ReportSite.SourceAndSink, "1,2 & 3", getTaintFlowQuery1(),
 						getTaintFlowQuery2(), getTaintFlowQuery3()));
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfAll = getInList(
-				getCompositeOf(0, "1,2,3 & 4", getTaintFlowQuery1(),
+				getCompositeOf(ReportSite.SourceAndSink, "1,2,3 & 4", getTaintFlowQuery1(),
 						getTaintFlowQuery2(), getTaintFlowQuery3(),
 						getTaintFlowQuery4()));
 		
@@ -189,7 +189,7 @@ public class Main {
 		return taintFlowQuery;
 	}
 	
-	private static CompositeTaintFlowQueryImpl getCompositeOf(int reportLoc, 
+	private static CompositeTaintFlowQueryImpl getCompositeOf(ReportSite reportLoc, 
 			String message, TaintFlowQueryImpl ...flowQueryImpls) {
 		CompositeTaintFlowQueryImpl compositeQuery = new CompositeTaintFlowQueryImpl();
 		compositeQuery.setReportLocation(reportLoc);

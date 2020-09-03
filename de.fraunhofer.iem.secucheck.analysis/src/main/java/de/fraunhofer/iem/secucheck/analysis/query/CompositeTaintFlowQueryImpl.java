@@ -7,8 +7,8 @@ public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuer
 	
 	private final List<TaintFlowQueryImpl> taintFlowQueries;
 
-	private int reportLocation;
 	private String message;
+	private ReportSite reportLocation;
 	
 	public CompositeTaintFlowQueryImpl() { 
 		this.taintFlowQueries = new ArrayList<TaintFlowQueryImpl>();
@@ -23,7 +23,7 @@ public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuer
 	}
 	
 	@Override
-	public int getReportLocation() {
+	public ReportSite getReportLocation() {
 		return this.reportLocation;
 	}
 	
@@ -33,7 +33,7 @@ public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuer
 	}
 	
 	@Override
-	public void setReportLocation(int loc) {
+	public void setReportLocation(ReportSite loc) {
 		this.reportLocation = loc;
 	}
 	

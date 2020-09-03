@@ -42,10 +42,13 @@ import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.IdentityStmt;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.JimpleBody;
 import soot.jimple.ParameterRef;
 import soot.jimple.Stmt;
 import soot.jimple.internal.JNopStmt;
+import soot.tagkit.Host;
+import soot.tagkit.PositionTag;
 import wpds.impl.Weight.NoWeight;
 
 class SingleFlowAnalysis implements Analysis {
@@ -180,8 +183,10 @@ class SingleFlowAnalysis implements Analysis {
 		LocationDetails startDetails = new LocationDetails();
 		SootMethod sourceMethodDefinition = Utility.findSourceMethodDefinition(flowQuery, start.stmt().getMethod(),
 				start.stmt().getUnit().get());
+		
 		startDetails.setClassName(sourceMethodDefinition.getClass().getName());
 		startDetails.setLineNumber(sourceMethodDefinition.getJavaSourceStartLineNumber());
+		startDetails.setColumnNumber(sourceMethodDefinition.getJavaSourceStartColumnNumber());
 		startDetails.setMethodSignature(sourceMethodDefinition.getSignature());
 		startDetails.setType(LocationType.Source);
 		
@@ -190,6 +195,7 @@ class SingleFlowAnalysis implements Analysis {
 				end.stmt().getUnit().get());
 		endDetails.setClassName(sinkMethodDefinition.getClass().getName());
 		endDetails.setLineNumber(sinkMethodDefinition.getJavaSourceStartLineNumber());
+		endDetails.setColumnNumber(sinkMethodDefinition.getJavaSourceStartColumnNumber());
 		endDetails.setMethodSignature(sinkMethodDefinition.getSignature());
 		endDetails.setType(LocationType.Sink);
 		
@@ -341,6 +347,12 @@ class SingleFlowAnalysis implements Analysis {
 					}
 				}
 				
+				// taint this object
+				if (sourceMethod.isOutputThis() && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
+					InstanceInvokeExpr instanceInvoke = (InstanceInvokeExpr) actualStatement.getInvokeExpr();
+					out.add(instanceInvoke.getBase());
+				}
+				
 				// // taint this object
 				// if (this.flow.getSource().getSingleSource().getTvOut() != null
 				// && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
@@ -377,7 +389,13 @@ class SingleFlowAnalysis implements Analysis {
 						out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
 					}
 				}
-
+				
+				// taint this object
+				if (sourceMethod.isInputThis() && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
+					InstanceInvokeExpr instanceInvoke = (InstanceInvokeExpr) actualStatement.getInvokeExpr();
+					out.add(instanceInvoke.getBase());
+				}
+				
 				// // taint this object
 				// if (this.flow.getSource().getSingleSource().getTvOut() != null
 				// && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
