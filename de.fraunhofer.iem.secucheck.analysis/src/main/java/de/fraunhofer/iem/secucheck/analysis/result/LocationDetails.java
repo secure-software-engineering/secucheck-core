@@ -23,8 +23,8 @@ public class LocationDetails {
 	
 	public LocationType getType() { return type; }
 	
-	public int getLineNumber() { return usageLineNumber; }
-	public int ColumnNumber() { return usageColNumber; }
+	public int getUsageLineNumber() { return usageLineNumber; }
+	public int getUsageColumnNumber() { return usageColNumber; }
 	
 	
 	public void setSourceClassName(String sourceClassName) { this.sourceClassName = sourceClassName; }
