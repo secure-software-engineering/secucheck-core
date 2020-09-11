@@ -49,6 +49,7 @@ import soot.jimple.Stmt;
 import soot.jimple.internal.JNopStmt;
 import soot.tagkit.Host;
 import soot.tagkit.PositionTag;
+import soot.tagkit.AbstractHost;
 import wpds.impl.Weight.NoWeight;
 
 class SingleFlowAnalysis implements Analysis {
@@ -183,21 +184,28 @@ class SingleFlowAnalysis implements Analysis {
 		LocationDetails startDetails = new LocationDetails();
 		SootMethod sourceMethodDefinition = Utility.findSourceMethodDefinition(flowQuery, start.stmt().getMethod(),
 				start.stmt().getUnit().get());
-		
-		startDetails.setClassName(sourceMethodDefinition.getClass().getName());
-		startDetails.setLineNumber(sourceMethodDefinition.getJavaSourceStartLineNumber());
-		startDetails.setColumnNumber(sourceMethodDefinition.getJavaSourceStartColumnNumber());
+		startDetails.setSourceClassName(sourceMethodDefinition.getDeclaringClass().getName());
 		startDetails.setMethodSignature(sourceMethodDefinition.getSignature());
+		
+		AbstractHost sourceHost = (AbstractHost) start.asNode().stmt().getUnit().get();
+		startDetails.setUsageLineNumber(sourceHost.getJavaSourceStartLineNumber());
+		startDetails.setUsageColumnNumber(sourceHost.getJavaSourceStartColumnNumber());
+		startDetails.setUsageMethodSignature(start.stmt().getMethod().getSignature());
+		startDetails.setUsageClassName(start.stmt().getMethod().getDeclaringClass().getName());
 		startDetails.setType(LocationType.Source);
 		
 		LocationDetails endDetails = new LocationDetails();
 		SootMethod sinkMethodDefinition = Utility.findSinkMethodDefinition(flowQuery, end.stmt().getMethod(),
 				end.stmt().getUnit().get());
-		endDetails.setClassName(sinkMethodDefinition.getClass().getName());
-		endDetails.setLineNumber(sinkMethodDefinition.getJavaSourceStartLineNumber());
-		endDetails.setColumnNumber(sinkMethodDefinition.getJavaSourceStartColumnNumber());
+		endDetails.setSourceClassName(sinkMethodDefinition.getDeclaringClass().getName());
 		endDetails.setMethodSignature(sinkMethodDefinition.getSignature());
-		endDetails.setType(LocationType.Sink);
+		
+		AbstractHost sinkHost = (AbstractHost) end.asNode().stmt().getUnit().get();
+		endDetails.setUsageLineNumber(sinkHost.getJavaSourceStartLineNumber());
+		endDetails.setUsageColumnNumber(sinkHost.getJavaSourceStartColumnNumber());
+		endDetails.setUsageMethodSignature(end.stmt().getMethod().getSignature());
+		endDetails.setUsageClassName(end.stmt().getMethod().getDeclaringClass().getName());
+		endDetails.setType(LocationType.Sink);		
 		
 		return new SameTypedPair<LocationDetails>(startDetails, endDetails);
 	}

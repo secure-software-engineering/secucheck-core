@@ -48,8 +48,7 @@ class Utility {
 	
 	static SootMethod findSourceMethodDefinition(TaintFlowQuery partialFlow, 
 			SootMethod method, Stmt actualStatement) {
-		for (Object object : partialFlow.getFrom()) {
-			Method sourceMethod = (Method) object;
+		for (Method sourceMethod : partialFlow.getFrom()) {
 			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
 			if (method.getSignature().equals(sourceSootSignature)) {
 				return method;
@@ -63,11 +62,10 @@ class Utility {
 	
 	static SootMethod findSinkMethodDefinition(TaintFlowQuery partialFlow,
 			SootMethod method, Stmt actualStatement) {
-		for (Object object : partialFlow.getTo()) {
-			Method sinkMethod = (Method) object;
-			String sourceSootSignature = "<" + sinkMethod.getSignature() + ">";
+		for (Method sinkMethod : partialFlow.getTo()) {
+			String sinkSootSignature = "<" + sinkMethod.getSignature() + ">";
 			if (actualStatement.containsInvokeExpr() &&
-					actualStatement.toString().contains(sourceSootSignature)) {
+					actualStatement.toString().contains(sinkSootSignature)) {
 				return actualStatement.getInvokeExpr().getMethodRef().tryResolve();
 			}
 		}

@@ -1,22 +1,40 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
 public class LocationDetails {
-	private String className;
+	
+	private String sourceClassName;
+	private String usageClassName;
+	
 	private String methodSignature;
-	private int lineNumber;
-	private int colNumber;
+	private String usageMethodSignature;
+	
+	private int usageLineNumber;
+	private int usageColNumber;
+	
 	private LocationType type;
 	
 	public LocationDetails() { }
 	
-	public String getClassName() { return className; }
-	public int getLineNumber() { return lineNumber; }
-	public int ColumnNumber() { return colNumber; }
+	public String getSourceClassName() { return sourceClassName; }
+	public String getUsageClassName() { return usageClassName; }
+
 	public String getMethodSignature() { return methodSignature; }
+	public String getUsageMethodSignature() { return usageMethodSignature; }
+	
 	public LocationType getType() { return type; }
-	public void setClassName(String className) { this.className = className; }
-	public void setLineNumber(int lineNumber) { this.lineNumber = lineNumber; }
-	public void setMethodSignature(String methodSignature) { this.methodSignature = methodSignature;	}
+	
+	public int getLineNumber() { return usageLineNumber; }
+	public int ColumnNumber() { return usageColNumber; }
+	
+	
+	public void setSourceClassName(String sourceClassName) { this.sourceClassName = sourceClassName; }
+	public void setUsageClassName(String usageClassName) { this.usageClassName = usageClassName; }
+	
+	public void setMethodSignature(String methodSignature) { this.methodSignature = methodSignature; }
+	public void setUsageMethodSignature(String usageMethodSignature) { this.usageMethodSignature = usageMethodSignature; }
+	
 	public void setType(LocationType type) { this.type = type; }
-	public void setColumnNumber(int colNumber) { this.colNumber = colNumber; }
+	
+	public void setUsageLineNumber(int usageLineNumber) { this.usageLineNumber = usageLineNumber; }
+	public void setUsageColumnNumber(int usageColNumber) { this.usageColNumber = usageColNumber; }
 }
