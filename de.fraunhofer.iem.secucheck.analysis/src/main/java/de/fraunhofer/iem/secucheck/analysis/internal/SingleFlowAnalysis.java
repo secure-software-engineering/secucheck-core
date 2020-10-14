@@ -167,10 +167,10 @@ class SingleFlowAnalysis implements Analysis {
 				if (isValidPath(boomerang, start, end)) {
 					if (start instanceof ForwardQuery) {
 						reachMap.add(new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(
-								flowQuery, getDetailsPair(flowQuery, start, end)));
+								flowQuery, getLocationdetailsPair(flowQuery, start, end)));
 					} else if (start instanceof BackwardQuery) {
 						reachMap.add(new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(
-								flowQuery, getDetailsPair(flowQuery, end, start)));
+								flowQuery, getLocationdetailsPair(flowQuery, end, start)));
 					}
 				}
 			}
@@ -178,7 +178,7 @@ class SingleFlowAnalysis implements Analysis {
 		return reachMap;
 	}
 	
-	private SameTypedPair<LocationDetails> getDetailsPair(TaintFlowQueryImpl flowQuery,
+	private SameTypedPair<LocationDetails> getLocationdetailsPair(TaintFlowQueryImpl flowQuery,
 			Query start, Query end){
 		
 		LocationDetails startDetails = new LocationDetails();

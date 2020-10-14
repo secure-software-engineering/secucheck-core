@@ -32,181 +32,252 @@ public class Main {
 			// Run the out-of-process hosted instance of the SecucheckTaintAnalysis.
 			runSecucheckAnalysis(new SecuCheckTaintAnalysisOutOfProcess());
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 	
 	private static void runSecucheckAnalysis(SecucheckAnalysis secucheckAnalysis) 
 			throws Exception {
-	
-		List<CompositeTaintFlowQueryImpl> compositeOfFirst = getInList(
-				getCompositeOf(ReportSite.SourceAndSink, "1", getTaintFlowQuery1()));
 		
-		List<CompositeTaintFlowQueryImpl> compositeOfFirstTwo = getInList(
-				getCompositeOf(ReportSite.SourceAndSink, "1 & 2", getTaintFlowQuery1(),
-						getTaintFlowQuery2()));
-		
-		List<CompositeTaintFlowQueryImpl> compositeOfFirstThree = getInList(
-				getCompositeOf(ReportSite.SourceAndSink, "1,2 & 3", getTaintFlowQuery1(),
-						getTaintFlowQuery2(), getTaintFlowQuery3()));
-		
-		List<CompositeTaintFlowQueryImpl> compositeOfAll = getInList(
-				getCompositeOf(ReportSite.SourceAndSink, "1,2,3 & 4", getTaintFlowQuery1(),
-						getTaintFlowQuery2(), getTaintFlowQuery3(),
-						getTaintFlowQuery4()));
-		
-		AnalysisResultListener resultListener = getConsoleResultListener();
+		AnalysisResultListener resultListener = new ConsoleResultListener();
 		
 		secucheckAnalysis.setOs(OS.Linux);
 		secucheckAnalysis.setAnalysisEntryPoints(getEntryPoints());
 		secucheckAnalysis.setApplicationClassPath(getAppClassPath());
 		secucheckAnalysis.setSootClassPathJars(getSootClassPath());
+				
+		//runDemoSet1(secucheckAnalysis, resultListener);
+		runDemoSet2(secucheckAnalysis, resultListener);
+		//runDemoSet3(secucheckAnalysis, resultListener);
+		//runDemoSet4(secucheckAnalysis, resultListener);
+		
+	}
+	
+	/** Demo-set 1: 
+	 *  - Demonstrates basic intra-type's:
+	 * 	 - Source
+	 * 	 - Sink
+	 * 	 - Sanitizer
+	 * 	 - Propogator
+	 *   By using using paramterized and non-paramterized usages.
+	 *  - Demonstrates use of result-listener
+	 */
+	private static void runDemoSet1(SecucheckAnalysis secucheckAnalysis, 
+			AnalysisResultListener resultListener) throws Exception {
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfFirst = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "1", getTaintFlowQuery1()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfSecond = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "2", getTaintFlowQuery2()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfThird = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "3", getTaintFlowQuery3()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfFourth = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "4", getTaintFlowQuery4()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfFifth = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "5", getTaintFlowQuery5()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfSixth = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "6", getTaintFlowQuery6()));
+		
+		// For demonstration purposes the listener is set to null in run 1.
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1, resultListener);
+		runAnalysisQuery(secucheckAnalysis, compositeOfSecond, 2, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfThird, 3, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFourth, 4, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFifth, 5, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfSixth, 6, null);
+	}
+
+	/** Demo-set 2: 
+	 *  - Demonstrates 2 level inter-type taint-flow's:
+	 * 	 - Source
+	 * 	 - Sink
+	 * 	 - Sanitizer
+	 * 	 - Propogator
+	 */
+	private static void runDemoSet2(SecucheckAnalysis secucheckAnalysis, 
+			AnalysisResultListener resultListener) throws Exception {
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfSeventh = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "7", getTaintFlowQuery7()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfEighth = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "8", getTaintFlowQuery8()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfNinth = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "9", getTaintFlowQuery9()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfTenth = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "10", getTaintFlowQuery10()));
+		
+		runAnalysisQuery(secucheckAnalysis, compositeOfSeventh, 7, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfEighth, 8, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfNinth, 9, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfTenth, 10, null);
+	}
+	
+	private static void runDemoSet3(SecucheckAnalysis secucheckAnalysis, 
+			AnalysisResultListener resultListener) throws Exception {
+		
+	}
+	
+	/** Demo-set X: TODO: Fix the number. 
+	 *  - Demonstrates multiple composites
+	 *  - Demonstrates the result listener
+	 */
+	private static void runDemoSet4(SecucheckAnalysis secucheckAnalysis, 
+			AnalysisResultListener resultListener) throws Exception {
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfFirst = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "1", getTaintFlowQuery1()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfFirstTwo = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "1 & 2", getTaintFlowQuery1(),
+						getTaintFlowQuery2()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfFirstThree = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "1,2 & 3", getTaintFlowQuery1(),
+						getTaintFlowQuery2(), getTaintFlowQuery3()));
+		
+		List<CompositeTaintFlowQueryImpl> compositeOfAll = Utility.getInList(
+				Utility.getCompositeOf(ReportSite.SourceAndSink, "1,2,3 & 4", getTaintFlowQuery1(),
+						getTaintFlowQuery2(), getTaintFlowQuery3(),
+						getTaintFlowQuery4()));
+		
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirstTwo, 2, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirstThree, 3, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfAll, 4, null);
+	}
+	
+	private static void runAnalysisQuery(SecucheckAnalysis secucheckAnalysis, 
+			List<CompositeTaintFlowQueryImpl> composites, int queryNumber, 
+			AnalysisResultListener resultListener) throws Exception {
 		secucheckAnalysis.setListener(resultListener);
-		
-		SecucheckTaintAnalysisResult result1 = secucheckAnalysis.run(compositeOfFirst);
+		SecucheckTaintAnalysisResult result = secucheckAnalysis.run(composites);
 		System.out.println();
-		System.out.println("Result-1 size: " + result1.size());
-		
-		// For demonstration purposes the listener is set to null.
-		secucheckAnalysis.setListener(null);
-		SecucheckTaintAnalysisResult result2 = secucheckAnalysis.run(compositeOfFirstTwo);
-		System.out.println();
-		System.out.println("Result-2 size: " + result2.size());
-		
-		secucheckAnalysis.setListener(resultListener);
-		SecucheckTaintAnalysisResult result3 = secucheckAnalysis.run(compositeOfFirstThree);
-		System.out.println();
-		System.out.println("Result-3 size: " + result3.size());
-		
-		// For demonstration purposes the listener is set to null.
-		secucheckAnalysis.setListener(null);
-		SecucheckTaintAnalysisResult result4 = secucheckAnalysis.run(compositeOfAll);
-		System.out.println();
-		System.out.println("Result-4 size: " + result4.size());
+		System.out.println("Result-" + queryNumber + " size: " + result.size());
 	}
-		
-	private static MethodImpl getSourceMethod() {
-		List<InputParameter> inputs = new ArrayList<InputParameter>();
-		List<OutputParameter> outputs = new ArrayList<OutputParameter>();
-		ReturnValue returnValue = new ReturnValue();
-		
-		MethodImpl method = new MethodImpl();
-		method.setName("getSecret");
-		method.setSignature("AnalyzeMe: int getSecret()");
-		method.setInputParameters(inputs);
-		method.setOutputParameters(outputs);
-		method.setReturnValue(returnValue);
-		return method;
-	}
+
+	/// Start: Definitions of taint-flows for intra-type ones.
 	
-	private static MethodImpl getSanitizerMethod() {
-		InputParameter input = new InputParameter();
-		input.setNumber(0);
-		
-		List<InputParameter> inputs = new ArrayList<InputParameter>();
-		inputs.add(input);
-		
-		List<OutputParameter> outputs = null;
-		ReturnValue returnValue = null;
-		
-		MethodImpl method = new MethodImpl();
-		method.setName("sanatizer");
-		method.setSignature("AnalyzeMe: int sanatizer(int)");
-		method.setInputParameters(inputs);
-		method.setOutputParameters(outputs);
-		method.setReturnValue(returnValue);
-		return method;
-	}
-	
-	private static MethodImpl getPropogatorMethod() {
-		InputParameter input = new InputParameter();
-		input.setNumber(0);
-		
-		List<InputParameter> inputs = new ArrayList<InputParameter>();
-		inputs.add(input);
-		
-		List<OutputParameter> outputs = null;
-		ReturnValue returnValue = null;
-		
-		MethodImpl method = new MethodImpl();
-		method.setName("propogator");
-		method.setSignature("AnalyzeMe: int propogator(int)");
-		method.setInputParameters(inputs);
-		method.setOutputParameters(outputs);
-		method.setReturnValue(returnValue);
-		return method;
-	}
-	
-	private static MethodImpl getSinkMethod() {
-		InputParameter input = new InputParameter();
-		input.setNumber(0);
-		
-		List<InputParameter> inputs = new ArrayList<InputParameter>();
-		inputs.add(input);
-		
-		List<OutputParameter> outputs = null;
-		ReturnValue returnValue = null;
-		
-		MethodImpl method = new MethodImpl();
-		method.setName("publish");
-		method.setSignature("AnalyzeMe: void publish(int)");
-		method.setInputParameters(inputs);
-		method.setOutputParameters(outputs);
-		method.setReturnValue(returnValue);
-		return method;
-	}
-	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithIssue()} method. 
+	 */
 	private static TaintFlowQueryImpl getTaintFlowQuery1() {		
 		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
-		taintFlowQuery.addFrom(getSourceMethod());
-		taintFlowQuery.addTo(getSinkMethod());		
+		taintFlowQuery.addFrom(Utility.getL1SourceMethod());
+		taintFlowQuery.addTo(Utility.getL1SinkMethod());		
 		return taintFlowQuery;
 	}
 	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workNoIssueSanitizer()} method. 
+	 */
 	private static TaintFlowQueryImpl getTaintFlowQuery2() {
 		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
-		taintFlowQuery.addFrom(getSourceMethod());
-		taintFlowQuery.addNotThrough(getSanitizerMethod());
-		taintFlowQuery.addTo(getSinkMethod());
+		taintFlowQuery.addFrom(Utility.getL1SourceMethod());
+		taintFlowQuery.addNotThrough(Utility.getL1SanitizerMethod());
+		taintFlowQuery.addTo(Utility.getL1SinkMethod());
 		return taintFlowQuery;
 	}
 	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithIssueProgator()} method. 
+	 */
 	private static TaintFlowQueryImpl getTaintFlowQuery3() {
 		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
-		taintFlowQuery.addFrom(getSourceMethod());
-		taintFlowQuery.addThrough(getPropogatorMethod());
-		taintFlowQuery.addTo(getSinkMethod());
+		taintFlowQuery.addFrom(Utility.getL1SourceMethod());
+		taintFlowQuery.addThrough(Utility.getL1PropogatorMethod());
+		taintFlowQuery.addTo(Utility.getL1SinkMethod());
 		return taintFlowQuery;
 	}
 	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workNoIssueSanitizerProgator()} method. 
+	 */
 	private static TaintFlowQueryImpl getTaintFlowQuery4() {
 		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
-		taintFlowQuery.addFrom(getSourceMethod());
-		taintFlowQuery.addNotThrough(getSanitizerMethod());
-		taintFlowQuery.addThrough(getPropogatorMethod());
-		taintFlowQuery.addTo(getSinkMethod());
+		taintFlowQuery.addFrom(Utility.getL1SourceMethod());
+		taintFlowQuery.addNotThrough(Utility.getL1SanitizerMethod());
+		taintFlowQuery.addThrough(Utility.getL1PropogatorMethod());
+		taintFlowQuery.addTo(Utility.getL1SinkMethod());
 		return taintFlowQuery;
 	}
 	
-	private static CompositeTaintFlowQueryImpl getCompositeOf(ReportSite reportLoc, 
-			String message, TaintFlowQueryImpl ...flowQueryImpls) {
-		CompositeTaintFlowQueryImpl compositeQuery = new CompositeTaintFlowQueryImpl();
-		compositeQuery.setReportLocation(reportLoc);
-		compositeQuery.setReportMessage(message);		
-		for (TaintFlowQueryImpl flowQuery : flowQueryImpls) {
-			compositeQuery.addQuery(flowQuery);
-		}		
-		return compositeQuery;
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithIssueParam()} method. 
+	 */
+	private static TaintFlowQueryImpl getTaintFlowQuery5() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(Utility.getL1SourceParamMethod());
+		taintFlowQuery.addTo(Utility.getL1SinkMethod());
+		return taintFlowQuery;
 	}
 	
-	private static <T> List<T> getInList(T ... ts){
-		List<T> list = new ArrayList<T>();
-		for (T t:ts) {
-			list.add(t);
-		}
-		return list;
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithIssueProgatorParam(int)} method. 
+	 */
+	private static TaintFlowQueryImpl getTaintFlowQuery6() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(Utility.getL1SourcePropogratorParamMethod());
+		taintFlowQuery.addThrough(Utility.getL1PropogatorMethod());
+		taintFlowQuery.addTo(Utility.getL1SinkMethod());
+		return taintFlowQuery;
 	}
+	
+	/// End: Definitions of taint-flows for intra-type ones.
+	
+	/// Start: Definitions of taint-flows for inter-type ones.
+	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithOtherTypeIssue()} method. 
+	 */
+	private static TaintFlowQueryImpl getTaintFlowQuery7() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(Utility.getL2SourceMethod());
+		taintFlowQuery.addTo(Utility.getL2SinkMethod());
+		return taintFlowQuery;
+	}
+	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithOtherTypeIssueParam(int)} method. 
+	 */
+	private static TaintFlowQueryImpl getTaintFlowQuery8() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(Utility.getL1SourceOtherTypeParamMethod());
+		taintFlowQuery.addTo(Utility.getL2SinkMethod());
+		return taintFlowQuery;
+	}
+	
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithOtherTypeIssueProgator()} method. 
+	 */
+	private static TaintFlowQueryImpl getTaintFlowQuery9() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(Utility.getL2SourceMethod());
+		taintFlowQuery.addThrough(Utility.getL2PropogatorMethod());
+		taintFlowQuery.addTo(Utility.getL2SinkMethod());
+		return taintFlowQuery;
+	}
+
+	/**
+	 *  Describing flow of: {@link #AnalyzeMeLevel1#workWithOtherTypeIssueProgator()} method. 
+	 */
+	private static TaintFlowQueryImpl getTaintFlowQuery10() {
+		TaintFlowQueryImpl taintFlowQuery = new TaintFlowQueryImpl();
+		taintFlowQuery.addFrom(Utility.getL1SourceOtherTypeIssuePropParamMethod());
+		taintFlowQuery.addThrough(Utility.getL2PropogatorMethod());
+		taintFlowQuery.addTo(Utility.getL2SinkMethod());
+		return taintFlowQuery;
+	}
+	
+	/// End: Definitions of taint-flows for inter-type ones.
 	
 	private static String getAppClassPath() {
 		return System.getProperty("user.dir") + File.separator + "target" + File.separator + "classes";
@@ -220,34 +291,10 @@ public class Main {
 	private static List<EntryPoint> getEntryPoints(){
 		List<EntryPoint> entryPoints = new ArrayList<EntryPoint>();
 		EntryPoint entryPoint = new EntryPoint();
-		entryPoint.setCanonicalClassName("AnalyzeMe");
+		entryPoint.setCanonicalClassName("AnalyzeMeLevel1");
 		entryPoint.setAllMethods(true);
 		entryPoints.add(entryPoint);
 		return entryPoints;
 	}
-	
-	private static AnalysisResultListener getConsoleResultListener() {
-		return new AnalysisResultListener() {
-			
-			public void reportFlowResult(TaintFlowQueryResult result) {
-				System.out.println();
-				System.out.println("Recieved single flow result, size:" + result.size());
-			}
-			
-			public void reportCompositeFlowResult(CompositeTaintFlowQueryResult result) {
-				System.out.println();
-				System.out.println("Recieved composite flow result, size:" + result.size());
-			}
-			
-			public void reportCompleteResult(SecucheckTaintAnalysisResult result) {
-				System.out.println();
-				System.out.println("Recieved complete result, size:" + result.size());
-			}
-			
-			public boolean isCancelled() {
-				return false;
-			}
-		};
-	}
-	
+		
 }

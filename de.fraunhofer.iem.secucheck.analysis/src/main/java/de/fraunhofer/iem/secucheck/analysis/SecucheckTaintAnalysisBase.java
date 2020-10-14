@@ -1,6 +1,8 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +24,13 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.Transform;
 import soot.Unit;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.options.Options;
+import soot.util.cfgcmd.CFGToDotGraph;
+import soot.util.dot.DotGraph;
 import test.core.selfrunning.ImprecisionException;
 
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
@@ -193,7 +199,28 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		};
 	}
 
+	private static void drawCallGraph(CallGraph callGraph){
+        DotGraph dot = new DotGraph("callgraph");
+        Iterator<Edge> iteratorEdges = callGraph.iterator();
+
+        int i = 0;
+        System.out.println("Call Graph size : "+ callGraph.size());
+        while (iteratorEdges.hasNext()) {
+            Edge edge = iteratorEdges.next();
+            String node_src = edge.getSrc().toString();
+            String node_tgt = edge.getTgt().toString();
+
+            dot.drawEdge(node_src, node_tgt);
+            System.out.println(i++);
+        }
+
+        dot.plot("/home/arkt/Desktop/cgs/callgraph.dot");
+    }
+	
 	private void executeAnalysis() throws Exception {
+				
+		//drawCallGraph(Scene.v().getCallGraph());
+				
 		for (CompositeTaintFlowQueryImpl flowQuery : this.flowQueries) {
 			if (resultListener != null && resultListener.isCancelled()) {
 				break;
