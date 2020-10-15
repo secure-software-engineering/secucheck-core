@@ -194,31 +194,31 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 				icfg = new JimpleBasedInterproceduralCFG(true);
 				try {
 					executeAnalysis();
-				} catch (Exception e) {	}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
 		};
 	}
-
+	
+	
 	private static void drawCallGraph(CallGraph callGraph){
         DotGraph dot = new DotGraph("callgraph");
         Iterator<Edge> iteratorEdges = callGraph.iterator();
 
-        int i = 0;
         System.out.println("Call Graph size : "+ callGraph.size());
         while (iteratorEdges.hasNext()) {
             Edge edge = iteratorEdges.next();
             String node_src = edge.getSrc().toString();
             String node_tgt = edge.getTgt().toString();
-
             dot.drawEdge(node_src, node_tgt);
-            System.out.println(i++);
         }
-
-        dot.plot("/home/arkt/Desktop/cgs/callgraph.dot");
+        dot.plot("<file-path>");
     }
 	
 	private void executeAnalysis() throws Exception {
-				
+		
+		// For dumping the call graph for debugging purposes.
 		//drawCallGraph(Scene.v().getCallGraph());
 				
 		for (CompositeTaintFlowQueryImpl flowQuery : this.flowQueries) {
