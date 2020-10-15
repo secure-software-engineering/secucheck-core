@@ -57,7 +57,7 @@ public class Utility {
 		List<InputParameter> inputs = new ArrayList<InputParameter>();
 		inputs.add(input);
 		
-		List<OutputParameter> outputs = null;
+		List<OutputParameter> outputs = new ArrayList<OutputParameter>();
 		ReturnValue returnValue = null;
 		
 		MethodImpl method = new MethodImpl();
@@ -76,8 +76,8 @@ public class Utility {
 		List<InputParameter> inputs = new ArrayList<InputParameter>();
 		inputs.add(input);
 		
-		List<OutputParameter> outputs = null;
-		ReturnValue returnValue = null;
+		List<OutputParameter> outputs = new ArrayList<OutputParameter>();
+		ReturnValue returnValue = new ReturnValue();
 		
 		MethodImpl method = new MethodImpl();
 		method.setName("propogator");
@@ -95,7 +95,7 @@ public class Utility {
 		List<InputParameter> inputs = new ArrayList<InputParameter>();
 		inputs.add(input);
 		
-		List<OutputParameter> outputs = null;
+		List<OutputParameter> outputs = new ArrayList<OutputParameter>();
 		ReturnValue returnValue = null;
 		
 		MethodImpl method = new MethodImpl();
@@ -115,9 +115,9 @@ public class Utility {
 		ReturnValue returnValue = null;
 		
 		// For the first input parameter.
-		InputParameter inputParam = new InputParameter();
-		inputParam.setNumber(0);
-		inputs.add(inputParam);
+		OutputParameter outputParam = new OutputParameter();
+		outputParam.setNumber(0);
+		outputs.add(outputParam);
 		
 		MethodImpl method = new MethodImpl();
 		method.setName("getSecret");
