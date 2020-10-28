@@ -21,21 +21,33 @@
 	</properties>
 
 	<dependencies>
+		
+		<!-- 
+		
 		<dependency>
 			<groupId>de.fraunhofer.iem</groupId>
 			<artifactId>boomerangPDS</artifactId>
 			<version>2.2</version>
 		</dependency>
+		
+		-->
+		
 		<dependency>
 			<groupId>ca.mcgill.sable</groupId>
 			<artifactId>soot</artifactId>
 			<version>3.2.0</version>
 		</dependency>
+		
+		<!-- 
+		
 		<dependency>
 			<groupId>heros</groupId>
 			<artifactId>heros</artifactId>
 			<version>1.1.0</version>
 		</dependency>
+		
+		-->
+		
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<version>2.11.0</version>
@@ -46,6 +58,9 @@
 			<version>2.11.0</version>
 			<artifactId>log4j-core</artifactId>
 		</dependency>
+		
+		<!-- 
+		
 		<dependency>
 			<groupId>de.fraunhofer.iem</groupId>
 			<artifactId>synchronizedPDS</artifactId>
@@ -66,6 +81,23 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
+		
+		-->
+		
+		 <!-- New tags for migration -->
+		
+		<dependency>
+		  <groupId>de.fraunhofer.iem</groupId>
+		  <artifactId>boomerangScope</artifactId>
+		  <version>3.1.1</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>de.fraunhofer.iem</groupId>
+		  <artifactId>boomerangPDS</artifactId>
+		  <version>3.1.1</version>
+		</dependency>
+				
 	</dependencies>
 
 	<repositories>
@@ -85,10 +117,18 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		
+		<!-- New tags for migration -->
+		<repository>
+		  <id>github</id>
+		  <name>CodeShield-Security</name>
+		  <url>https://maven.pkg.github.com/CodeShield-Security/SPDS/</url>
+		</repository>
+		
 	</repositories>
 
 	<build>
-		<sourceDirectory>../de.fraunhofer.iem.secucheck.analysis/src</sourceDirectory>
+		<!-- <sourceDirectory>../de.fraunhofer.iem.secucheck.analysis/src</sourceDirectory>  -->
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
