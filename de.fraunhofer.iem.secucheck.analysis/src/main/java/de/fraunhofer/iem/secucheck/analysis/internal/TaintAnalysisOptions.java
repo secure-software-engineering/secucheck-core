@@ -8,9 +8,4 @@ class TaintAnalysisOptions extends DefaultBoomerangOptions {
 	public boolean trackStrings() {
 		return true;
 	}
-	
-	@Override
-	public boolean arrayFlows() {
-		return true;
-	}
 }

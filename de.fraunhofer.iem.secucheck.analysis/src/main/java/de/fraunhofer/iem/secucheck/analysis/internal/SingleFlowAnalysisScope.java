@@ -2,7 +2,6 @@ package de.fraunhofer.iem.secucheck.analysis.internal;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,48 +10,44 @@ import com.google.common.collect.Sets;
 import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
-import boomerang.callgraph.ObservableICFG;
-import boomerang.jimple.Statement;
-import boomerang.jimple.Val;
-import boomerang.seedfactory.SeedFactory;
+import boomerang.scene.AnalysisScope;
+import boomerang.scene.ControlFlowGraph.Edge;
+import boomerang.scene.Statement;
+import boomerang.scene.Val;
+import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
-import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
-import soot.jimple.AssignStmt;
-import soot.jimple.IdentityStmt;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.ParameterRef;
-import soot.jimple.Stmt;
-import wpds.impl.Weight.NoWeight;
 
-public class SingleFlowSeedFactory extends SeedFactory<NoWeight>{
+public class SingleFlowAnalysisScope extends AnalysisScope {
 
 	private final TaintFlowQuery taintFlow;
-	private final ObservableICFG<Unit, SootMethod> icfg;
+	private final SootCallGraph sootCallGraph;
 	
-	private final Set<SootMethod> sourceMethods = new HashSet<SootMethod>();
-	private final Set<SootMethod> sinkMethods = new HashSet<SootMethod>();
+	private final Set<boomerang.scene.Method> sourceMethods = new HashSet<>();
+	private final Set<boomerang.scene.Method> sinkMethods = new HashSet<>();
 	
-	public SingleFlowSeedFactory(TaintFlowQuery taintFlow, ObservableICFG<Unit, SootMethod> icfg) {
+	public SingleFlowAnalysisScope(TaintFlowQuery taintFlow, SootCallGraph sootCallGraph) {
+		super(sootCallGraph);
 		this.taintFlow = taintFlow;
-		this.icfg = icfg;
+		this.sootCallGraph = sootCallGraph;
 	}
 	
 	@Override
-	protected Collection<? extends Query> generate(SootMethod method, Stmt u) {
+	protected Collection<? extends Query> generate(Edge cfgEdge) {
+		
+		boomerang.scene.Method method = cfgEdge.getMethod();
+		Statement statement = cfgEdge.getTarget();
+		
 		Set<Query> out = Sets.newHashSet();
 		
-		Collection<Value> sourceVariables = generateSourceVariables(this.taintFlow, method, u);
-		sourceVariables.forEach(v -> 
-			out.add(new ForwardQuery(new Statement(u, method), new Val(v, method))) );
+		// Inconsistency between instantiations of Forward and Backward queries.
+		Collection<Val> sourceVariables = generateSourceVariables(this.taintFlow, method, statement);
+		sourceVariables.forEach(v -> out.add(new ForwardQuery(cfgEdge, v)));
 		
-		Collection<Value> sinkVariables = generatedSinkVariables(this.taintFlow, method, u);
-		sinkVariables.forEach(v -> 
-			out.add(new BackwardQuery(new Statement(u, method), new Val(v, method))));
+		Collection<Val> sinkVariables = generatedSinkVariables(this.taintFlow, method, statement);
+		sinkVariables.forEach(v -> out.add(BackwardQuery.make(cfgEdge, v)));
 		
 		// Find source method	
 		for (Method flowMethod : this.taintFlow.getFrom()) {
@@ -70,67 +65,66 @@ public class SingleFlowSeedFactory extends SeedFactory<NoWeight>{
 		return out;
 	}
 	
-	@Override
-	public ObservableICFG<Unit, SootMethod> icfg() { return this.icfg; }
-	
-	private Collection<Value> generateSourceVariables(TaintFlowQuery partialFlow, 
-			SootMethod method, Stmt actualStatement) {
-		
-		for (Object object : partialFlow.getFrom()) {
-			Method sourceMethod = (Method) object;
+	private Collection<Val> generateSourceVariables(TaintFlowQuery partialFlow, 
+			boomerang.scene.Method method, Statement statement) {
+		for (Method sourceMethod  : partialFlow.getFrom()) {
 			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
-			Collection<Value> out = Sets.newHashSet();
-
-			if (method.getSignature().equals(sourceSootSignature) && 
-					actualStatement instanceof IdentityStmt) {
-				
-				IdentityStmt identity = (IdentityStmt) actualStatement;
-				Value right = identity.getRightOp();
-				if (right instanceof ParameterRef) {
-					
-					ParameterRef parameterRef = (ParameterRef) right;
-					if (sourceMethod.getOutputParameters() != null) {
-						for (OutputParameter output : sourceMethod.getOutputParameters()) {
-							int parameterIndex = output.getNumber();
-							if (parameterRef.getIndex() == parameterIndex
-									&& method.getParameterCount() >= parameterIndex) {
-								out.add(identity.getLeftOp());
-							}
-						}
-					}
-					
-				}
-				return out;
-
-			} else if (actualStatement.containsInvokeExpr()
-					&& actualStatement.toString().contains(sourceSootSignature)) {
-
-				// taint the return value
-				if (sourceMethod.getReturnValue() != null && actualStatement instanceof AssignStmt) {
-					out.add(((AssignStmt) actualStatement).getLeftOp());
-				} 
+			Collection<Val> out = Sets.newHashSet();
+			
+			// method.getSignature();
+			if (method.getSubSignature().equals(sourceSootSignature) && 
+					statement.isIdentityStmt()) {
+												
+//				 IdentityStmt identity = (IdentityStmt) statement;
+//				 Value right = identity.getRightOp();
+//				
+//				 if (right instanceof ParameterRef) {		
+//					ParameterRef parameterRef = (ParameterRef) right;
+//					if (sourceMethod.getOutputParameters() != null) {
+//						for (OutputParameter output : sourceMethod.getOutputParameters()) {
+//							int parameterIndex = output.getNumber();
+//							if (parameterRef.getIndex() == parameterIndex
+//									&& method.getParameterCount() >= parameterIndex) {
+//								out.add(identity.getLeftOp());
+//							}
+//						}
+//					}
+//					
+//				}
 				
 				if (sourceMethod.getOutputParameters() != null) {
 					for (OutputParameter output : sourceMethod.getOutputParameters()) {
-						int parameterIndex =  output.getNumber();
-						if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
-							out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
+						int parameterIndex = output.getNumber();
+						if (statement.getRightOp().isParameterLocal(parameterIndex)){
+							out.add(statement.getLeftOp());
 						}
 					}
 				}
-				
+				return out;
+
+			} else if (statement.containsInvokeExpr()
+					&& statement.toString().contains(sourceSootSignature)) {
+				// taint the return value
+				if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
+					out.add(statement.getLeftOp());
+				} 
+				if (sourceMethod.getOutputParameters() != null) {
+					for (OutputParameter output : sourceMethod.getOutputParameters()) {
+						int parameterIndex =  output.getNumber();
+						if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+							out.add(statement.getInvokeExpr().getArg(parameterIndex));
+						}
+					}
+				}
 				// taint this object
-				if (sourceMethod.isOutputThis() && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
-					InstanceInvokeExpr instanceInvoke = (InstanceInvokeExpr) actualStatement.getInvokeExpr();
-					out.add(instanceInvoke.getBase());
+				if (sourceMethod.isOutputThis() && statement.getInvokeExpr().isInstanceInvokeExpr()) {
+					out.add(statement.getInvokeExpr().getBase());
 				}
 				
 				return out;
 			}
 
 		}
-	
-
 //		if (this.flow.getSource().getValueSource() != null) // a single value source
 //		{
 //			// TODO:handle this
@@ -138,30 +132,28 @@ public class SingleFlowSeedFactory extends SeedFactory<NoWeight>{
 		return Collections.emptySet();
 	}
 
-	private Collection<Value> generatedSinkVariables(TaintFlowQuery partialFlow, 
-			SootMethod method, Stmt actualStatement) {
-		for (Object object : partialFlow.getTo()) {
-			Method sourceMethod = (Method) object;
+	private Collection<Val> generatedSinkVariables(TaintFlowQuery partialFlow, 
+			boomerang.scene.Method method, Statement statement) {
+		for (Method sourceMethod : partialFlow.getTo()) {
 			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
-			Collection<Value> out = Sets.newHashSet();
+			Collection<Val> out = Sets.newHashSet();
 
-			if (actualStatement.containsInvokeExpr() 
-					&& actualStatement.toString().contains(sourceSootSignature)) {
+			if (statement.containsInvokeExpr() && statement.toString()
+					.contains(sourceSootSignature)) {
 				
 				// taint the return value
 				if (sourceMethod.getInputParameters() != null) {
 					for (InputParameter input : sourceMethod.getInputParameters()) {
 						int parameterIndex = input.getNumber();
-						if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
-							out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
+						if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+							out.add(statement.getInvokeExpr().getArg(parameterIndex));
 						}
 					}
 				}
-				
+		
 				// taint this object
-				if (sourceMethod.isInputThis() && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
-					InstanceInvokeExpr instanceInvoke = (InstanceInvokeExpr) actualStatement.getInvokeExpr();
-					out.add(instanceInvoke.getBase());
+				if (sourceMethod.isInputThis() && statement.getInvokeExpr().isInstanceInvokeExpr()) {
+					out.add(statement.getInvokeExpr().getBase());
 				}
 				
 				return out;

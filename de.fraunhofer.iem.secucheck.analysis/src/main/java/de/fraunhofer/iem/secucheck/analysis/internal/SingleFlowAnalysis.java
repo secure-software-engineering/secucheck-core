@@ -2,9 +2,7 @@ package de.fraunhofer.iem.secucheck.analysis.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,19 +14,14 @@ import boomerang.BackwardQuery;
 import boomerang.Boomerang;
 import boomerang.ForwardQuery;
 import boomerang.Query;
-import boomerang.callgraph.ObservableICFG;
-import boomerang.jimple.Statement;
-import boomerang.jimple.Val;
-import boomerang.seedfactory.SeedFactory;
+import boomerang.scene.AnalysisScope;
+import boomerang.scene.ControlFlowGraph.Edge;
+import boomerang.scene.Val;
+import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.Analysis;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.datastructures.Pair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
-import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
-import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResult;
@@ -38,31 +31,21 @@ import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import soot.Body;
 import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
-import soot.jimple.AssignStmt;
-import soot.jimple.IdentityStmt;
-import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.JimpleBody;
-import soot.jimple.ParameterRef;
-import soot.jimple.Stmt;
 import soot.jimple.internal.JNopStmt;
-import soot.tagkit.Host;
-import soot.tagkit.PositionTag;
-import soot.tagkit.AbstractHost;
 import wpds.impl.Weight.NoWeight;
 
 class SingleFlowAnalysis implements Analysis {
 
 	private final TaintFlowQueryImpl singleFlow;
-	private final ObservableICFG<Unit, SootMethod> icfg;
+	private final SootCallGraph sootCallGraph;
 	private final AnalysisResultListener resultListener;
 	
 	public SingleFlowAnalysis(TaintFlowQueryImpl singleFlow,
-			ObservableICFG<Unit, SootMethod> icfg, 
+			SootCallGraph sootCallGraph, 
 			AnalysisResultListener resultListener) {
 		this.singleFlow = singleFlow;
-		this.icfg = icfg;
+		this.sootCallGraph = sootCallGraph;
 		this.resultListener = resultListener;
 	}
 	
@@ -86,11 +69,11 @@ class SingleFlowAnalysis implements Analysis {
 		analyzePlainFlow(TaintFlowQueryImpl singleFlow){
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
-			reachMap = new ArrayList<DifferentTypedPair<TaintFlowQueryImpl,SameTypedPair<LocationDetails>>>();
+			reachMap = new ArrayList<>();
 		
-		SeedFactory<NoWeight> seedFactory = getSeedFactory(singleFlow);
-		Boomerang boomerang = getBoomerang(seedFactory);
-		Seeds seeds = computeSeeds(seedFactory);
+		AnalysisScope analysisScope = getAnalysisScope(singleFlow);
+		Boomerang boomerang = getBoomerang(analysisScope);
+		Seeds seeds = computeSeeds(analysisScope);
 		
 		if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
 			List<Method> sanitizers = getSanitizers(singleFlow);
@@ -127,8 +110,7 @@ class SingleFlowAnalysis implements Analysis {
 		newQuery2.getTo().addAll(singleFlow.getTo());
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
-			originalReachMap = 
-				new ArrayList<DifferentTypedPair<TaintFlowQueryImpl,SameTypedPair<LocationDetails>>>(),
+			originalReachMap = new ArrayList<>(),
 			reachMap1 = analyzePlainFlow(newQuery1), 
 			reachMap2 = analyzePlainFlow(newQuery2);
 		
@@ -158,39 +140,49 @@ class SingleFlowAnalysis implements Analysis {
 			Set<BackwardQuery> sinks) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
-				new ArrayList<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>();
+				new ArrayList<>();
 		
 		if (sources.size() != 0 && sinks.size() != 0) {
-			// Found more sinks than sources, running forward analysis
-			if (sources.size() <= sinks.size()) {
-				sources.forEach(source -> boomerang.solve(source));
-				reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
-			} else {
-				// Found less sinks than sources, running backward analysis
-				sinks.forEach(sink -> boomerang.solve(sink));
-				reachMap = getReachingPairs(boomerang, partialFlow, sinks, sources);
-			}
+
+			sources.forEach(source -> boomerang.solve(source));
+			reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
+
+				
+				// TODO: Discuss this.
+				// Found more sinks than sources, running forward analysis
+//				if (sources.size() <= sinks.size()) {
+//					sources.forEach(source -> boomerang.solve(source));
+//					reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
+//				} else {
+//					// Found less sinks than sources, running backward analysis
+//					sinks.forEach(sink -> boomerang.solve(sink));
+//					reachMap = getReachingPairs(boomerang, partialFlow, sinks, sources);
+//				}
 		}				
 		return reachMap;
 	}
 	
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
-		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<? extends Query> queries,
-			Set<? extends Query> reachable) {
+		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<ForwardQuery> queries,
+			Set<BackwardQuery> reachable) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
-				new ArrayList<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>();
+				new ArrayList<>();
 		
-		for (Query start : queries) {
-			for (Query end : reachable) {
+		for (ForwardQuery start : queries) {
+			for (BackwardQuery end : reachable) {
 				if (isValidPath(boomerang, start, end)) {
-					if (start instanceof ForwardQuery) {
-						reachMap.add(new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(
-								flowQuery, getLocationDetailsPair(flowQuery, start, end)));
-					} else if (start instanceof BackwardQuery) {
-						reachMap.add(new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(
-								flowQuery, getLocationDetailsPair(flowQuery, end, start)));
-					}
+					reachMap.add(new DifferentTypedPair<>(
+							flowQuery, getLocationDetailsPair(flowQuery, start, end)));
+					
+					// TODO: Discuss this.
+//					if (start instanceof ForwardQuery) {
+//						reachMap.add(new DifferentTypedPair<>(
+//								flowQuery, getLocationDetailsPair(flowQuery, start, end)));
+//					} else if (start instanceof BackwardQuery) {
+//						reachMap.add(new DifferentTypedPair<>(
+//								flowQuery, getLocationDetailsPair(flowQuery, end, start)));
+//					}
 				}
 			}
 		}
@@ -201,40 +193,44 @@ class SingleFlowAnalysis implements Analysis {
 			Query start, Query end){
 		
 		LocationDetails startDetails = new LocationDetails();
-		SootMethod sourceMethodDefinition = Utility.findSourceMethodDefinition(flowQuery, start.stmt().getMethod(),
-				start.stmt().getUnit().get());
-		startDetails.setSourceClassName(sourceMethodDefinition.getDeclaringClass().getName());
-		startDetails.setMethodSignature(sourceMethodDefinition.getSignature());
+		startDetails.setSourceClassName(start.cfgEdge().getMethod().getDeclaringClass().getName());
+		startDetails.setMethodSignature(start.cfgEdge().getMethod().getSubSignature());
 		
-		AbstractHost sourceHost = (AbstractHost) start.asNode().stmt().getUnit().get();
-		startDetails.setUsageLineNumber(sourceHost.getJavaSourceStartLineNumber());
-		startDetails.setUsageColumnNumber(sourceHost.getJavaSourceStartColumnNumber());
-		startDetails.setUsageMethodSignature(start.stmt().getMethod().getSignature());
-		startDetails.setUsageClassName(start.stmt().getMethod().getDeclaringClass().getName());
+		// TODO: Confirm that the destination is always Y.		
+		startDetails.setUsageLineNumber(start.cfgEdge().getY().getStartLineNumber());
+		startDetails.setUsageColumnNumber(start.cfgEdge().getY().getStartColumnNumber());
+		
+		//TODO: Extend the Location details to 
+		//contain the start and end of line and column number.
+		
+		startDetails.setUsageMethodSignature(start.cfgEdge().getY().getMethod().getSubSignature());
+		startDetails.setUsageClassName(start.cfgEdge().getY().getMethod().getDeclaringClass().getName());
 		startDetails.setType(LocationType.Source);
 		
 		LocationDetails endDetails = new LocationDetails();
-		SootMethod sinkMethodDefinition = Utility.findSinkMethodDefinition(flowQuery, end.stmt().getMethod(),
-				end.stmt().getUnit().get());
-		endDetails.setSourceClassName(sinkMethodDefinition.getDeclaringClass().getName());
-		endDetails.setMethodSignature(sinkMethodDefinition.getSignature());
+		endDetails.setSourceClassName(end.cfgEdge().getMethod().getDeclaringClass().getName());
+		endDetails.setMethodSignature(end.cfgEdge().getMethod().getSubSignature());
 		
-		AbstractHost sinkHost = (AbstractHost) end.asNode().stmt().getUnit().get();
-		endDetails.setUsageLineNumber(sinkHost.getJavaSourceStartLineNumber());
-		endDetails.setUsageColumnNumber(sinkHost.getJavaSourceStartColumnNumber());
-		endDetails.setUsageMethodSignature(end.stmt().getMethod().getSignature());
-		endDetails.setUsageClassName(end.stmt().getMethod().getDeclaringClass().getName());
+		// TODO: Confirm that the destination is always Y.	
+		endDetails.setUsageLineNumber(end.cfgEdge().getY().getStartLineNumber());
+		endDetails.setUsageColumnNumber(end.cfgEdge().getY().getStartColumnNumber());
+		
+		//TODO: Extend the Location details to 
+		//contain the start and end of line and column number.
+		
+		endDetails.setUsageMethodSignature(end.cfgEdge().getY().getMethod().getSubSignature());
+		endDetails.setUsageClassName(end.cfgEdge().getY().getMethod().getDeclaringClass().getName());
 		endDetails.setType(LocationType.Sink);		
 		
 		return new SameTypedPair<LocationDetails>(startDetails, endDetails);
 	}
 		
-	private SeedFactory<NoWeight> getSeedFactory(TaintFlowQuery taintFlow) {
-		return new SingleFlowSeedFactory(taintFlow, this.icfg);
+	private AnalysisScope getAnalysisScope(TaintFlowQuery taintFlow) {
+		return new SingleFlowAnalysisScope(taintFlow, this.sootCallGraph);
 	}
 	
-	private Boomerang getBoomerang(SeedFactory<NoWeight> seedFactory) {
-		return new SingleFlowBoomerang(seedFactory, this.icfg, new TaintAnalysisOptions());
+	private Boomerang getBoomerang(AnalysisScope analysisScope) {
+		return new SingleFlowBoomerang(analysisScope, this.sootCallGraph, new TaintAnalysisOptions());
 	}
 
 	private List<Method> getSanitizers(TaintFlowQuery partFlow) {
@@ -244,10 +240,10 @@ class SingleFlowAnalysis implements Analysis {
 		return sanitizers;
 	}
 	
-	private Seeds computeSeeds(SeedFactory<NoWeight> seedFactory) {
+	private Seeds computeSeeds(AnalysisScope analysisScope) {
 		Set<ForwardQuery> sources = Sets.newHashSet();
 		Set<BackwardQuery> sinks = Sets.newHashSet();
-		Collection<Query> computeSeeds = seedFactory.computeSeeds();
+		Collection<Query> computeSeeds = analysisScope.computeSeeds();
 		for (Query q : computeSeeds) {
 			if (q instanceof BackwardQuery) {
 				sinks.add((BackwardQuery) q);
@@ -259,7 +255,7 @@ class SingleFlowAnalysis implements Analysis {
 	}
 	
 	private Map<SootMethod, Body> setEmptySootBodies(List<Method> methods){
-		Map<SootMethod, Body> oldBodies = new HashMap<SootMethod, Body>();
+		Map<SootMethod, Body> oldBodies = new HashMap<>();
 		for (Method method : methods) {
 			SootMethod sootMethod = Utility.getSootMethod(method);
 			if (sootMethod != null) {
@@ -279,6 +275,13 @@ class SingleFlowAnalysis implements Analysis {
 	
 	private boolean isPropogatorless(TaintFlowQueryImpl singleFlow) {
 		return singleFlow.getThrough() == null || singleFlow.getThrough().size() == 0;
+	}
+	
+	private boolean isValidPath(Boomerang boomerang, ForwardQuery start, BackwardQuery end) {
+		Edge edge = end.cfgEdge();
+		Val value = end.var();
+		Table<Edge, Val, NoWeight> results = boomerang.getResults(start);
+		return results.get(edge, value) == null ? false : true;
 	}
 	
 	private boolean isSourceAndSinkMatching(SameTypedPair<LocationDetails> sourcePair, 
@@ -316,13 +319,5 @@ class SingleFlowAnalysis implements Analysis {
 		SameTypedPair<LocationDetails> stichedPair = 
 				new SameTypedPair<>(sourcePair.getFirst(), sinkPair.getSecond());
 		return stichedPair;
-	}
-	
-	private boolean isValidPath(Boomerang boomerang, Query start, Query end) {
-		// Quick check: Is the "end" included in the Table at all?
-		Statement s = end.asNode().stmt();
-		Val v = end.asNode().fact();
-		Table<Statement, Val, NoWeight> results = boomerang.getResults(start);
-		return results.get(s, v) == null ? false : true;
 	}
 }
