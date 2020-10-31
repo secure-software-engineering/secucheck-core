@@ -8,4 +8,9 @@ class TaintAnalysisOptions extends DefaultBoomerangOptions {
 	public boolean trackStrings() {
 		return true;
 	}
+	
+	@Override
+	public boolean allowMultipleQueries() {
+		return true;
+	}
 }
