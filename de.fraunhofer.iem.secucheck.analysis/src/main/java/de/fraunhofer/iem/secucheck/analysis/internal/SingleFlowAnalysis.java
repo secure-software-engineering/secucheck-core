@@ -145,19 +145,18 @@ class SingleFlowAnalysis implements Analysis {
 		if (sources.size() != 0 && sinks.size() != 0) {
 
 			sources.forEach(source -> boomerang.solve(source));
-			reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
-
-				
-				// TODO: Discuss this.
-				// Found more sinks than sources, running forward analysis
-//				if (sources.size() <= sinks.size()) {
-//					sources.forEach(source -> boomerang.solve(source));
-//					reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
-//				} else {
-//					// Found less sinks than sources, running backward analysis
-//					sinks.forEach(sink -> boomerang.solve(sink));
-//					reachMap = getReachingPairs(boomerang, partialFlow, sinks, sources);
-//				}
+			reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);	
+			
+			//TODO: Discuss this.
+//			// Found more sinks than sources, running forward analysis
+//			if (sources.size() <= sinks.size()) {
+//				sources.forEach(source -> boomerang.solve(source));
+//				reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
+//			} else {
+//				// Found less sinks than sources, running backward analysis
+//				sinks.forEach(sink -> boomerang.solve(sink));
+//				reachMap = getReachingPairs(boomerang, partialFlow, sinks, sources);
+//			}
 		}				
 		return reachMap;
 	}
@@ -197,11 +196,10 @@ class SingleFlowAnalysis implements Analysis {
 		startDetails.setMethodSignature(start.cfgEdge().getMethod().getSubSignature());
 		
 		// TODO: Confirm that the destination is always Y.		
-		startDetails.setUsageLineNumber(start.cfgEdge().getY().getStartLineNumber());
-		startDetails.setUsageColumnNumber(start.cfgEdge().getY().getStartColumnNumber());
-		
-		//TODO: Extend the Location details to 
-		//contain the start and end of line and column number.
+		startDetails.setUsageStartLineNumber(start.cfgEdge().getY().getStartLineNumber());
+		startDetails.setUsageEndLineNumber(start.cfgEdge().getY().getEndLineNumber());
+		startDetails.setUsageStartColumnNumber(start.cfgEdge().getY().getStartColumnNumber());	
+		startDetails.setUsageEndColumnNumber(start.cfgEdge().getY().getEndColumnNumber());	
 		
 		startDetails.setUsageMethodSignature(start.cfgEdge().getY().getMethod().getSubSignature());
 		startDetails.setUsageClassName(start.cfgEdge().getY().getMethod().getDeclaringClass().getName());
@@ -212,17 +210,17 @@ class SingleFlowAnalysis implements Analysis {
 		endDetails.setMethodSignature(end.cfgEdge().getMethod().getSubSignature());
 		
 		// TODO: Confirm that the destination is always Y.	
-		endDetails.setUsageLineNumber(end.cfgEdge().getY().getStartLineNumber());
-		endDetails.setUsageColumnNumber(end.cfgEdge().getY().getStartColumnNumber());
-		
-		//TODO: Extend the Location details to 
-		//contain the start and end of line and column number.
+		endDetails.setUsageStartLineNumber(end.cfgEdge().getY().getStartLineNumber());
+		endDetails.setUsageEndLineNumber(end.cfgEdge().getY().getEndLineNumber());
+		endDetails.setUsageStartColumnNumber(end.cfgEdge().getY().getStartColumnNumber());
+		endDetails.setUsageEndColumnNumber(end.cfgEdge().getY().getEndColumnNumber());
 		
 		endDetails.setUsageMethodSignature(end.cfgEdge().getY().getMethod().getSubSignature());
 		endDetails.setUsageClassName(end.cfgEdge().getY().getMethod().getDeclaringClass().getName());
 		endDetails.setType(LocationType.Sink);		
 		
 		return new SameTypedPair<LocationDetails>(startDetails, endDetails);
+		
 	}
 		
 	private AnalysisScope getAnalysisScope(TaintFlowQuery taintFlow) {
@@ -303,12 +301,20 @@ class SingleFlowAnalysis implements Analysis {
 				sinkPair.getFirst().getMethodSignature()))
 			return false;
 		
-		if (sourcePair.getSecond().getUsageLineNumber() != 
-				sinkPair.getFirst().getUsageLineNumber())
+		if (sourcePair.getSecond().getUsageStartLineNumber() != 
+				sinkPair.getFirst().getUsageStartLineNumber())
 			return false;
 		
-		if (sourcePair.getSecond().getUsageColumnNumber() != 
-				sinkPair.getFirst().getUsageColumnNumber())
+		if (sourcePair.getSecond().getUsageEndLineNumber() != 
+				sinkPair.getFirst().getUsageEndLineNumber())
+			return false;
+		
+		if (sourcePair.getSecond().getUsageStartColumnNumber() != 
+				sinkPair.getFirst().getUsageStartColumnNumber())
+			return false;
+		
+		if (sourcePair.getSecond().getUsageEndColumnNumber() != 
+				sinkPair.getFirst().getUsageEndColumnNumber())
 			return false;
 		
 		return true;

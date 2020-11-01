@@ -25,7 +25,6 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 public class SingleFlowAnalysisScope extends AnalysisScope {
 
 	private final TaintFlowQuery taintFlow;
-	private final SootCallGraph sootCallGraph;
 	
 	private final Set<boomerang.scene.Method> sourceMethods = new HashSet<>();
 	private final Set<boomerang.scene.Method> sinkMethods = new HashSet<>();
@@ -33,7 +32,6 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 	public SingleFlowAnalysisScope(TaintFlowQuery taintFlow, SootCallGraph sootCallGraph) {
 		super(sootCallGraph);
 		this.taintFlow = taintFlow;
-		this.sootCallGraph = sootCallGraph;
 	}
 	
 	@Override
@@ -43,17 +41,14 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		// The target statement for the current edge.
 		Statement statement = cfgEdge.getTarget();
 		
-		// Inconsistency between instantiations of Forward and Backward queries.
 		Collection<SameTypedPair<Val>> sourceVariables = 
 				generateSourceVariables(this.taintFlow, statement);
 		
-		// AllocVal
 		sourceVariables.forEach(v -> out.add(new ForwardQuery(cfgEdge,
 				new AllocVal(v.getFirst(), statement, v.getSecond()))));
 		
 		Collection<Val> sinkVariables = generatedSinkVariables(this.taintFlow, statement);
 		
-		// AllocVal
 		sinkVariables.forEach(v -> out.add(BackwardQuery.make(cfgEdge, v)));
 		
 		// Find source methods.	

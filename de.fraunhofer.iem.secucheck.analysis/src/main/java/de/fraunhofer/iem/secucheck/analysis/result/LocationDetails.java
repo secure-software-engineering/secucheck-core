@@ -8,8 +8,10 @@ public class LocationDetails {
 	private String methodSignature;
 	private String usageMethodSignature;
 	
-	private int usageLineNumber;
-	private int usageColNumber;
+	private int usageStartLineNumber;
+	private int usageEndLineNumber;
+	private int usageStartColNumber;
+	private int usageEndColNumber;
 	
 	private LocationType type;
 	
@@ -23,9 +25,10 @@ public class LocationDetails {
 	
 	public LocationType getType() { return type; }
 	
-	public int getUsageLineNumber() { return usageLineNumber; }
-	public int getUsageColumnNumber() { return usageColNumber; }
-	
+	public int getUsageStartLineNumber() { return usageStartLineNumber; }
+	public int getUsageEndLineNumber() { return usageEndLineNumber; }
+	public int getUsageStartColumnNumber() { return usageStartColNumber; }
+	public int getUsageEndColumnNumber() { return usageEndColNumber; }
 	
 	public void setSourceClassName(String sourceClassName) { this.sourceClassName = sourceClassName; }
 	public void setUsageClassName(String usageClassName) { this.usageClassName = usageClassName; }
@@ -35,6 +38,8 @@ public class LocationDetails {
 	
 	public void setType(LocationType type) { this.type = type; }
 	
-	public void setUsageLineNumber(int usageLineNumber) { this.usageLineNumber = usageLineNumber; }
-	public void setUsageColumnNumber(int usageColNumber) { this.usageColNumber = usageColNumber; }
+	public void setUsageStartLineNumber(int usageStartLineNumber) { this.usageStartLineNumber = usageStartLineNumber; }
+	public void setUsageEndLineNumber(int usageEndLineNumber) { this.usageEndLineNumber = usageEndLineNumber; }
+	public void setUsageStartColumnNumber(int usageStartColNumber) { this.usageStartColNumber = usageStartColNumber; }
+	public void setUsageEndColumnNumber(int usageEndColNumber) { this.usageEndColNumber = usageEndColNumber; }
 }
