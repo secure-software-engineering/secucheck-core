@@ -14,10 +14,13 @@ import boomerang.BackwardQuery;
 import boomerang.Boomerang;
 import boomerang.ForwardQuery;
 import boomerang.Query;
+import boomerang.results.BackwardBoomerangResults;
+import boomerang.results.AbstractBoomerangResults.Context;
 import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.Val;
 import boomerang.scene.jimple.SootCallGraph;
+import boomerang.util.AccessPath;
 import de.fraunhofer.iem.secucheck.analysis.Analysis;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
@@ -33,6 +36,7 @@ import soot.Body;
 import soot.SootMethod;
 import soot.jimple.JimpleBody;
 import soot.jimple.internal.JNopStmt;
+import wpds.impl.Weight;
 import wpds.impl.Weight.NoWeight;
 
 class SingleFlowAnalysis implements Analysis {
@@ -136,7 +140,7 @@ class SingleFlowAnalysis implements Analysis {
 		
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 		analyzeInternal(Boomerang boomerang, 
-			TaintFlowQueryImpl partialFlow, Set<ForwardQuery> sources,
+			TaintFlowQueryImpl flowQuery, Set<ForwardQuery> sources,
 			Set<BackwardQuery> sinks) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
@@ -144,8 +148,11 @@ class SingleFlowAnalysis implements Analysis {
 		
 		if (sources.size() != 0 && sinks.size() != 0) {
 
-			sources.forEach(source -> boomerang.solve(source));
-			reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);	
+			List<DifferentTypedPair<BackwardQuery, 
+				BackwardBoomerangResults<Weight.NoWeight>>> backwardResults = new ArrayList<>();			
+			sinks.forEach(sink -> backwardResults.add(
+					new DifferentTypedPair<>(sink, boomerang.solve(sink))));
+			reachMap = getReachingPairs(boomerang, flowQuery, sources, backwardResults);	
 			
 			//TODO: Discuss this.
 //			// Found more sinks than sources, running forward analysis
@@ -162,30 +169,64 @@ class SingleFlowAnalysis implements Analysis {
 	}
 	
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
-		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<ForwardQuery> queries,
-			Set<BackwardQuery> reachable) {
+		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<ForwardQuery> sources,
+				List<DifferentTypedPair<BackwardQuery, BackwardBoomerangResults<Weight.NoWeight>>> sinkResults) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
 				new ArrayList<>();
 		
-		for (ForwardQuery start : queries) {
-			for (BackwardQuery end : reachable) {
-				if (isValidPath(boomerang, start, end)) {
+		for (DifferentTypedPair<BackwardQuery, 
+				BackwardBoomerangResults<Weight.NoWeight>> sinkResult : sinkResults) {
+			
+			for (ForwardQuery source : sources) {
+				
+				if (hasSourceAliased(sinkResult.getSecond(), source)) {
 					reachMap.add(new DifferentTypedPair<>(
-							flowQuery, getLocationDetailsPair(flowQuery, start, end)));
-					
-					// TODO: Discuss this.
-//					if (start instanceof ForwardQuery) {
-//						reachMap.add(new DifferentTypedPair<>(
-//								flowQuery, getLocationDetailsPair(flowQuery, start, end)));
-//					} else if (start instanceof BackwardQuery) {
-//						reachMap.add(new DifferentTypedPair<>(
-//								flowQuery, getLocationDetailsPair(flowQuery, end, start)));
-//					}
+							flowQuery, getLocationDetailsPair(flowQuery, source, sinkResult.getFirst())));
 				}
 			}
 		}
+		
 		return reachMap;
+		
+//		for (ForwardQuery start : queries) {
+//			for (BackwardQuery end : reachable) {
+//				if (isValidPath(boomerang, start, end)) {
+//					reachMap.add(new DifferentTypedPair<>(
+//							flowQuery, getLocationDetailsPair(flowQuery, start, end)));
+//					
+//					// TODO: Discuss this.
+////					if (start instanceof ForwardQuery) {
+////						reachMap.add(new DifferentTypedPair<>(
+////								flowQuery, getLocationDetailsPair(flowQuery, start, end)));
+////					} else if (start instanceof BackwardQuery) {
+////						reachMap.add(new DifferentTypedPair<>(
+////								flowQuery, getLocationDetailsPair(flowQuery, end, start)));
+////					}
+//				}
+//			}
+//		}
+//		return reachMap;
+	}
+	
+	private boolean hasSourceAliased(BackwardBoomerangResults<Weight.NoWeight> sinkResult, 
+			ForwardQuery source) {
+		
+		Map<ForwardQuery, Context> allocationSites = sinkResult.getAllocationSites();
+		Set<AccessPath> alaises = sinkResult.getAllAliases();
+		
+		
+//		Edge edge = end.cfgEdge();
+//		Val value = end.var();
+//		Table<Edge, Val, NoWeight> results = boomerang.getResults(start);
+		return 1==1;
+	}
+	
+	private boolean isValidPath(Boomerang boomerang, ForwardQuery start, BackwardQuery end) {
+		Edge edge = end.cfgEdge();
+		Val value = end.var();
+		Table<Edge, Val, NoWeight> results = boomerang.getResults(start);
+		return results.get(edge, value) == null ? false : true;
 	}
 	
 	private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowQueryImpl flowQuery,
@@ -273,13 +314,6 @@ class SingleFlowAnalysis implements Analysis {
 	
 	private boolean isPropogatorless(TaintFlowQueryImpl singleFlow) {
 		return singleFlow.getThrough() == null || singleFlow.getThrough().size() == 0;
-	}
-	
-	private boolean isValidPath(Boomerang boomerang, ForwardQuery start, BackwardQuery end) {
-		Edge edge = end.cfgEdge();
-		Val value = end.var();
-		Table<Edge, Val, NoWeight> results = boomerang.getResults(start);
-		return results.get(edge, value) == null ? false : true;
 	}
 	
 	private boolean isSourceAndSinkMatching(SameTypedPair<LocationDetails> sourcePair, 
