@@ -16,12 +16,17 @@ import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
+import boomerang.scene.jimple.JimpleStatement;
+import boomerang.scene.jimple.JimpleVal;
 import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import soot.jimple.IdentityStmt;
+import soot.jimple.ParameterRef;
+import soot.jimple.internal.JIdentityStmt;
 import wpds.impl.Weight;
 import wpds.impl.Weight;
 
@@ -44,11 +49,10 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		// The target statement for the current edge.
 		Statement statement = cfgEdge.getTarget();
 		
-		Collection<SameTypedPair<Val>> sourceVariables = 
+		Collection<Val> sourceVariables = 
 				generateSourceVariables(this.taintFlow, statement);
 		
-		sourceVariables.forEach(v -> out.add(
-				new WeightedForwardQuery<Weight.NoWeight>(cfgEdge, v.getFirst(), Weight.NO_WEIGHT_ONE)));
+		sourceVariables.forEach(v -> out.add(new ForwardQuery(cfgEdge, v )));
 		
 		Collection<Val> sinkVariables = generatedSinkVariables(this.taintFlow, statement);
 		
@@ -73,27 +77,45 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		return out;
 	}
 	
-	private Collection<SameTypedPair<Val>> generateSourceVariables(TaintFlowQuery partialFlow, 
+	private Collection<Val> generateSourceVariables(TaintFlowQuery partialFlow, 
 			Statement statement) {
 		
 		for (Method sourceMethod  : partialFlow.getFrom()) {
 			
 			String sourceSootSignature = WrapInAngularBrackets(sourceMethod.getSignature());
-			Collection<SameTypedPair<Val>> out = Sets.newHashSet();
+			Collection<Val> out = Sets.newHashSet();
 			
 			if (ToStringEquals(statement.getMethod(), sourceSootSignature) && 
-					statement.isIdentityStmt()) {
-				
-				if (sourceMethod.getOutputParameters() != null) {
-					for (OutputParameter output : sourceMethod.getOutputParameters()) {
-						int parameterIndex = output.getNumber();
-						if (statement.getRightOp().isParameterLocal(parameterIndex)){							
-							out.add(new SameTypedPair<Val>(statement.getLeftOp(),
-									statement.getRightOp()));
+					statement.isIdentityStmt()) {	
+
+				// Left and Right Op() methods don't work for JimpleIdentityStmt.
+				if (statement instanceof JimpleStatement) {
+					
+					JimpleStatement jimpleStament = (JimpleStatement) statement;
+					IdentityStmt identityStmt = (IdentityStmt)jimpleStament.getDelegate();
+					
+					if (identityStmt.getRightOp() instanceof ParameterRef) {
+						ParameterRef parameterRef = (ParameterRef) identityStmt.getRightOp();
+						
+						if (sourceMethod.getOutputParameters() != null) {
+							for (OutputParameter output : sourceMethod.getOutputParameters()) {
+								
+								int parameterIndex = output.getNumber();
+								if (statement.getMethod().getParameterLocals().size() >= parameterIndex
+										&& parameterRef.getIndex() == parameterIndex) {
+									
+									out.add(new AllocVal(
+											new JimpleVal(identityStmt.getLeftOp(), statement.getMethod()),
+											statement,
+											new JimpleVal(identityStmt.getRightOp(), statement.getMethod())
+										));
+									
+								}
+							}
 						}
 					}
 				}
-				
+								
 				return out;
 
 			} else if (statement.containsInvokeExpr()
@@ -102,17 +124,14 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 
 				// Taint the return value
 				if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
-					out.add(new SameTypedPair<Val>(statement.getLeftOp(),
-							statement.getRightOp()));
+					out.add(new AllocVal(statement.getLeftOp(), statement, statement.getRightOp()));
 				}
 				
 				if (sourceMethod.getOutputParameters() != null) {
 					for (OutputParameter output : sourceMethod.getOutputParameters()) {
 						int parameterIndex =  output.getNumber();
 						if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-							out.add(new SameTypedPair<Val>(
-									statement.getInvokeExpr().getArg(parameterIndex), 
-									statement.getInvokeExpr().getArg(parameterIndex)));
+							out.add(statement.getInvokeExpr().getArg(parameterIndex));
 						}
 					}
 				}
@@ -120,8 +139,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 				// Taint this object
 				if (sourceMethod.isOutputThis() &&
 						statement.getInvokeExpr().isInstanceInvokeExpr()) {
-					out.add(new SameTypedPair<Val>(statement.getInvokeExpr().getBase(),
-							statement.getInvokeExpr().getBase()));
+					out.add(statement.getInvokeExpr().getBase());
 				}
 				
 				return out;

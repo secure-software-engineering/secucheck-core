@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -56,6 +57,7 @@ class SingleFlowAnalysis implements Analysis {
 	
 	@Override
 	public AnalysisResult run() {
+		
 		TaintFlowQueryResult result = new TaintFlowQueryResult();
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap;
 		
@@ -66,7 +68,6 @@ class SingleFlowAnalysis implements Analysis {
 			reachMap = analyzePropogatorFlow(singleFlow);
 		}
 		
-		result.addQueryResultPairs(reachMap);
 		return result;
 	}
 	
@@ -81,8 +82,10 @@ class SingleFlowAnalysis implements Analysis {
 		Seeds seeds = computeSeeds(analysisScope);
 		
 		if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
+			
 			List<Method> sanitizers = getSanitizers(singleFlow);
 			Map<SootMethod, Body> oldMethodBodies = new HashMap<SootMethod, Body>();
+			
 			try	{
 				oldMethodBodies = setEmptySootBodies(sanitizers);
 				reachMap =  analyzeInternal(boomerang, singleFlow, seeds.getSources(),
@@ -92,6 +95,7 @@ class SingleFlowAnalysis implements Analysis {
 					entry.getKey().setActiveBody(entry.getValue()));
 			}
 		}
+		
 		return reachMap;
 	}
 	
@@ -106,12 +110,16 @@ class SingleFlowAnalysis implements Analysis {
 				newQuery2 = new TaintFlowQueryImpl(); 
 		
 		newQuery1.getFrom().addAll(singleFlow.getFrom());
+		
 		if (singleFlow.getNotThrough() != null)
 			newQuery1.getNotThrough().addAll(singleFlow.getNotThrough());
+		
 		newQuery1.getTo().addAll(singleFlow.getThrough());
 		newQuery2.getFrom().addAll(singleFlow.getThrough());
+		
 		if (singleFlow.getNotThrough() != null)
 			newQuery2.getNotThrough().addAll(singleFlow.getNotThrough());
+		
 		newQuery2.getTo().addAll(singleFlow.getTo());
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
@@ -122,8 +130,10 @@ class SingleFlowAnalysis implements Analysis {
 		if (reachMap1.size() != 0 && reachMap2.size() != 0) {
 			for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
 					sourcePair : reachMap1) {
+				
 				for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>> 
 						sinkPair : reachMap2) {
+					
 					if (isSourceAndSinkMatching(sourcePair.getSecond(), sinkPair.getSecond())) {
 						SameTypedPair<LocationDetails> stichedPair = 
 								stitchSourceAndSink(sourcePair.getSecond(), sinkPair.getSecond());
@@ -133,6 +143,7 @@ class SingleFlowAnalysis implements Analysis {
 									(singleFlow, stichedPair));
 					}
 				}
+				
 			}			
 		}
 		
@@ -140,92 +151,58 @@ class SingleFlowAnalysis implements Analysis {
 	}
 		
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
-		analyzeInternal(Boomerang boomerang, 
-			TaintFlowQueryImpl flowQuery, Set<ForwardQuery> sources,
+		analyzeInternal(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<ForwardQuery> sources,
 			Set<BackwardQuery> sinks) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
 				new ArrayList<>();
 		
 		if (sources.size() != 0 && sinks.size() != 0) {
-
-			List<ForwardBoomerangResults<Weight.NoWeight>> forwardResults = new ArrayList<>();			
-			sources.forEach(source -> forwardResults.add(boomerang.solve(source)));
+			
+			Map<ForwardQuery, ForwardBoomerangResults<Weight.NoWeight>> forwardResults = new HashMap<>();			
+			sources.forEach(source -> forwardResults.put(source, boomerang.solve(source)));
 			reachMap = getReachingPairs(boomerang, flowQuery, sinks, forwardResults);	
 			
-			//TODO: Discuss this.
-//			// Found more sinks than sources, running forward analysis
-//			if (sources.size() <= sinks.size()) {
-//				sources.forEach(source -> boomerang.solve(source));
-//				reachMap = getReachingPairs(boomerang, partialFlow, sources, sinks);
-//			} else {
-//				// Found less sinks than sources, running backward analysis
-//				sinks.forEach(sink -> boomerang.solve(sink));
-//				reachMap = getReachingPairs(boomerang, partialFlow, sinks, sources);
-//			}
-		}				
+		}	
+		
 		return reachMap;
 	}
 	
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<BackwardQuery> sinks,
-				List<ForwardBoomerangResults<Weight.NoWeight>> sourceResults) {
+				Map<ForwardQuery, ForwardBoomerangResults<Weight.NoWeight>> sourceResults) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
 				new ArrayList<>();
 		
-		for (ForwardBoomerangResults<Weight.NoWeight> sourceResult : sourceResults) {
+		for (Entry<ForwardQuery,ForwardBoomerangResults<Weight.NoWeight>> sourceEntry 
+				: sourceResults.entrySet()) {
+			
 			for (BackwardQuery sink : sinks) {
-				if (hasSourceAliased(sourceResult, sink)) {
+				
+				if (isValidPath(sourceEntry.getValue(), sink)) {
 					reachMap.add(new DifferentTypedPair<>(
-							flowQuery, getLocationDetailsPair(flowQuery, null, sink)));
+							flowQuery, getLocationDetailsPair(flowQuery, sourceEntry.getKey(), sink)));
 				}
+				
 			}
 		}
 		
 		return reachMap;
-		
-//		for (ForwardQuery start : queries) {
-//			for (BackwardQuery end : reachable) {
-//				if (isValidPath(boomerang, start, end)) {
-//					reachMap.add(new DifferentTypedPair<>(
-//							flowQuery, getLocationDetailsPair(flowQuery, start, end)));
-//					
-//					// TODO: Discuss this.
-////					if (start instanceof ForwardQuery) {
-////						reachMap.add(new DifferentTypedPair<>(
-////								flowQuery, getLocationDetailsPair(flowQuery, start, end)));
-////					} else if (start instanceof BackwardQuery) {
-////						reachMap.add(new DifferentTypedPair<>(
-////								flowQuery, getLocationDetailsPair(flowQuery, end, start)));
-////					}
-//				}
-//			}
-//		}
-//		return reachMap;
 	}
 	
-	private boolean hasSourceAliased(ForwardBoomerangResults<Weight.NoWeight> sourceResult, 
+	private boolean isValidPath(ForwardBoomerangResults<Weight.NoWeight> sourceResult, 
 			BackwardQuery sink) {
 		
 		Table<Edge, Val, Weight.NoWeight> table = sourceResult.asStatementValWeightTable();
 		
-//		Map<ForwardQuery, Context> allocationSites = sinkResult.getAllocationSites();
-//		Set<AccessPath> alaises = sinkResult.getAllAliases();
+		Edge sinkEdge = sink.cfgEdge();
+		Val sinValue = sink.var();
 		
-//		Edge edge = end.cfgEdge();
-//		Val value = end.var();
-//		Table<Edge, Val, NoWeight> results = boomerang.getResults(start);
-		return 1==1;
+		return table.contains(sinkEdge, sinValue);
+		
 	}
-	
-	private boolean isValidPath(Boomerang boomerang, ForwardQuery start, BackwardQuery end) {
-		Edge edge = end.cfgEdge();
-		Val value = end.var();
-		Table<Edge, Val, NoWeight> results = boomerang.getResults(start);
-		return results.get(edge, value) == null ? false : true;
-	}
-	
+		
 	private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowQueryImpl flowQuery,
 			Query start, Query end){
 		
@@ -270,16 +247,21 @@ class SingleFlowAnalysis implements Analysis {
 	}
 
 	private List<Method> getSanitizers(TaintFlowQuery partFlow) {
+		
 		List<Method> sanitizers = new ArrayList<Method>();	
+		
 		if (partFlow.getNotThrough() != null)
 			partFlow.getNotThrough().forEach(y -> sanitizers.add((Method)y));
+		
 		return sanitizers;
 	}
 	
 	private Seeds computeSeeds(AnalysisScope analysisScope) {
+		
 		Set<ForwardQuery> sources = Sets.newHashSet();
 		Set<BackwardQuery> sinks = Sets.newHashSet();
 		Collection<Query> computeSeeds = analysisScope.computeSeeds();
+		
 		for (Query q : computeSeeds) {
 			if (q instanceof BackwardQuery) {
 				sinks.add((BackwardQuery) q);
@@ -287,11 +269,13 @@ class SingleFlowAnalysis implements Analysis {
 				sources.add((ForwardQuery) q);
 			}
 		} 
+		
 		return new Seeds(sources, sinks);
 	}
 	
 	private Map<SootMethod, Body> setEmptySootBodies(List<Method> methods){
 		Map<SootMethod, Body> oldBodies = new HashMap<>();
+		
 		for (Method method : methods) {
 			SootMethod sootMethod = Utility.getSootMethod(method);
 			if (sootMethod != null) {
@@ -305,7 +289,8 @@ class SingleFlowAnalysis implements Analysis {
 				replacementBody.insertIdentityStmts();
 				sootMethod.setActiveBody(replacementBody);
 			}
-		}		
+		}	
+		
 		return oldBodies;
 	}
 	
@@ -353,8 +338,6 @@ class SingleFlowAnalysis implements Analysis {
 	
 	private SameTypedPair<LocationDetails>  stitchSourceAndSink(
 			SameTypedPair<LocationDetails> sourcePair, SameTypedPair<LocationDetails> sinkPair) {
-		SameTypedPair<LocationDetails> stichedPair = 
-				new SameTypedPair<>(sourcePair.getFirst(), sinkPair.getSecond());
-		return stichedPair;
+		return new SameTypedPair<>(sourcePair.getFirst(), sinkPair.getSecond());
 	}
 }
