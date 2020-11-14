@@ -15,6 +15,7 @@ import boomerang.Boomerang;
 import boomerang.ForwardQuery;
 import boomerang.Query;
 import boomerang.results.BackwardBoomerangResults;
+import boomerang.results.ForwardBoomerangResults;
 import boomerang.results.AbstractBoomerangResults.Context;
 import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
@@ -148,11 +149,9 @@ class SingleFlowAnalysis implements Analysis {
 		
 		if (sources.size() != 0 && sinks.size() != 0) {
 
-			List<DifferentTypedPair<BackwardQuery, 
-				BackwardBoomerangResults<Weight.NoWeight>>> backwardResults = new ArrayList<>();			
-			sinks.forEach(sink -> backwardResults.add(
-					new DifferentTypedPair<>(sink, boomerang.solve(sink))));
-			reachMap = getReachingPairs(boomerang, flowQuery, sources, backwardResults);	
+			List<ForwardBoomerangResults<Weight.NoWeight>> forwardResults = new ArrayList<>();			
+			sources.forEach(source -> forwardResults.add(boomerang.solve(source)));
+			reachMap = getReachingPairs(boomerang, flowQuery, sinks, forwardResults);	
 			
 			//TODO: Discuss this.
 //			// Found more sinks than sources, running forward analysis
@@ -169,20 +168,17 @@ class SingleFlowAnalysis implements Analysis {
 	}
 	
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
-		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<ForwardQuery> sources,
-				List<DifferentTypedPair<BackwardQuery, BackwardBoomerangResults<Weight.NoWeight>>> sinkResults) {
+		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<BackwardQuery> sinks,
+				List<ForwardBoomerangResults<Weight.NoWeight>> sourceResults) {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap = 
 				new ArrayList<>();
 		
-		for (DifferentTypedPair<BackwardQuery, 
-				BackwardBoomerangResults<Weight.NoWeight>> sinkResult : sinkResults) {
-			
-			for (ForwardQuery source : sources) {
-				
-				if (hasSourceAliased(sinkResult.getSecond(), source)) {
+		for (ForwardBoomerangResults<Weight.NoWeight> sourceResult : sourceResults) {
+			for (BackwardQuery sink : sinks) {
+				if (hasSourceAliased(sourceResult, sink)) {
 					reachMap.add(new DifferentTypedPair<>(
-							flowQuery, getLocationDetailsPair(flowQuery, source, sinkResult.getFirst())));
+							flowQuery, getLocationDetailsPair(flowQuery, null, sink)));
 				}
 			}
 		}
@@ -209,12 +205,13 @@ class SingleFlowAnalysis implements Analysis {
 //		return reachMap;
 	}
 	
-	private boolean hasSourceAliased(BackwardBoomerangResults<Weight.NoWeight> sinkResult, 
-			ForwardQuery source) {
+	private boolean hasSourceAliased(ForwardBoomerangResults<Weight.NoWeight> sourceResult, 
+			BackwardQuery sink) {
 		
-		Map<ForwardQuery, Context> allocationSites = sinkResult.getAllocationSites();
-		Set<AccessPath> alaises = sinkResult.getAllAliases();
+		Table<Edge, Val, Weight.NoWeight> table = sourceResult.asStatementValWeightTable();
 		
+//		Map<ForwardQuery, Context> allocationSites = sinkResult.getAllocationSites();
+//		Set<AccessPath> alaises = sinkResult.getAllAliases();
 		
 //		Edge edge = end.cfgEdge();
 //		Val value = end.var();

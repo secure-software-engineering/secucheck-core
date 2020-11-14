@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
+import boomerang.WeightedForwardQuery;
 import boomerang.scene.AllocVal;
 import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
@@ -21,6 +22,8 @@ import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import wpds.impl.Weight;
+import wpds.impl.Weight;
 
 public class SingleFlowAnalysisScope extends AnalysisScope {
 
@@ -44,8 +47,8 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		Collection<SameTypedPair<Val>> sourceVariables = 
 				generateSourceVariables(this.taintFlow, statement);
 		
-		sourceVariables.forEach(v -> out.add(new ForwardQuery(cfgEdge,
-				new AllocVal(v.getFirst(), statement, v.getSecond()))));
+		sourceVariables.forEach(v -> out.add(
+				new WeightedForwardQuery<Weight.NoWeight>(cfgEdge, v.getFirst(), Weight.NO_WEIGHT_ONE)));
 		
 		Collection<Val> sinkVariables = generatedSinkVariables(this.taintFlow, statement);
 		

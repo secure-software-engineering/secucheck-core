@@ -16,5 +16,5 @@ public class SingleFlowBoomerang extends Boomerang {
 		super(sootCallGraph, SootDataFlowScope.make(Scene.v()), options);
 		this.analysisScope = analysisScope;
 		this.sootCallGraph = sootCallGraph;
-	}	
+	}
 }
