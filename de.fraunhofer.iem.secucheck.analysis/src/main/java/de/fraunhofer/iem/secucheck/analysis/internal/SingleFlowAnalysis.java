@@ -68,6 +68,7 @@ class SingleFlowAnalysis implements Analysis {
 			reachMap = analyzePropogatorFlow(singleFlow);
 		}
 		
+		result.addQueryResultPairs(reachMap);
 		return result;
 	}
 	
@@ -197,9 +198,9 @@ class SingleFlowAnalysis implements Analysis {
 		Table<Edge, Val, Weight.NoWeight> table = sourceResult.asStatementValWeightTable();
 		
 		Edge sinkEdge = sink.cfgEdge();
-		Val sinValue = sink.var();
+		Val sinkValue = sink.var();
 		
-		return table.contains(sinkEdge, sinValue);
+		return table.contains(sinkEdge, sinkValue);
 		
 	}
 		

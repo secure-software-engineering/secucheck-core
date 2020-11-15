@@ -237,12 +237,18 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		//drawCallGraph(Scene.v().getCallGraph());
 				
 		for (CompositeTaintFlowQueryImpl flowQuery : this.flowQueries) {
+			
 			if (resultListener != null && resultListener.isCancelled()) {
 				break;
 			}
+			
 			Analysis analysis = new CompositeTaintFlowAnalysis(sootCallGraph, flowQuery, resultListener);
 			CompositeTaintFlowQueryResult singleResult = (CompositeTaintFlowQueryResult) analysis.run();
-			this.result.addResult(flowQuery, singleResult);
+			
+			if (singleResult.size() != 0) {
+				this.result.addResult(flowQuery, singleResult);
+			}
+			
 			if (resultListener != null) {
 				resultListener.reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
 			}
