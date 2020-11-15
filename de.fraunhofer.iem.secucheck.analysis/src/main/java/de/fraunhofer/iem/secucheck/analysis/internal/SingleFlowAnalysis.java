@@ -21,6 +21,7 @@ import boomerang.results.AbstractBoomerangResults.Context;
 import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.Val;
+import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.jimple.SootCallGraph;
 import boomerang.util.AccessPath;
 import de.fraunhofer.iem.secucheck.analysis.Analysis;
@@ -36,7 +37,9 @@ import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import soot.Body;
 import soot.SootMethod;
+import soot.jimple.IdentityStmt;
 import soot.jimple.JimpleBody;
+import soot.jimple.ParameterRef;
 import soot.jimple.internal.JNopStmt;
 import wpds.impl.Weight;
 import wpds.impl.Weight.NoWeight;
@@ -211,11 +214,24 @@ class SingleFlowAnalysis implements Analysis {
 		startDetails.setSourceClassName(start.cfgEdge().getMethod().getDeclaringClass().getName());
 		startDetails.setMethodSignature(start.cfgEdge().getMethod().getSubSignature());
 		
-		// TODO: Confirm that the destination is always Y.		
-		startDetails.setUsageStartLineNumber(start.cfgEdge().getY().getStartLineNumber());
-		startDetails.setUsageEndLineNumber(start.cfgEdge().getY().getEndLineNumber());
-		startDetails.setUsageStartColumnNumber(start.cfgEdge().getY().getStartColumnNumber());	
-		startDetails.setUsageEndColumnNumber(start.cfgEdge().getY().getEndColumnNumber());	
+		// When parameter is tainted.
+		// Left and Right Op() methods don't work for IdentityStmt inside JimpleStatement.
+		if (start.cfgEdge().getY().isIdentityStmt() && start.cfgEdge().getY() instanceof JimpleStatement) {
+			JimpleStatement jimpleStament = (JimpleStatement) start.cfgEdge().getY();
+			IdentityStmt identityStmt = (IdentityStmt)jimpleStament.getDelegate();
+			if (identityStmt.getRightOp() instanceof ParameterRef) {
+				SootMethod sootMethod = Utility.getSootMethod(start.cfgEdge().getY().getMethod());				
+				startDetails.setUsageStartLineNumber(sootMethod.getJavaSourceStartLineNumber());
+				startDetails.setUsageEndLineNumber(-1);
+				startDetails.setUsageStartColumnNumber(sootMethod.getJavaSourceStartColumnNumber());	
+				startDetails.setUsageEndColumnNumber(-1);
+			}
+		} else {
+			startDetails.setUsageStartLineNumber(start.cfgEdge().getY().getStartLineNumber());
+			startDetails.setUsageEndLineNumber(start.cfgEdge().getY().getEndLineNumber());
+			startDetails.setUsageStartColumnNumber(start.cfgEdge().getY().getStartColumnNumber());	
+			startDetails.setUsageEndColumnNumber(start.cfgEdge().getY().getEndColumnNumber());
+		}		
 		
 		startDetails.setUsageMethodSignature(start.cfgEdge().getY().getMethod().getSubSignature());
 		startDetails.setUsageClassName(start.cfgEdge().getY().getMethod().getDeclaringClass().getName());
@@ -224,8 +240,7 @@ class SingleFlowAnalysis implements Analysis {
 		LocationDetails endDetails = new LocationDetails();
 		endDetails.setSourceClassName(end.cfgEdge().getMethod().getDeclaringClass().getName());
 		endDetails.setMethodSignature(end.cfgEdge().getMethod().getSubSignature());
-		
-		// TODO: Confirm that the destination is always Y.	
+			
 		endDetails.setUsageStartLineNumber(end.cfgEdge().getY().getStartLineNumber());
 		endDetails.setUsageEndLineNumber(end.cfgEdge().getY().getEndLineNumber());
 		endDetails.setUsageStartColumnNumber(end.cfgEdge().getY().getStartColumnNumber());

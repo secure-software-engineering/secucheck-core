@@ -88,7 +88,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 			if (ToStringEquals(statement.getMethod(), sourceSootSignature) && 
 					statement.isIdentityStmt()) {	
 
-				// Left and Right Op() methods don't work for JimpleIdentityStmt.
+				// Left and Right Op() methods don't work for IdentityStmt inside JimpleStatement.
 				if (statement instanceof JimpleStatement) {
 					
 					JimpleStatement jimpleStament = (JimpleStatement) statement;
