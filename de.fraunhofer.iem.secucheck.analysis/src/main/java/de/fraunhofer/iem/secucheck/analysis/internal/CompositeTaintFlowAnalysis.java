@@ -4,6 +4,7 @@ import java.util.List;
 
 import boomerang.callgraph.ObservableICFG;
 import boomerang.callgraph.ObservableStaticICFG;
+import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.Analysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
@@ -20,14 +21,14 @@ import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 public class CompositeTaintFlowAnalysis implements Analysis {
 
 	private final CompositeTaintFlowQuery flowQuery;
-	private final ObservableICFG<Unit, SootMethod> icfg;
+	private final SootCallGraph sootCallGraph;
 	private final AnalysisResultListener resultListener;
 	
-	public CompositeTaintFlowAnalysis(BiDiInterproceduralCFG<Unit, SootMethod> icfg, 
+	public CompositeTaintFlowAnalysis(SootCallGraph sootCallGraph, 
 			CompositeTaintFlowQuery flowQuery, AnalysisResultListener resultListener) 
 					throws Exception {
 		this.flowQuery = flowQuery;
-		this.icfg = new ObservableStaticICFG(icfg);
+		this.sootCallGraph = sootCallGraph;
 		this.resultListener = resultListener;
 		// Resolve all methods. This is necessary if a flow participant is not part of
 		// the user code...
@@ -45,7 +46,7 @@ public class CompositeTaintFlowAnalysis implements Analysis {
 			if (this.resultListener != null && this.resultListener.isCancelled()) {
 				break;
 			}
-			Analysis analysis = new SingleFlowAnalysis(originalFlow, icfg, this.resultListener);
+			Analysis analysis = new SingleFlowAnalysis(originalFlow, sootCallGraph, this.resultListener);
 			TaintFlowQueryResult retResult = (TaintFlowQueryResult) analysis.run();
 			if (retResult.size() == 0) {
 				result.clear();

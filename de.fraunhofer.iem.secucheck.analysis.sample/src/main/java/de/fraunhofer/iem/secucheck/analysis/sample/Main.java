@@ -143,9 +143,9 @@ public class Main {
 						getTaintFlowQuery4()));
 		
 		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfFirstTwo, 2, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfFirstThree, 3, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfAll, 4, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirstTwo, 12, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirstThree, 13, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfAll, 14, null);
 	}
 	
 	private static void runAnalysisQuery(SecucheckAnalysis secucheckAnalysis, 
