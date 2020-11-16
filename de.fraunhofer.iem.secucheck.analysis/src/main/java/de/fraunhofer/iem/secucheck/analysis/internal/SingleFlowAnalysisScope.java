@@ -60,16 +60,16 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		
 		// Find source methods.	
 		for (Method flowMethod : this.taintFlow.getFrom()) {
-			if (ToStringEquals(statement.getMethod(), 
-					WrapInAngularBrackets(flowMethod.getSignature()))) {
+			if (toStringEquals(statement.getMethod(), 
+					wrapInAngularBrackets(flowMethod.getSignature()))) {
 				sourceMethods.add(statement.getMethod());
 			}
 		}
 
 		// Find target methods.				
 		for (Method flowMethod : this.taintFlow.getTo()) {
-			if (ToStringEquals(statement.getMethod(), 
-					WrapInAngularBrackets(flowMethod.getSignature()))) {
+			if (toStringEquals(statement.getMethod(), 
+					wrapInAngularBrackets(flowMethod.getSignature()))) {
 				sinkMethods.add(statement.getMethod());
 			}
 		}
@@ -82,10 +82,10 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		
 		for (Method sourceMethod  : partialFlow.getFrom()) {
 			
-			String sourceSootSignature = WrapInAngularBrackets(sourceMethod.getSignature());
+			String sourceSootSignature = wrapInAngularBrackets(sourceMethod.getSignature());
 			Collection<Val> out = Sets.newHashSet();
 			
-			if (ToStringEquals(statement.getMethod(), sourceSootSignature) && 
+			if (toStringEquals(statement.getMethod(), sourceSootSignature) && 
 					statement.isIdentityStmt()) {	
 
 				// Left and Right Op() methods don't work for IdentityStmt inside JimpleStatement.
@@ -119,7 +119,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 				return out;
 
 			} else if (statement.containsInvokeExpr()
-					&& ToStringEquals(statement.getInvokeExpr().getMethod(),
+					&& toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
 							sourceSootSignature)) {
 
 				// Taint the return value
@@ -158,11 +158,11 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		
 		for (Method sinkMethod : partialFlow.getTo()) {
 			
-			String sinkSootSignature = WrapInAngularBrackets(sinkMethod.getSignature());
+			String sinkSootSignature = wrapInAngularBrackets(sinkMethod.getSignature());
 			Collection<Val> out = Sets.newHashSet();
 			
 			if (statement.containsInvokeExpr() && 
-					ToStringEquals(statement.getInvokeExpr().getMethod(),
+					toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
 							sinkSootSignature)) {
 				
 				// Taint the return value.
@@ -190,11 +190,11 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		return Collections.emptySet();
 	}	
 
-	private static String WrapInAngularBrackets(String value) {
+	private static String wrapInAngularBrackets(String value) {
 		return "<" + value + ">";
 	}
 	
-	private static boolean ToStringEquals(Object object1, Object object2) {
+	private static boolean toStringEquals(Object object1, Object object2) {
 		return object1.toString().equals(object2.toString());
 	}
 
