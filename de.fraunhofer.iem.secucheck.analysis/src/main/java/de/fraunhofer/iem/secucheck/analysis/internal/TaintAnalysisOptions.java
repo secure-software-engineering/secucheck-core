@@ -10,7 +10,7 @@ class TaintAnalysisOptions extends DefaultBoomerangOptions {
 	}
 	
 	@Override
-	public boolean arrayFlows() {
+	public boolean allowMultipleQueries() {
 		return true;
 	}
 }

@@ -1,6 +1,8 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -8,7 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import boomerang.preanalysis.BoomerangPretransformer;
+import boomerang.BackwardQuery;
+import boomerang.Boomerang;
+import boomerang.DefaultBoomerangOptions;
+import boomerang.Query;
+import boomerang.results.BackwardBoomerangResults;
+import boomerang.scene.AnalysisScope;
+import boomerang.scene.SootDataFlowScope;
+import boomerang.scene.Statement;
+import boomerang.scene.Val;
+import boomerang.scene.jimple.BoomerangPretransformer;
+import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
@@ -32,13 +44,13 @@ import soot.options.Options;
 import soot.util.cfgcmd.CFGToDotGraph;
 import soot.util.dot.DotGraph;
 import test.core.selfrunning.ImprecisionException;
+import wpds.impl.Weight;
 
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
 	protected final ReentrantLock lock;  
 	
 	protected long analysisTime;
-	protected BiDiInterproceduralCFG<Unit, SootMethod> icfg;
 	
 	private OS os;
 	private String appClassPath;
@@ -180,6 +192,8 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());
 		PackManager.v().getPack("wjtp").add(transform);
 		PackManager.v().getPack("cg").apply();
+		
+		BoomerangPretransformer.v().apply();
 		PackManager.v().getPack("wjtp").apply();
 		if (resultListener != null) {
 			resultListener.reportCompleteResult(this.result);
@@ -189,9 +203,9 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	
 	private SceneTransformer createAnalysisTransformer() throws ImprecisionException {
 		return new SceneTransformer() {
-			protected void internalTransform(String phaseName, Map options) {
-				BoomerangPretransformer.v().apply();
-				icfg = new JimpleBasedInterproceduralCFG(true);
+			protected void internalTransform(String phaseName, 
+					@SuppressWarnings("rawtypes") Map options) {
+				
 				try {
 					executeAnalysis();
 				} catch (Exception ex) {
@@ -199,8 +213,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 				}
 			}
 		};
-	}
-	
+	}	
 	
 	private static void drawCallGraph(CallGraph callGraph){
         DotGraph dot = new DotGraph("callgraph");
@@ -218,16 +231,24 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	
 	private void executeAnalysis() throws Exception {
 		
+		SootCallGraph sootCallGraph = new SootCallGraph();
+		
 		// For dumping the call graph for debugging purposes.
 		//drawCallGraph(Scene.v().getCallGraph());
 				
 		for (CompositeTaintFlowQueryImpl flowQuery : this.flowQueries) {
+			
 			if (resultListener != null && resultListener.isCancelled()) {
 				break;
 			}
-			Analysis analysis = new CompositeTaintFlowAnalysis(icfg, flowQuery, resultListener);
+			
+			Analysis analysis = new CompositeTaintFlowAnalysis(sootCallGraph, flowQuery, resultListener);
 			CompositeTaintFlowQueryResult singleResult = (CompositeTaintFlowQueryResult) analysis.run();
-			this.result.addResult(flowQuery, singleResult);
+			
+			if (singleResult.size() != 0) {
+				this.result.addResult(flowQuery, singleResult);
+			}
+			
 			if (resultListener != null) {
 				resultListener.reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
 			}
