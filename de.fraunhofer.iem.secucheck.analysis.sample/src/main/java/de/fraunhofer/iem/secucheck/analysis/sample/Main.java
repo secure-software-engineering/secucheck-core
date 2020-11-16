@@ -47,10 +47,9 @@ public class Main {
 		secucheckAnalysis.setApplicationClassPath(getAppClassPath());
 		secucheckAnalysis.setSootClassPathJars(getSootClassPath());
 				
-		//runDemoSet1(secucheckAnalysis, resultListener);
+		runDemoSet1(secucheckAnalysis, resultListener);
 		runDemoSet2(secucheckAnalysis, resultListener);
-		//runDemoSet3(secucheckAnalysis, resultListener);
-		//runDemoSet4(secucheckAnalysis, resultListener);
+		runDemoSet3(secucheckAnalysis, resultListener);
 		
 	}
 	
@@ -121,16 +120,10 @@ public class Main {
 		runAnalysisQuery(secucheckAnalysis, compositeOfTenth, 10, null);
 	}
 	
-	private static void runDemoSet3(SecucheckAnalysis secucheckAnalysis, 
-			AnalysisResultListener resultListener) throws Exception {
-		
-	}
-	
-	/** Demo-set X: TODO: Fix the number. 
+	/** Demo-set 3: 
 	 *  - Demonstrates multiple composites
-	 *  - Demonstrates the result listener
 	 */
-	private static void runDemoSet4(SecucheckAnalysis secucheckAnalysis, 
+	private static void runDemoSet3(SecucheckAnalysis secucheckAnalysis, 
 			AnalysisResultListener resultListener) throws Exception {
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfFirst = Utility.getInList(
@@ -290,11 +283,17 @@ public class Main {
 	
 	private static List<EntryPoint> getEntryPoints(){
 		List<EntryPoint> entryPoints = new ArrayList<EntryPoint>();
+	
 		EntryPoint entryPoint = new EntryPoint();
 		entryPoint.setCanonicalClassName("AnalyzeMeLevel1");
 		entryPoint.setAllMethods(true);
 		entryPoints.add(entryPoint);
+		
+		entryPoint = new EntryPoint();
+		entryPoint.setCanonicalClassName("AnalyzeMeLevel2");
+		entryPoint.setAllMethods(true);
+		entryPoints.add(entryPoint);
+		
 		return entryPoints;
 	}
-		
 }

@@ -69,39 +69,91 @@ class SingleFlowAnalysis implements Analysis {
 	@Override
 	public AnalysisResult run() {
 		TaintFlowQueryResult result = new TaintFlowQueryResult();
+		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap;
 		
-		for (TaintFlowQueryImpl flowQuery : getLogicalSubFlows(singleFlow)) {
-			if (this.resultListener != null && this.resultListener.isCancelled()) {
-				break;
-			}
-			SeedFactory<NoWeight> seedFactory = getSeedFactory(flowQuery);
-			Boomerang boomerang = getBoomerang(seedFactory);
-			Seeds seeds = computeSeeds(seedFactory);
-			
-			if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
-				List<Method> sanitizers = getSanitizers(flowQuery);
-				Map<SootMethod, Body> oldMethodBodies = new HashMap<SootMethod, Body>();
-				List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap =
-						new ArrayList<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>();
-				try	{
-					oldMethodBodies = setEmptySootBodies(sanitizers);
-					reachMap = analyzeInternal(boomerang, flowQuery, seeds.getSources(),
-							seeds.getSinks());
-				} finally {
-					oldMethodBodies.entrySet().forEach( entry ->
-						entry.getKey().setActiveBody(entry.getValue()));
-				}
-				if (reachMap.size() == 0) {
-					result.clear();
-					break;
-				}
-				result.addQueryResultPairs(reachMap);
-			}
+		// Propogator-less execution.
+		if (isPropogatorless(this.singleFlow)) {
+			reachMap = analyzePlainFlow(singleFlow);
+		} else {
+			reachMap = analyzePropogatorFlow(singleFlow);
 		}
+		
+		result.addQueryResultPairs(reachMap);
 		return result;
 	}
 	
-	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> analyzeInternal(Boomerang boomerang, 
+	public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
+		analyzePlainFlow(TaintFlowQueryImpl singleFlow){
+		
+		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
+			reachMap = new ArrayList<DifferentTypedPair<TaintFlowQueryImpl,SameTypedPair<LocationDetails>>>();
+		
+		SeedFactory<NoWeight> seedFactory = getSeedFactory(singleFlow);
+		Boomerang boomerang = getBoomerang(seedFactory);
+		Seeds seeds = computeSeeds(seedFactory);
+		
+		if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
+			List<Method> sanitizers = getSanitizers(singleFlow);
+			Map<SootMethod, Body> oldMethodBodies = new HashMap<SootMethod, Body>();
+			try	{
+				oldMethodBodies = setEmptySootBodies(sanitizers);
+				reachMap =  analyzeInternal(boomerang, singleFlow, seeds.getSources(),
+						seeds.getSinks());
+			} finally {
+				oldMethodBodies.entrySet().forEach( entry ->
+					entry.getKey().setActiveBody(entry.getValue()));
+			}
+		}
+		return reachMap;
+	}
+	
+	public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
+		analyzePropogatorFlow(TaintFlowQueryImpl singleFlow){
+
+		/* Each occurance of a propogator/desanitizer would break a single
+		 * TaintFlow into two logical TaintFlows, this generates 
+		 * these TaintFlows. */	
+		
+		TaintFlowQueryImpl newQuery1 = new TaintFlowQueryImpl(), 
+				newQuery2 = new TaintFlowQueryImpl(); 
+		
+		newQuery1.getFrom().addAll(singleFlow.getFrom());
+		if (singleFlow.getNotThrough() != null)
+			newQuery1.getNotThrough().addAll(singleFlow.getNotThrough());
+		newQuery1.getTo().addAll(singleFlow.getThrough());
+		newQuery2.getFrom().addAll(singleFlow.getThrough());
+		if (singleFlow.getNotThrough() != null)
+			newQuery2.getNotThrough().addAll(singleFlow.getNotThrough());
+		newQuery2.getTo().addAll(singleFlow.getTo());
+		
+		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
+			originalReachMap = 
+				new ArrayList<DifferentTypedPair<TaintFlowQueryImpl,SameTypedPair<LocationDetails>>>(),
+			reachMap1 = analyzePlainFlow(newQuery1), 
+			reachMap2 = analyzePlainFlow(newQuery2);
+		
+		if (reachMap1.size() != 0 && reachMap2.size() != 0) {
+			for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
+					sourcePair : reachMap1) {
+				for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>> 
+						sinkPair : reachMap2) {
+					if (isSourceAndSinkMatching(sourcePair.getSecond(), sinkPair.getSecond())) {
+						SameTypedPair<LocationDetails> stichedPair = 
+								stitchSourceAndSink(sourcePair.getSecond(), sinkPair.getSecond());
+						
+						originalReachMap.add(new 
+								DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
+									(singleFlow, stichedPair));
+					}
+				}
+			}			
+		}
+		
+		return originalReachMap;
+	}
+		
+	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
+		analyzeInternal(Boomerang boomerang, 
 			TaintFlowQueryImpl partialFlow, Set<ForwardQuery> sources,
 			Set<BackwardQuery> sinks) {
 		
@@ -121,39 +173,6 @@ class SingleFlowAnalysis implements Analysis {
 		}				
 		return reachMap;
 	}
-
-	/* Each occurance of a propogator/desanitizer would break a single
-	 * TaintFlow into two logical TaintFlows, this method generates 
-	 * these TaintFlows. */
-	private List<TaintFlowQueryImpl> getLogicalSubFlows(
-			TaintFlowQueryImpl partialFlow) {
-		List<TaintFlowQueryImpl> subFlows = new ArrayList<TaintFlowQueryImpl>();
-		if (partialFlow.getThrough() == null || partialFlow.getThrough().size() == 0){
-			subFlows.add(partialFlow);
-			return subFlows;
-		}
-		
-		for (MethodImpl propogator : partialFlow.getThrough()) {
-			TaintFlowQueryImpl	newQuery1 = new TaintFlowQueryImpl(), 
-							newQuery2 = new TaintFlowQueryImpl();
-			newQuery1.getFrom().addAll(partialFlow.getFrom());
-			
-			if (partialFlow.getNotThrough() != null)
-				newQuery1.getNotThrough().addAll(partialFlow.getNotThrough());
-			
-			newQuery1.getTo().add(propogator);
-			newQuery2.getFrom().add(propogator);
-			
-			if (partialFlow.getNotThrough() != null)
-				newQuery2.getNotThrough().addAll(partialFlow.getNotThrough());
-			
-			newQuery2.getTo().addAll(partialFlow.getTo());
-			subFlows.add(newQuery1);
-			subFlows.add(newQuery2);
-		}
-		
-		return subFlows;
-	}
 	
 	private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 		getReachingPairs(Boomerang boomerang, TaintFlowQueryImpl flowQuery, Set<? extends Query> queries,
@@ -167,10 +186,10 @@ class SingleFlowAnalysis implements Analysis {
 				if (isValidPath(boomerang, start, end)) {
 					if (start instanceof ForwardQuery) {
 						reachMap.add(new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(
-								flowQuery, getLocationdetailsPair(flowQuery, start, end)));
+								flowQuery, getLocationDetailsPair(flowQuery, start, end)));
 					} else if (start instanceof BackwardQuery) {
 						reachMap.add(new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(
-								flowQuery, getLocationdetailsPair(flowQuery, end, start)));
+								flowQuery, getLocationDetailsPair(flowQuery, end, start)));
 					}
 				}
 			}
@@ -178,7 +197,7 @@ class SingleFlowAnalysis implements Analysis {
 		return reachMap;
 	}
 	
-	private SameTypedPair<LocationDetails> getLocationdetailsPair(TaintFlowQueryImpl flowQuery,
+	private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowQueryImpl flowQuery,
 			Query start, Query end){
 		
 		LocationDetails startDetails = new LocationDetails();
@@ -210,68 +229,12 @@ class SingleFlowAnalysis implements Analysis {
 		return new SameTypedPair<LocationDetails>(startDetails, endDetails);
 	}
 		
-	private SeedFactory<NoWeight> getSeedFactory(TaintFlowQuery partialFlow) {
-		Set<SootMethod> sourceMethods = new HashSet<SootMethod>();
-		Set<SootMethod> sinkMethods = new HashSet<SootMethod>();
-		
-		return new SeedFactory<NoWeight>() {
-			@Override
-			protected Collection<? extends Query> generate(SootMethod method, Stmt u) {
-				Set<Query> out = Sets.newHashSet();
-				
-				Collection<Value> sourceVariables = generateSourceVariables(partialFlow, method, u);
-				sourceVariables.forEach(v -> 
-					out.add(new ForwardQuery(new Statement(u, method), new Val(v, method))) );
-				
-				Collection<Value> sinkVariables = generatedSinkVariables(partialFlow, method, u);
-				sinkVariables.forEach(v -> 
-					out.add(new BackwardQuery(new Statement(u, method), new Val(v, method))));
-				
-				// Find source method	
-				for (Method flowMethod : partialFlow.getFrom()) {
-					if (method.toString().equals("<" + flowMethod.getSignature() + ">")) {
-						sourceMethods.add(method);
-					}
-				}
-
-				// Find target method				
-				for (Method flowMethod : partialFlow.getTo()) {
-					if (method.toString().equals("<" + flowMethod.getSignature() + ">")) {
-						sinkMethods.add(method);
-					}
-				}
-				return out;
-			}
-			
-			@Override
-			public ObservableICFG<Unit, SootMethod> icfg() { return SingleFlowAnalysis.this.icfg; }
-		};
-		
-		// Note currently this is broken. See Ticket #10 on github.
-		// https://github.com/secure-software-engineering/secucheck/issues/10
-
-//		if (!sourceMethods.isEmpty()) {
-//			taintReporter.markMethod(sourceMethods.iterator().next(), MarkerType.SOURCE_METHOD);
-//		}
-//		
-//		if (!sinkMethods.isEmpty()) {
-//			taintReporter.markMethod(sinkMethods.iterator().next(), MarkerType.SINK_METHOD);
-//		}
-
+	private SeedFactory<NoWeight> getSeedFactory(TaintFlowQuery taintFlow) {
+		return new SingleFlowSeedFactory(taintFlow, this.icfg);
 	}
 	
 	private Boomerang getBoomerang(SeedFactory<NoWeight> seedFactory) {
-		return new Boomerang(new TaintAnalysisOptions()) {
-			@Override
-			public ObservableICFG<Unit, SootMethod> icfg() {
-				return SingleFlowAnalysis.this.icfg;
-			}
-			
-			@Override
-			public SeedFactory<NoWeight> getSeedFactory() {
-				return seedFactory;
-			}
-		};
+		return new SingleFlowBoomerang(seedFactory, this.icfg, new TaintAnalysisOptions());
 	}
 
 	private List<Method> getSanitizers(TaintFlowQuery partFlow) {
@@ -314,111 +277,47 @@ class SingleFlowAnalysis implements Analysis {
 		return oldBodies;
 	}
 	
-	protected Collection<Value> generateSourceVariables(TaintFlowQuery partialFlow, 
-			SootMethod method, Stmt actualStatement) {
-		
-		for (Object object : partialFlow.getFrom()) {
-			Method sourceMethod = (Method) object;
-			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
-			Collection<Value> out = Sets.newHashSet();
-
-			if (method.getSignature().equals(sourceSootSignature) && 
-					actualStatement instanceof IdentityStmt) {
-				
-				IdentityStmt identity = (IdentityStmt) actualStatement;
-				Value right = identity.getRightOp();
-				if (right instanceof ParameterRef) {
-					ParameterRef parameterRef = (ParameterRef) right;
-					for (OutputParameter output : sourceMethod.getOutputParameters()) {
-						int parameterIndex = output.getNumber();
-						if (parameterRef.getIndex() == parameterIndex
-								&& method.getParameterCount() >= parameterIndex) {
-							out.add(identity.getLeftOp());
-						}
-					}
-				}
-				return out;
-
-			} else if (actualStatement.containsInvokeExpr()
-					&& actualStatement.toString().contains(sourceSootSignature)) {
-
-				// taint the return value
-				
-				if (sourceMethod.getReturnValue() != null && actualStatement instanceof AssignStmt) {
-					out.add(((AssignStmt) actualStatement).getLeftOp());
-				} 
-				
-				for (OutputParameter output : sourceMethod.getOutputParameters()) {
-					int parameterIndex =  output.getNumber();
-					if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
-						out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
-					}
-				}
-				
-				// taint this object
-				if (sourceMethod.isOutputThis() && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
-					InstanceInvokeExpr instanceInvoke = (InstanceInvokeExpr) actualStatement.getInvokeExpr();
-					out.add(instanceInvoke.getBase());
-				}
-				
-				// // taint this object
-				// if (this.flow.getSource().getSingleSource().getTvOut() != null
-				// && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
-				// InstanceInvokeExpr instanceInvokeExpr = (InstanceInvokeExpr)
-				// actualStatement.getInvokeExpr();
-				// out.add(instanceInvokeExpr.getBase());
-				// }
-				return out;
-			}
-
-		}
-	
-
-//		if (this.flow.getSource().getValueSource() != null) // a single value source
-//		{
-//			// TODO:handle this
-//		} 
-		return Collections.emptySet();
+	private boolean isPropogatorless(TaintFlowQueryImpl singleFlow) {
+		return singleFlow.getThrough() == null || singleFlow.getThrough().size() == 0;
 	}
-
-	protected Collection<Value> generatedSinkVariables(TaintFlowQuery partialFlow, 
-			SootMethod method, Stmt actualStatement) {
-		for (Object object : partialFlow.getTo()) {
-			Method sourceMethod = (Method) object;
-			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
-			Collection<Value> out = Sets.newHashSet();
-
-			if (actualStatement.containsInvokeExpr() 
-					&& actualStatement.toString().contains(sourceSootSignature)) {
-				// taint the return value
-				for (InputParameter input : sourceMethod.getInputParameters()) {
-					int parameterIndex = input.getNumber();
-					if (actualStatement.getInvokeExpr().getArgCount() >= parameterIndex) {
-						out.add(actualStatement.getInvokeExpr().getArg(parameterIndex));
-					}
-				}
-				
-				// taint this object
-				if (sourceMethod.isInputThis() && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
-					InstanceInvokeExpr instanceInvoke = (InstanceInvokeExpr) actualStatement.getInvokeExpr();
-					out.add(instanceInvoke.getBase());
-				}
-				
-				// // taint this object
-				// if (this.flow.getSource().getSingleSource().getTvOut() != null
-				// && actualStatement.getInvokeExpr() instanceof InstanceInvokeExpr) {
-				// InstanceInvokeExpr instanceInvokeExpr = (InstanceInvokeExpr)
-				// actualStatement.getInvokeExpr();
-				// out.add(instanceInvokeExpr.getBase());
-				// }
-				return out;
-			}
-
-		}
-		// TODO: re-check the sink structure!!
-		return Collections.emptySet();
-	}	
-
+	
+	private boolean isSourceAndSinkMatching(SameTypedPair<LocationDetails> sourcePair, 
+			SameTypedPair<LocationDetails> sinkPair) {
+		
+		if (!sourcePair.getSecond().getUsageClassName().equals(
+				sinkPair.getFirst().getUsageClassName()))
+			return false;
+		
+		if (!sourcePair.getSecond().getUsageMethodSignature().equals(
+				sinkPair.getFirst().getUsageMethodSignature()))
+			return false;
+		
+		if (!sourcePair.getSecond().getSourceClassName().equals(
+				sinkPair.getFirst().getSourceClassName()))
+			return false;
+		
+		if (!sourcePair.getSecond().getMethodSignature().equals(
+				sinkPair.getFirst().getMethodSignature()))
+			return false;
+		
+		if (sourcePair.getSecond().getUsageLineNumber() != 
+				sinkPair.getFirst().getUsageLineNumber())
+			return false;
+		
+		if (sourcePair.getSecond().getUsageColumnNumber() != 
+				sinkPair.getFirst().getUsageColumnNumber())
+			return false;
+		
+		return true;
+	}
+	
+	private SameTypedPair<LocationDetails>  stitchSourceAndSink(
+			SameTypedPair<LocationDetails> sourcePair, SameTypedPair<LocationDetails> sinkPair) {
+		SameTypedPair<LocationDetails> stichedPair = 
+				new SameTypedPair<>(sourcePair.getFirst(), sinkPair.getSecond());
+		return stichedPair;
+	}
+	
 	private boolean isValidPath(Boomerang boomerang, Query start, Query end) {
 		// Quick check: Is the "end" included in the Table at all?
 		Statement s = end.asNode().stmt();
