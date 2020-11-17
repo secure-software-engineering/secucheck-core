@@ -294,7 +294,7 @@ class SingleFlowAnalysis implements Analysis {
 		
 		for (Method method : methods) {
 			SootMethod sootMethod = Utility.getSootMethod(method);
-			if (sootMethod != null) {
+			if (sootMethod != null && !sootMethod.isPhantom()) {
 				Body body = sootMethod.getActiveBody();
 				if (body != null) {
 					oldBodies.put(sootMethod, body);
