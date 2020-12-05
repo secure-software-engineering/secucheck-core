@@ -54,6 +54,7 @@ public class SecuCheckAnalysisServer {
 					
 					SecucheckAnalysis analysis = new SecucheckTaintAnalysis(
 							queryDetails.getOs(),
+							queryDetails.getSolver(),
 							queryDetails.getAppClassPath(),
 							queryDetails.getSootClassPath(), 
 							queryDetails.getAnalysisEntryPoints(), resultListener);	

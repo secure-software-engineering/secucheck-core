@@ -1,30 +1,22 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import boomerang.BackwardQuery;
-import boomerang.Boomerang;
-import boomerang.DefaultBoomerangOptions;
-import boomerang.Query;
-import boomerang.results.BackwardBoomerangResults;
-import boomerang.scene.AnalysisScope;
-import boomerang.scene.SootDataFlowScope;
-import boomerang.scene.Statement;
-import boomerang.scene.Val;
 import boomerang.scene.jimple.BoomerangPretransformer;
 import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysisImpl;
+import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysisFactory;
+import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysisFactoryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
+import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
@@ -35,16 +27,11 @@ import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Transform;
-import soot.Unit;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
-import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.options.Options;
-import soot.util.cfgcmd.CFGToDotGraph;
 import soot.util.dot.DotGraph;
 import test.core.selfrunning.ImprecisionException;
-import wpds.impl.Weight;
 
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
@@ -53,6 +40,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	protected long analysisTime;
 	
 	private OS os;
+	private Solver solver;
 	private String appClassPath;
 	private String sootClassPath;
 	private List<EntryPoint> entryPoints;
@@ -64,11 +52,12 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		this.lock = new ReentrantLock();
 	}
 	
-	public SecucheckTaintAnalysisBase(OS os, String appClassPath,
+	public SecucheckTaintAnalysisBase(OS os, Solver solver, String appClassPath,
 			String sootClassPath, List<EntryPoint> entryPoints,
 			AnalysisResultListener resultListener) {
 		this();
 		this.os = os;
+		this.solver = solver;
 		this.appClassPath = appClassPath;
 		this.sootClassPath = sootClassPath;
 		this.entryPoints = entryPoints;
@@ -230,8 +219,9 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
     }
 	
 	private void executeAnalysis() throws Exception {
-		
-		SootCallGraph sootCallGraph = new SootCallGraph();
+				
+		SingleFlowAnalysisFactory analysisFactory = new SingleFlowAnalysisFactoryImpl(this.solver,
+				new SootCallGraph(), resultListener);
 		
 		// For dumping the call graph for debugging purposes.
 		//drawCallGraph(Scene.v().getCallGraph());
@@ -242,8 +232,10 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 				break;
 			}
 			
-			Analysis analysis = new CompositeTaintFlowAnalysis(sootCallGraph, flowQuery, resultListener);
-			CompositeTaintFlowQueryResult singleResult = (CompositeTaintFlowQueryResult) analysis.run();
+			CompositeTaintFlowAnalysis analysis = new CompositeTaintFlowAnalysisImpl(flowQuery,
+					analysisFactory, resultListener);
+			
+			CompositeTaintFlowQueryResult singleResult = analysis.run();
 			
 			if (singleResult.size() != 0) {
 				this.result.addResult(flowQuery, singleResult);

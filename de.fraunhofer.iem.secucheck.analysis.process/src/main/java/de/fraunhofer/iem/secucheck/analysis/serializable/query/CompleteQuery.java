@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
+import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
@@ -14,6 +15,7 @@ import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 public final class CompleteQuery extends ProcessMessage implements AnalysisMessage {
 	
 	private OS os;
+	private Solver solver;
 	private boolean hasResultListener;
 	private String appClassPath;
 	private String sootClassPath;
@@ -22,11 +24,12 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 	
 	public CompleteQuery() { }
 	
-	public CompleteQuery(OS os, String appClassPath, String sootClassPath,
+	public CompleteQuery(OS os, Solver solver, String appClassPath, String sootClassPath,
 			List<EntryPoint> entryPoints, List<CompositeTaintFlowQueryImpl> flowQueries,
 			boolean hasResultListener) {
 		super.messageType = getMessageType();
 		this.os = os;
+		this.solver = solver;
 		this.appClassPath = appClassPath;
 		this.sootClassPath = sootClassPath;
 		this.flowQueries = flowQueries;
@@ -53,6 +56,10 @@ public final class CompleteQuery extends ProcessMessage implements AnalysisMessa
 	
 	public OS getOs() {
 		return os;
+	}
+	
+	public Solver getSolver() {
+		return solver;
 	}
 	
 	public String getAppClassPath() {

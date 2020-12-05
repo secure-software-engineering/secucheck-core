@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.io.FileUtils;
 
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
+import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
@@ -32,6 +33,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 	private final ReentrantLock lock;
 	
 	private OS os;
+	private Solver solver;
 	private String appClassPath;
 	private String sootClassPath;
 	private List<EntryPoint> entryPoints;
@@ -58,6 +60,10 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 	
 	public void setOs(OS os) {
 		this.os = os;
+	}
+	
+	public void setSolver(Solver solver) {
+		this.solver = solver;
 	}
 
 	public void setSootClassPathJars(String sootClassPath) {
@@ -102,7 +108,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			// PrintStream pw = System.out;
 			PrintWriter pw = new PrintWriter(process.getOutputStream());
 			
-			CompleteQuery analysisQuery = new CompleteQuery(os, appClassPath, sootClassPath,
+			CompleteQuery analysisQuery = new CompleteQuery(os, solver, appClassPath, sootClassPath,
 					entryPoints, flowQueries, resultListener != null);
 
 			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));

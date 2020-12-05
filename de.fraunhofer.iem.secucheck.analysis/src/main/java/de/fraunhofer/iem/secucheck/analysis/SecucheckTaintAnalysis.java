@@ -6,6 +6,7 @@ import java.util.List;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
+import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
@@ -15,10 +16,10 @@ public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
 		super();
 	}
 		
-	public SecucheckTaintAnalysis(OS os, String appClassPath, 
+	public SecucheckTaintAnalysis(OS os, Solver solver, String appClassPath, 
 			String sootClassPath, List<EntryPoint> entryPoints,
 			AnalysisResultListener resultListener) {
-		super(os, appClassPath, sootClassPath, entryPoints,
+		super(os, solver, appClassPath, sootClassPath, entryPoints,
 				resultListener);	
 	}
 	
