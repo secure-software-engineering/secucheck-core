@@ -11,12 +11,8 @@ import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 public interface SecucheckAnalysis {	
 	
-	void setOs(OS os);
-	void setSootClassPathJars(String sootClassPath);
-	void setApplicationClassPath(String appClassPath);
-	
-	void setAnalysisEntryPoints(List<EntryPoint> entryPoints);
-	void setListener(AnalysisResultListener resultListener);
+	void setConfiguration(SecucheckAnalysisConfiguration configuration);
+	SecucheckAnalysisConfiguration getConfiguration();
 	
 	SecucheckTaintAnalysisResult run
 		(List<CompositeTaintFlowQueryImpl> flowQueries) 

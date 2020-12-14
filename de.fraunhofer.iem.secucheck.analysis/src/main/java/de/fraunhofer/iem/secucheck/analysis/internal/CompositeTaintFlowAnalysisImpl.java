@@ -41,24 +41,33 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
 	}
 	
 	@Override
-	public CompositeTaintFlowQueryResult run() {	
+	public CompositeTaintFlowQueryResult run() throws Exception {
+		
 		CompositeTaintFlowQueryResult result = new CompositeTaintFlowQueryResult();
+		
 		List<TaintFlowQueryImpl> flows = flowQuery.getTaintFlowQueries();
+		
 		for (TaintFlowQueryImpl originalFlow : flows) {
+			
 			if (this.resultListener != null && this.resultListener.isCancelled()) {
 				break;
 			}
+			
 			SingleFlowAnalysis analysis = analysisFactory.create(originalFlow);
 			TaintFlowQueryResult retResult = analysis.run();
+			
 			if (retResult.size() == 0) {
 				result.clear();
 				break;
 			}
+			
 			if (this.resultListener != null) {
 				this.resultListener.reportFlowResult(retResult);
 			}
 			result.addResult((TaintFlowQueryImpl) originalFlow, retResult);		
-		}		
-		return result;		
+		}
+		
+		return result;	
+		
 	}	
 }

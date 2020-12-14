@@ -2,18 +2,125 @@ package de.fraunhofer.iem.secucheck.analysis.internal;
 
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import boomerang.scene.WrappedClass;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
+import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import soot.G;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.Stmt;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
+import soot.options.Options;
+import soot.util.dot.DotGraph;
 
 class Utility {
+	
+	static void initializeSootWithEntryPoints(String sootClassPath, List<EntryPoint> entryPoints) 
+			throws Exception {
+		
+		G.v().reset();
+
+		Options.v().set_keep_line_number(true);
+
+		Options.v().setPhaseOption("cg.cha", "on");
+		Options.v().setPhaseOption("cg", "all-reachable:true");
+		Options.v().set_output_format(Options.output_format_none);
+
+		Options.v().set_no_bodies_for_excluded(true);
+		Options.v().set_allow_phantom_refs(true);
+		Options.v().setPhaseOption("jb", "use-original-names:true");
+
+		Options.v().set_exclude(excludedPackages());
+		Options.v().set_soot_classpath(sootClassPath);
+		Options.v().set_prepend_classpath(true);
+		Options.v().set_whole_program(true);
+
+		Scene.v().addBasicClass("java.lang.StringBuilder", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.System", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.ThreadGroup", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.ClassLoader", SootClass.BODIES);
+		Scene.v().addBasicClass("java.security.PrivilegedActionException", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.Thread", SootClass.BODIES);
+		Scene.v().addBasicClass("java.lang.AbstractStringBuilder", SootClass.BODIES);
+
+		Runnable runnable = () -> {
+			List<SootMethod> entries = new ArrayList<SootMethod>();
+			for (EntryPoint entry : entryPoints) {
+				SootClass sootClass = Scene.v().forceResolve(entry.getCanonicalClassName(),
+						SootClass.BODIES);
+				sootClass.setApplicationClass();
+				if (entry.isAllMethods()) {
+					entries.addAll(sootClass.getMethods());
+				} else {
+					entry.getMethods().forEach(y -> 
+						entries.add(sootClass.getMethodByName(y)));
+				}
+			}
+			Scene.v().setEntryPoints(entries);
+		};
+		
+		executeSootRunnable(runnable, "Could not find entry point.");
+		
+		Scene.v().forceResolve("java.lang.Thread", SootClass.BODIES).setApplicationClass();
+		Scene.v().loadNecessaryClasses();
+	}
+
+	private static boolean includeJDK() {
+		return true;
+	}
+
+	public static List<String> excludedPackages() {
+		List<String> excludedPackages = new LinkedList<>();
+		excludedPackages.add("sun.*");
+		excludedPackages.add("javax.*");
+		excludedPackages.add("com.sun.*");
+		excludedPackages.add("com.ibm.*");
+		excludedPackages.add("org.xml.*");
+		excludedPackages.add("org.w3c.*");
+		excludedPackages.add("apple.awt.*");
+		excludedPackages.add("com.apple.*");
+		return excludedPackages;
+	}
+	
+	private static void drawCallGraph(CallGraph callGraph){
+        DotGraph dot = new DotGraph("callgraph");
+        Iterator<Edge> iteratorEdges = callGraph.iterator();
+
+        System.out.println("Call Graph size : "+ callGraph.size());
+        while (iteratorEdges.hasNext()) {
+            Edge edge = iteratorEdges.next();
+            String node_src = edge.getSrc().toString();
+            String node_tgt = edge.getTgt().toString();
+            dot.drawEdge(node_src, node_tgt);
+        }
+        dot.plot("<file-path>");
+    }
+
+	private static void executeSootRunnable(Runnable runable, String message) throws Exception {
+		try {
+			runable.run();
+		} catch (Error | Exception e) {
+			// Normally the "Error" class indicates problems that are outside of application
+			// scope to deal with (OutOfMemoryError etc).
+			// Soot throws instances of class "Error" in case of problems. So we are
+			// forced to catch it here.
+			throw new Exception(message, e);
+		}
+	}
+	
+	static String getCombinedSootClassPath(OS os, String appClassPath, String sootClassPath) {
+		String separator = os == OS.WINDOWS ? ";" : ":";
+		return sootClassPath + separator + appClassPath;
+	}
 	
 	static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(CompositeTaintFlowQuery flowQuery) {
 		List<de.fraunhofer.iem.secucheck.analysis.query.Method> methods = new ArrayList<>();
