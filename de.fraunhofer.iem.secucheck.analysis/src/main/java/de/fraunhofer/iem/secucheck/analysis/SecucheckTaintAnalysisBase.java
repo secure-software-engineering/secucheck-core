@@ -15,13 +15,22 @@ import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
 	protected final ReentrantLock lock;  
-	protected final SecucheckAnalysisConfiguration configuration;
-	
+	protected SecucheckAnalysisConfiguration configuration;
 	protected long analysisTime;
 	
 	public SecucheckTaintAnalysisBase(SecucheckAnalysisConfiguration configuration) {
 		this.lock = new ReentrantLock();
 		this.configuration = configuration;
+	}
+	
+	@Override
+	public void setConfiguration(SecucheckAnalysisConfiguration configuration) {
+		this.configuration = configuration;
+	}
+	
+	@Override
+	public SecucheckAnalysisConfiguration getConfiguration() {
+		return this.configuration;
 	}
 	
 	@Override

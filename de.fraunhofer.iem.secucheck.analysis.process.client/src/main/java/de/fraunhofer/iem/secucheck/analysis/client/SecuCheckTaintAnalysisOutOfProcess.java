@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
@@ -32,58 +33,17 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 	
 	private final ReentrantLock lock;
 	
-	private OS os;
-	private Solver solver;
-	private String appClassPath;
-	private String sootClassPath;
-	private List<EntryPoint> entryPoints;
-	private AnalysisResultListener resultListener;
+	private SecucheckAnalysisConfiguration config;
 	private SecucheckTaintAnalysisResult result;
 	
 	private static File analysisJarFile;
 	
 	public SecuCheckTaintAnalysisOutOfProcess() {
-		super();
 		this.lock = new ReentrantLock();
 	}
 	
-	public SecuCheckTaintAnalysisOutOfProcess(OS os, String appClassPath, 
-			String sootClassPath, List<EntryPoint> entryPoints,
-				AnalysisResultListener resultListener) {
+	public SecuCheckTaintAnalysisOutOfProcess(SecucheckAnalysisConfiguration config) {
 		this();
-		this.os = os;
-		this.appClassPath = appClassPath;
-		this.sootClassPath = sootClassPath;
-		this.entryPoints = entryPoints;
-		this.resultListener = resultListener;
-	}
-	
-	public void setOs(OS os) {
-		this.os = os;
-	}
-	
-	public void setSolver(Solver solver) {
-		this.solver = solver;
-	}
-
-	public void setSootClassPathJars(String sootClassPath) {
-		this.sootClassPath = sootClassPath;
-	}
-
-	public void setApplicationClassPath(String appClassPath) {
-		this.appClassPath = appClassPath;	
-	}
-	
-	public void setSootClassPath(String sootClassPath) {
-		this.sootClassPath = sootClassPath;
-	}
-	
-	public void setAnalysisEntryPoints(List<EntryPoint> entryPoints) {
-		this.entryPoints = entryPoints;
-	}
-	
-	public void setListener(AnalysisResultListener resultListener) {
-		this.resultListener = resultListener;
 	}
 	
 	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries)
@@ -108,8 +68,9 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			// PrintStream pw = System.out;
 			PrintWriter pw = new PrintWriter(process.getOutputStream());
 			
-			CompleteQuery analysisQuery = new CompleteQuery(os, solver, appClassPath, sootClassPath,
-					entryPoints, flowQueries, resultListener != null);
+			CompleteQuery analysisQuery = new CompleteQuery(config.getOs(), config.getSolver(), 
+					config.getSootClassPathJars(), config.getApplicationClassPath(),
+					config.getAnalysisEntryPoints(), flowQueries, config.getListener() != null);
 
 			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));
 			pw.flush();
@@ -117,7 +78,7 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
 			while (!process.waitFor(50, TimeUnit.MILLISECONDS)) {
-				if (resultListener != null && resultListener.isCancelled())
+				if (config.getListener() != null && config.getListener().isCancelled())
 					process.destroyForcibly();
 				readInput(br);
 			}
@@ -149,13 +110,13 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 				ListenerResult interResult = (ListenerResult) message;
 				switch(interResult.getReportType()) {
 					case SingleResult:
-						this.resultListener.reportFlowResult(interResult.getSingleResult());
+						this.config.getListener().reportFlowResult(interResult.getSingleResult());
 						break;
 					case CompositeResult:
-						this.resultListener.reportCompositeFlowResult(interResult.getCompositeResult());
+						this.config.getListener().reportCompositeFlowResult(interResult.getCompositeResult());
 						break;
 				case CompleteResult:
-					this.resultListener.reportCompleteResult(interResult.getCompleteResult());
+					this.config.getListener().reportCompleteResult(interResult.getCompleteResult());
 					break;
 				}
 				break;
@@ -195,6 +156,18 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 				return javaFile;
 			}
 		}
+		return null;
+	}
+
+	@Override
+	public void setConfiguration(SecucheckAnalysisConfiguration configuration) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public SecucheckAnalysisConfiguration getConfiguration() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

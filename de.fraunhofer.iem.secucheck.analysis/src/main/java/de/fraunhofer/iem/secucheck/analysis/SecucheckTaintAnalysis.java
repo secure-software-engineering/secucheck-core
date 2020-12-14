@@ -13,14 +13,11 @@ import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
 	
 	public SecucheckTaintAnalysis() {
-		super();
+		super(null);
 	}
 		
-	public SecucheckTaintAnalysis(OS os, Solver solver, String appClassPath, 
-			String sootClassPath, List<EntryPoint> entryPoints,
-			AnalysisResultListener resultListener) {
-		super(os, solver, appClassPath, sootClassPath, entryPoints,
-				resultListener);	
+	public SecucheckTaintAnalysis(SecucheckAnalysisConfiguration config) {
+		super(config);	
 	}
 	
 	@Override

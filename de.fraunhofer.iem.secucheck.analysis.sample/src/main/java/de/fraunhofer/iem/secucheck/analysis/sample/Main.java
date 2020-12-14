@@ -8,6 +8,8 @@ import java.util.List;
 import de.fraunhofer.iem.secucheck.analysis.client.SecuCheckTaintAnalysisOutOfProcess;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisDefaultConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckTaintAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
@@ -16,6 +18,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.ReportSite;
 import de.fraunhofer.iem.secucheck.analysis.query.ReturnValue;
+import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
@@ -41,15 +44,18 @@ public class Main {
 			throws Exception {
 		
 		AnalysisResultListener resultListener = new ConsoleResultListener();
+		SecucheckAnalysisConfiguration configuration = new SecucheckAnalysisDefaultConfiguration();
 		
-		secucheckAnalysis.setOs(OS.Linux);
-		secucheckAnalysis.setAnalysisEntryPoints(getEntryPoints());
-		secucheckAnalysis.setApplicationClassPath(getAppClassPath());
-		secucheckAnalysis.setSootClassPathJars(getSootClassPath());
-				
-		runDemoSet1(secucheckAnalysis, resultListener);
-		runDemoSet2(secucheckAnalysis, resultListener);
-		runDemoSet3(secucheckAnalysis, resultListener);
+		configuration.setOs(OS.LINUX);
+		configuration.setSolver(Solver.BOOMERANG3);
+		configuration.setAnalysisEntryPoints(getEntryPoints());
+		configuration.setApplicationClassPath(getAppClassPath());
+		configuration.setSootClassPathJars(getSootClassPath());
+		configuration.setListener(resultListener);
+		
+		runDemoSet1(secucheckAnalysis);
+		runDemoSet2(secucheckAnalysis);
+		runDemoSet3(secucheckAnalysis);
 		
 	}
 	
@@ -62,8 +68,7 @@ public class Main {
 	 *   By using using paramterized and non-paramterized usages.
 	 *  - Demonstrates use of result-listener
 	 */
-	private static void runDemoSet1(SecucheckAnalysis secucheckAnalysis, 
-			AnalysisResultListener resultListener) throws Exception {
+	private static void runDemoSet1(SecucheckAnalysis secucheckAnalysis) throws Exception {
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfFirst = Utility.getInList(
 				Utility.getCompositeOf(ReportSite.SourceAndSink, "1", getTaintFlowQuery1()));
@@ -84,12 +89,12 @@ public class Main {
 				Utility.getCompositeOf(ReportSite.SourceAndSink, "6", getTaintFlowQuery6()));
 		
 		// For demonstration purposes the listener is set to null in run 1.
-		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1, resultListener);
-		runAnalysisQuery(secucheckAnalysis, compositeOfSecond, 2, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfThird, 3, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfFourth, 4, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfFifth, 5, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfSixth, 6, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1);
+		runAnalysisQuery(secucheckAnalysis, compositeOfSecond, 2);
+		runAnalysisQuery(secucheckAnalysis, compositeOfThird, 3);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFourth, 4);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFifth, 5);
+		runAnalysisQuery(secucheckAnalysis, compositeOfSixth, 6);
 	}
 
 	/** Demo-set 2: 
@@ -99,8 +104,7 @@ public class Main {
 	 * 	 - Sanitizer
 	 * 	 - Propogator
 	 */
-	private static void runDemoSet2(SecucheckAnalysis secucheckAnalysis, 
-			AnalysisResultListener resultListener) throws Exception {
+	private static void runDemoSet2(SecucheckAnalysis secucheckAnalysis) throws Exception {
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfSeventh = Utility.getInList(
 				Utility.getCompositeOf(ReportSite.SourceAndSink, "7", getTaintFlowQuery7()));
@@ -114,17 +118,16 @@ public class Main {
 		List<CompositeTaintFlowQueryImpl> compositeOfTenth = Utility.getInList(
 				Utility.getCompositeOf(ReportSite.SourceAndSink, "10", getTaintFlowQuery10()));
 		
-		runAnalysisQuery(secucheckAnalysis, compositeOfSeventh, 7, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfEighth, 8, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfNinth, 9, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfTenth, 10, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfSeventh, 7);
+		runAnalysisQuery(secucheckAnalysis, compositeOfEighth, 8);
+		runAnalysisQuery(secucheckAnalysis, compositeOfNinth, 9);
+		runAnalysisQuery(secucheckAnalysis, compositeOfTenth, 10);
 	}
 	
 	/** Demo-set 3: 
 	 *  - Demonstrates multiple composites
 	 */
-	private static void runDemoSet3(SecucheckAnalysis secucheckAnalysis, 
-			AnalysisResultListener resultListener) throws Exception {
+	private static void runDemoSet3(SecucheckAnalysis secucheckAnalysis) throws Exception {
 		
 		List<CompositeTaintFlowQueryImpl> compositeOfFirst = Utility.getInList(
 				Utility.getCompositeOf(ReportSite.SourceAndSink, "1", getTaintFlowQuery1()));
@@ -142,16 +145,14 @@ public class Main {
 						getTaintFlowQuery2(), getTaintFlowQuery3(),
 						getTaintFlowQuery4()));
 		
-		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfFirstTwo, 12, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfFirstThree, 13, null);
-		runAnalysisQuery(secucheckAnalysis, compositeOfAll, 14, null);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirst, 1);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirstTwo, 12);
+		runAnalysisQuery(secucheckAnalysis, compositeOfFirstThree, 13);
+		runAnalysisQuery(secucheckAnalysis, compositeOfAll, 14);
 	}
 	
 	private static void runAnalysisQuery(SecucheckAnalysis secucheckAnalysis, 
-			List<CompositeTaintFlowQueryImpl> composites, int queryNumber, 
-			AnalysisResultListener resultListener) throws Exception {
-		secucheckAnalysis.setListener(resultListener);
+			List<CompositeTaintFlowQueryImpl> composites, int queryNumber) throws Exception {
 		SecucheckTaintAnalysisResult result = secucheckAnalysis.run(composites);
 		System.out.println();
 		System.out.println("Result-" + queryNumber + " size: " + result.size());

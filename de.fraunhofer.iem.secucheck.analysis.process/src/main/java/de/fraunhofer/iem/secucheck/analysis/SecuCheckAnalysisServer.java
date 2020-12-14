@@ -52,20 +52,25 @@ public class SecuCheckAnalysisServer {
 					this.resultListener = queryDetails.hasResultListener() ? 
 							new SimpleResultListener() : null;
 					
-					SecucheckAnalysis analysis = new SecucheckTaintAnalysis(
-							queryDetails.getOs(),
-							queryDetails.getSolver(),
-							queryDetails.getAppClassPath(),
-							queryDetails.getSootClassPath(), 
-							queryDetails.getAnalysisEntryPoints(), resultListener);	
+					SecucheckAnalysisConfiguration config = new SecucheckAnalysisDefaultConfiguration();
+					config.setOs(queryDetails.getOs());
+					config.setSolver(queryDetails.getSolver());
+					config.setApplicationClassPath(queryDetails.getAppClassPath());
+					config.setSootClassPathJars(queryDetails.getSootClassPath());
+					config.setAnalysisEntryPoints(queryDetails.getAnalysisEntryPoints());
+					config.setListener(resultListener);
 					
+					SecucheckAnalysis analysis = new SecucheckTaintAnalysis(config);	
 					SecucheckTaintAnalysisResult result = analysis.run(queryDetails.getFlowQueries());
+					
 					CompleteResult completeResult = new CompleteResult(result);
 					systemOut.println(ProcessMessageSerializer.serializeToJsonString(completeResult));
 					System.err.print(baos.toString());
+					
 					if (logger.isInfoEnabled()) {
 						logger.log(Level.INFO, "Successfully analyzed a query.");
 					}
+					
 					break;			
 				case Cancellation:
 					resultListener.setCancelled();

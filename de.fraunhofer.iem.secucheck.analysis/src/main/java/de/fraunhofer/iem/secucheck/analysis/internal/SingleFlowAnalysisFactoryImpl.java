@@ -26,7 +26,7 @@ public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory 
 				return new BoomerangSingleFlowAnalysis(flowQuery, this.sootCallGraph, this.configuration);
 
 			case FLOWDROID:
-				return new FlowDroidSingleFlowAnalysis();
+				return new FlowDroidSingleFlowAnalysis(flowQuery, this.sootCallGraph, this.configuration);
 				
 			default:
 				return null;
