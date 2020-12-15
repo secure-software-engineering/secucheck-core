@@ -37,6 +37,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries) 
 			throws Exception  {		
 		Utility.ValidateCompositeFlowQueries(flowQueries);
+		Utility.ValidateConfigruation(this.configuration);
 		lock.lock();
 		try {
 			return executeAnalysis(flowQueries);
@@ -49,8 +50,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 			throws Exception {
 				
 		SingleFlowAnalysisFactory analysisFactory = 
-				new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), new SootCallGraph(),
-						this.configuration);
+				new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), this.configuration);
 		
 		SecucheckTaintAnalysisResult result = new SecucheckTaintAnalysisResult();
 		

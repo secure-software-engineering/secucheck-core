@@ -31,13 +31,6 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
 		this.flowQuery = flowQuery;
 		this.analysisFactory = analysisFactory;
 		this.resultListener = resultListener;
-		
-		// Resolve all methods. This is necessary if a flow participant is not part of
-		// the user code...
-		// See: https://github.com/secure-software-engineering/secucheck/issues/11
-		for (Method method : Utility.getMethods(flowQuery)) {
-			Utility.getSootMethod(method);
-		}
 	}
 	
 	@Override
@@ -54,17 +47,17 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
 			}
 			
 			SingleFlowAnalysis analysis = analysisFactory.create(originalFlow);
-			TaintFlowQueryResult retResult = analysis.run();
+			TaintFlowQueryResult returnResult = analysis.run();
 			
-			if (retResult.size() == 0) {
+			if (returnResult.size() == 0) {
 				result.clear();
 				break;
 			}
 			
 			if (this.resultListener != null) {
-				this.resultListener.reportFlowResult(retResult);
+				this.resultListener.reportFlowResult(returnResult);
 			}
-			result.addResult((TaintFlowQueryImpl) originalFlow, retResult);		
+			result.addResult((TaintFlowQueryImpl) originalFlow, returnResult);		
 		}
 		
 		return result;	

@@ -38,4 +38,13 @@ public class Utility {
 		if (flowQuery.getTo() == null ||flowQuery.getTo().size() == 0)
 			throw new Exception("For a valid taint flow query there must be a sink specified.");
 	}
+
+	public static void ValidateConfigruation(SecucheckAnalysisConfiguration configuration) throws Exception {
+		if (configuration == null)
+			throw new Exception("The configuration for Secucheck analysis is not set.");
+		if (configuration.getApplicationClassPath() == null || configuration.getApplicationClassPath().isEmpty())
+			throw new Exception("The application class-path for Secucheck analysis is not set.");
+		if (configuration.getAnalysisEntryPoints() == null || configuration.getAnalysisEntryPoints().size() == 0)
+			throw new Exception("The entry-points for Secucheck analysis are not provided.");
+	}
 }

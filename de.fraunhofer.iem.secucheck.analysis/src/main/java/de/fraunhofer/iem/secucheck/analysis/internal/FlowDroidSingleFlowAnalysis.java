@@ -36,38 +36,41 @@ import soot.options.Options;
 public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 	
 	private final TaintFlowQueryImpl singleFlow;
-	private final SootCallGraph sootCallGraph;
 	private final SecucheckAnalysisConfiguration configuration;
 	
 	private final TaintFlowQueryResult result;
 	
-	public FlowDroidSingleFlowAnalysis(TaintFlowQueryImpl singleFlow,
-			SootCallGraph sootCallGraph, SecucheckAnalysisConfiguration configuration) {
+	public FlowDroidSingleFlowAnalysis(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
 		this.singleFlow = singleFlow;
-		this.sootCallGraph = sootCallGraph;
 		this.configuration = configuration;
 		this.result = new TaintFlowQueryResult();
 	}
 	
 	
 	@Override
-	public TaintFlowQueryResult run() {
+	public TaintFlowQueryResult run() throws Exception {
+		
+		String classPath = Utility.getCombinedSootClassPath(this.configuration.getOs(),
+				this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());
+		
+		Utility.initializeSootWithEntryPoints(classPath, this.configuration.getAnalysisEntryPoints());
+		Utility.loadAllParticipantMethods(singleFlow);
 		
 		List<String> entryMethods = getCanonicalEntryMethodSignatures(configuration.getAnalysisEntryPoints());
 		DefaultEntryPointCreator entryPointCreator = new DefaultEntryPointCreator(entryMethods);
 		Infoflow infoFlow = getInfoFlow();
 				
 		if (isPropogatorless(this.singleFlow)) {
-			result.addQueryResultPairs(analyzePlainFlow(singleFlow, infoFlow, entryPointCreator));
+			result.addQueryResultPairs(analyzePlainFlow(singleFlow, infoFlow, entryPointCreator, this.configuration));
 		} else {
-			result.addQueryResultPairs(analyzePropogatorFlow(singleFlow, infoFlow, entryPointCreator));
+			result.addQueryResultPairs(analyzePropogatorFlow(singleFlow, infoFlow, entryPointCreator, this.configuration));
 		}
 		return this.result;
 	}
 	
 	public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 		analyzePlainFlow(TaintFlowQueryImpl singleFlow, Infoflow infoFlow,
-				DefaultEntryPointCreator entryPointCreator){
+				DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration){
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 			reachMap = new ArrayList<>();
@@ -100,7 +103,7 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 	
 	public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 		analyzePropogatorFlow(TaintFlowQueryImpl singleFlow, Infoflow infoFlow,
-				DefaultEntryPointCreator entryPointCreator){
+				DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration){
 	
 		/* Each occurance of a propogator/desanitizer would break a single
 		 * TaintFlow into two logical TaintFlows, this generates 
@@ -124,8 +127,8 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 			originalReachMap = new ArrayList<>(),
-			reachMap1 = analyzePlainFlow(newQuery1, infoFlow, entryPointCreator), 
-			reachMap2 = analyzePlainFlow(newQuery2, infoFlow, entryPointCreator);
+			reachMap1 = analyzePlainFlow(newQuery1, infoFlow, entryPointCreator, configuration), 
+			reachMap2 = analyzePlainFlow(newQuery2, infoFlow, entryPointCreator, configuration);
 		
 		if (reachMap1.size() != 0 && reachMap2.size() != 0) {
 			for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
@@ -154,12 +157,12 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 	private static List<String> getCanonicalEntryMethodSignatures(List<EntryPoint> entryPoints) {
 		List<String> methodNames = new ArrayList<>();
 		for (EntryPoint entryPoint : entryPoints) {
-			
+			// We are not supposed to deal with Soot explicitly for the case of InfoFlow solver.
+			// So, the we will rely on explicitly specified entry-points.
 			SootClass sootClass = Scene.v().forceResolve(entryPoint.getCanonicalClassName(), SootClass.BODIES);
-			// ? 
 			sootClass.setApplicationClass();			
 			if (entryPoint.isAllMethods()) {
-				sootClass.getMethods().forEach(method -> methodNames.add(method.getName()));
+				sootClass.getMethods().forEach(method -> methodNames.add(method.getSignature()));
 			} else {
 				entryPoint.getMethods().forEach(method -> methodNames.add(method));
 			}
@@ -169,7 +172,8 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 	
 	private static List<String> getCanonicalMethodSignatures(List<MethodImpl> methodSpecs){
 		List<String> methodNames = new ArrayList<>();
-		methodSpecs.forEach(method -> methodNames.add(method.getSignature()));
+		methodSpecs.forEach(
+				method -> methodNames.add(Utility.wrapInAngularBrackets(method.getSignature())));
 		return methodNames;
 	}
 	
@@ -207,7 +211,7 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		for (Method method : methods) {
 			SootMethod sootMethod = Utility.getSootMethod(method);
-			if (sootMethod != null && !sootMethod.isPhantom()) {
+			if (sootMethod != null && sootMethod.hasActiveBody() && !sootMethod.isPhantom()) {
 				Body body = sootMethod.getActiveBody();
 				if (body != null) {
 					oldBodies.put(sootMethod, body);

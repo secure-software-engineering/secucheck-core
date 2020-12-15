@@ -47,11 +47,13 @@ public class Main {
 		SecucheckAnalysisConfiguration configuration = new SecucheckAnalysisDefaultConfiguration();
 		
 		configuration.setOs(OS.LINUX);
-		configuration.setSolver(Solver.BOOMERANG3);
+		configuration.setSolver(Solver.FLOWDROID);
 		configuration.setAnalysisEntryPoints(getEntryPoints());
 		configuration.setApplicationClassPath(getAppClassPath());
 		configuration.setSootClassPathJars(getSootClassPath());
 		configuration.setListener(resultListener);
+		
+		secucheckAnalysis.setConfiguration(configuration);
 		
 		runDemoSet1(secucheckAnalysis);
 		runDemoSet2(secucheckAnalysis);

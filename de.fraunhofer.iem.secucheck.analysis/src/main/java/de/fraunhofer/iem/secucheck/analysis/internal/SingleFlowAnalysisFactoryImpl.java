@@ -1,6 +1,5 @@
 package de.fraunhofer.iem.secucheck.analysis.internal;
 
-import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
@@ -8,13 +7,10 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory {
 	
 	private Solver solver;
-	private SootCallGraph sootCallGraph;
 	private SecucheckAnalysisConfiguration configuration;
 	
-	public SingleFlowAnalysisFactoryImpl(Solver solver, SootCallGraph sootCallGraph,
-			SecucheckAnalysisConfiguration configuration){
+	public SingleFlowAnalysisFactoryImpl(Solver solver,	SecucheckAnalysisConfiguration configuration){
 		this.solver = solver;
-		this.sootCallGraph = sootCallGraph;
 		this.configuration = configuration;
 	}
 	
@@ -23,10 +19,10 @@ public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory 
 		
 		switch (solver) {
 			case BOOMERANG3:
-				return new BoomerangSingleFlowAnalysis(flowQuery, this.sootCallGraph, this.configuration);
+				return new BoomerangSingleFlowAnalysis(flowQuery, this.configuration);
 
 			case FLOWDROID:
-				return new FlowDroidSingleFlowAnalysis(flowQuery, this.sootCallGraph, this.configuration);
+				return new FlowDroidSingleFlowAnalysis(flowQuery, this.configuration);
 				
 			default:
 				return null;

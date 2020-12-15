@@ -12,6 +12,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import soot.G;
 import soot.Scene;
 import soot.SootClass;
@@ -183,5 +184,22 @@ class Utility {
 			}
 		}
 		return null;
+	}
+
+	public static void loadAllParticipantMethods(TaintFlowQueryImpl singleFlow) {
+		// Resolve all methods. This is necessary if a flow participant is not part of
+		// the user code...
+		// See: https://github.com/secure-software-engineering/secucheck/issues/11
+		for (Method method : Utility.getMethods(singleFlow)) {
+			Utility.getSootMethod(method);
+		}
+	}
+	
+	public static String wrapInAngularBrackets(String value) {
+		return "<" + value + ">";
+	}
+	
+	public static boolean toStringEquals(Object object1, Object object2) {
+		return object1.toString().equals(object2.toString());
 	}
 }

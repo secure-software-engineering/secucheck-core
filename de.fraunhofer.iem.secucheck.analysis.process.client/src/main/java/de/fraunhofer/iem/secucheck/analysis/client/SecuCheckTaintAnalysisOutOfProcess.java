@@ -44,11 +44,13 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 	
 	public SecuCheckTaintAnalysisOutOfProcess(SecucheckAnalysisConfiguration config) {
 		this();
+		this.config = config;
 	}
 	
 	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries)
 			throws Exception {
 		Utility.ValidateCompositeFlowQueries(flowQueries);
+		Utility.ValidateConfigruation(this.config);
 		lock.lock();
 		try {
 			
@@ -68,9 +70,9 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 			// PrintStream pw = System.out;
 			PrintWriter pw = new PrintWriter(process.getOutputStream());
 			
-			CompleteQuery analysisQuery = new CompleteQuery(config.getOs(), config.getSolver(), 
-					config.getSootClassPathJars(), config.getApplicationClassPath(),
-					config.getAnalysisEntryPoints(), flowQueries, config.getListener() != null);
+			CompleteQuery analysisQuery = new CompleteQuery(this.config.getOs(), this.config.getSolver(), 
+					this.config.getSootClassPathJars(), this.config.getApplicationClassPath(),
+					this.config.getAnalysisEntryPoints(), flowQueries, this.config.getListener() != null);
 
 			pw.println(ProcessMessageSerializer.serializeToJsonString(analysisQuery));
 			pw.flush();
@@ -161,13 +163,12 @@ public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalys
 
 	@Override
 	public void setConfiguration(SecucheckAnalysisConfiguration configuration) {
-		// TODO Auto-generated method stub
+		this.config = configuration;
 		
 	}
 
 	@Override
 	public SecucheckAnalysisConfiguration getConfiguration() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.config;
 	}
 }

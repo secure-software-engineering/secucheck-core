@@ -17,6 +17,7 @@ import boomerang.ForwardQuery;
 import boomerang.Query;
 import boomerang.results.ForwardBoomerangResults;
 import boomerang.scene.AnalysisScope;
+import boomerang.scene.CallGraph;
 import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.Val;
 import boomerang.scene.jimple.BoomerangPretransformer;
@@ -46,15 +47,12 @@ import wpds.impl.Weight;
 class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
 	private final TaintFlowQueryImpl singleFlow;
-	private final SootCallGraph sootCallGraph;
 	private final SecucheckAnalysisConfiguration configuration;
 	
 	private final TaintFlowQueryResult result;
 	
-	public BoomerangSingleFlowAnalysis(TaintFlowQueryImpl singleFlow,
-			SootCallGraph sootCallGraph, SecucheckAnalysisConfiguration configuration) {
+	public BoomerangSingleFlowAnalysis(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
 		this.singleFlow = singleFlow;
-		this.sootCallGraph = sootCallGraph;
 		this.configuration = configuration;
 		this.result = new TaintFlowQueryResult();
 	}
@@ -66,6 +64,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 				this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());
 		
 		Utility.initializeSootWithEntryPoints(classPath, this.configuration.getAnalysisEntryPoints());
+		Utility.loadAllParticipantMethods(singleFlow);
 		
 		Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());
 		PackManager.v().getPack("wjtp").add(transform);
@@ -100,8 +99,9 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> 
 			reachMap = new ArrayList<>();
 		
-		AnalysisScope analysisScope = getAnalysisScope(singleFlow);
-		Boomerang boomerang = getBoomerang(analysisScope);
+		SootCallGraph callGraph = new SootCallGraph();
+		AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
+		Boomerang boomerang = getBoomerang(analysisScope, callGraph);
 		Seeds seeds = computeSeeds(analysisScope);
 		
 		if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
@@ -273,12 +273,12 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 	}
 		
-	private AnalysisScope getAnalysisScope(TaintFlowQuery taintFlow) {
-		return new SingleFlowAnalysisScope(taintFlow, this.sootCallGraph);
+	private AnalysisScope getAnalysisScope(TaintFlowQuery taintFlow, SootCallGraph callGraph) {
+		return new SingleFlowAnalysisScope(taintFlow, callGraph);
 	}
 	
-	private Boomerang getBoomerang(AnalysisScope analysisScope) {
-		return new SingleFlowBoomerang(analysisScope, this.sootCallGraph, new TaintAnalysisOptions());
+	private Boomerang getBoomerang(AnalysisScope analysisScope, SootCallGraph callGraph) {
+		return new SingleFlowBoomerang(analysisScope, callGraph, new TaintAnalysisOptions());
 	}
 
 	private List<Method> getSanitizers(TaintFlowQuery partFlow) {
