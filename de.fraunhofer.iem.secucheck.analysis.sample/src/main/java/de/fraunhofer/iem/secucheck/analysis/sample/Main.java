@@ -29,31 +29,41 @@ public class Main {
 	
 	public static void main(String[] args) {
 		try {
+		
 			// Run the in-process hosted instance of the SecucheckTaintAnalysis.
-			runSecucheckAnalysis(new SecucheckTaintAnalysis());
+			runBothSolvers(new SecucheckTaintAnalysis());
 			
 			// Run the out-of-process hosted instance of the SecucheckTaintAnalysis.
-			runSecucheckAnalysis(new SecuCheckTaintAnalysisOutOfProcess());
+			runBothSolvers(new SecuCheckTaintAnalysisOutOfProcess());
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	
-	private static void runSecucheckAnalysis(SecucheckAnalysis secucheckAnalysis) 
-			throws Exception {
+	private static void runBothSolvers(SecucheckAnalysis analysis) throws Exception {
+		assignNewConfiguration(analysis, Solver.FLOWDROID);
+		runSecucheckAnalysis(analysis);
 		
+		assignNewConfiguration(analysis, Solver.BOOMERANG3);
+		runSecucheckAnalysis(analysis);
+	}
+	
+	private static void assignNewConfiguration(SecucheckAnalysis secucheckAnalysis, Solver solver) {
 		AnalysisResultListener resultListener = new ConsoleResultListener();
 		SecucheckAnalysisConfiguration configuration = new SecucheckAnalysisDefaultConfiguration();
-		
 		configuration.setOs(OS.LINUX);
-		configuration.setSolver(Solver.FLOWDROID);
+		configuration.setSolver(solver);
 		configuration.setAnalysisEntryPoints(getEntryPoints());
 		configuration.setApplicationClassPath(getAppClassPath());
 		configuration.setSootClassPathJars(getSootClassPath());
 		configuration.setListener(resultListener);
 		
 		secucheckAnalysis.setConfiguration(configuration);
+	}
+	
+	private static void runSecucheckAnalysis(SecucheckAnalysis secucheckAnalysis) 
+			throws Exception {
 		
 		runDemoSet1(secucheckAnalysis);
 		runDemoSet2(secucheckAnalysis);

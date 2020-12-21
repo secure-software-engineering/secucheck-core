@@ -1,0 +1,60 @@
+{
+  "fileName": "SqlInjectionLesson5b.jar",
+  "findings": [
+    {
+      "source": {
+        "targetName": "@RequestParam String userid",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String userid, @RequestParam String login_count, HttpServletRequest request) throws IOException {",
+        "methodName": "public AttackResult completed(@RequestParam String userid, @RequestParam String login_count, HttpServletRequest request)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+        "lineNo": 51
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet results = query.executeQuery();",
+        "methodName": "protected AttackResult injectableQuery(String login_count, String accountName)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+        "lineNo": 71
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQuery(login_count, userid);",
+          "methodName": "public AttackResult completed(@RequestParam String userid, @RequestParam String login_count, HttpServletRequest request)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+          "lineNo": 52
+        },
+        {
+          "statement": "protected AttackResult injectableQuery(String login_count, String accountName) {",
+          "methodName": "protected AttackResult injectableQuery(String login_count, String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+          "lineNo": 55
+        },
+        {
+          "statement": "String queryString = \"SELECT * From user_data WHERE Login_Count = ? and userid= \" + accountName;",
+          "methodName": "protected AttackResult injectableQuery(String login_count, String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+          "lineNo": 56
+        },
+        {
+          "statement": "PreparedStatement query = connection.prepareStatement(queryString, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);",
+          "methodName": "protected AttackResult injectableQuery(String login_count, String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+          "lineNo": 58
+        },
+        {
+          "statement": "query.setInt(1, count);",
+          "methodName": "protected AttackResult injectableQuery(String login_count, String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5b",
+          "lineNo": 68
+        }
+      ],
+      "description": "Webgoat application: Introduction -> SqlInjectionLesson5b",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson5b": true
+      }
+    }
+  ]
+}

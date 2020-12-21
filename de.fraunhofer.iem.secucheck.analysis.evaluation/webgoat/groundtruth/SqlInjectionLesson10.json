@@ -1,0 +1,48 @@
+{
+  "fileName": "SqlInjectionLesson10.jar",
+  "findings": [
+    {
+      "source": {
+        "targetName": "@RequestParam String action_string",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String action_string) {",
+        "methodName": "public AttackResult completed(@RequestParam String action_string)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson10",
+        "lineNo": 52
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet results = statement.executeQuery(query);",
+        "methodName": "protected AttackResult injectableQueryAvailability(String action)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson10",
+        "lineNo": 63
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQueryAvailability(action_string);",
+          "methodName": "public AttackResult completed(@RequestParam String action_string)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson10",
+          "lineNo": 53
+        },
+        {
+          "statement": "protected AttackResult injectableQueryAvailability(String action) {",
+          "methodName": "protected AttackResult injectableQueryAvailability(String action)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson10",
+          "lineNo": 56
+        },
+        {
+          "statement": "String query = \"SELECT * FROM access_log WHERE action LIKE '%\" + action + \"%'\";",
+          "methodName": "protected AttackResult injectableQueryAvailability(String action)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson10",
+          "lineNo": 58
+        }
+      ],
+      "description": "Webgoat application: Introduction -> SqlInjectionLesson10",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson10": true
+      }
+    }
+  ]
+}

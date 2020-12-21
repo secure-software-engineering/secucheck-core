@@ -1,0 +1,134 @@
+{
+  "fileName": "SqlInjectionLesson5a.jar",
+  "findings": [
+    {
+      "source": {
+        "targetName": "@RequestParam String account",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection) {",
+        "methodName": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+        "lineNo": 53
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet results = statement.executeQuery(query);",
+        "methodName": "protected AttackResult injectableQuery(String accountName)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+        "lineNo": 62
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQuery(account + \" \" + operator + \" \" + injection);",
+          "methodName": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 54
+        },
+        {
+          "statement": "protected AttackResult injectableQuery(String accountName) {",
+          "methodName": "protected AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 57
+        },
+        {
+          "statement": "query = \"SELECT * FROM user_data WHERE first_name = 'John' and last_name = '\" + accountName + \"'\";",
+          "methodName": "protected AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 60
+        }
+      ],
+      "description": "Webgoat application: Introduction -> SqlInjectionLesson5a",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson5a": true
+      }
+    },
+    {
+      "source": {
+        "targetName": "@RequestParam String operator",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection) {",
+        "methodName": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+        "lineNo": 53
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet results = statement.executeQuery(query);",
+        "methodName": "protected AttackResult injectableQuery(String accountName)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+        "lineNo": 62
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQuery(account + \" \" + operator + \" \" + injection);",
+          "methodName": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 54
+        },
+        {
+          "statement": "protected AttackResult injectableQuery(String accountName) {",
+          "methodName": "protected AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 57
+        },
+        {
+          "statement": "query = \"SELECT * FROM user_data WHERE first_name = 'John' and last_name = '\" + accountName + \"'\";",
+          "methodName": "protected AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 60
+        }
+      ],
+      "description": "Webgoat application: Introduction -> SqlInjectionLesson5a",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson5a": true
+      }
+    },
+    {
+      "source": {
+        "targetName": "@RequestParam String injection",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection) {",
+        "methodName": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+        "lineNo": 53
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet results = statement.executeQuery(query);",
+        "methodName": "protected AttackResult injectableQuery(String accountName)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+        "lineNo": 62
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQuery(account + \" \" + operator + \" \" + injection);",
+          "methodName": "public AttackResult completed(@RequestParam String account, @RequestParam String operator, @RequestParam String injection)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 54
+        },
+        {
+          "statement": "protected AttackResult injectableQuery(String accountName) {",
+          "methodName": "protected AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 57
+        },
+        {
+          "statement": "query = \"SELECT * FROM user_data WHERE first_name = 'John' and last_name = '\" + accountName + \"'\";",
+          "methodName": "protected AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson5a",
+          "lineNo": 60
+        }
+      ],
+      "description": "Webgoat application: Introduction -> SqlInjectionLesson5a",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson5a": true
+      }
+    }
+  ]
+}

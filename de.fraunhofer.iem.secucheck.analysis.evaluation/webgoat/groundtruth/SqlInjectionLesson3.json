@@ -1,0 +1,42 @@
+{
+  "fileName": "SqlInjectionLesson3.jar",
+  "findings": [
+    {
+      "source": {
+        "targetName": "@RequestParam String query",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String query) {",
+        "methodName": "public AttackResult completed(@RequestParam String query)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson3",
+        "lineNo": 56
+      },
+      "sink": {
+        "targetName": "executeUpdate",
+        "targetNo": 1,
+        "statement": "statement.executeUpdate(query);",
+        "methodName": "protected AttackResult injectableQuery(String query)",
+        "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson3",
+        "lineNo": 65
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQuery(query);",
+          "methodName": "public AttackResult completed(@RequestParam String query)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson3",
+          "lineNo": 57
+        },
+        {
+          "statement": "protected AttackResult injectableQuery(String query) {",
+          "methodName": "protected AttackResult injectableQuery(String query)",
+          "className": "org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson3",
+          "lineNo": 60
+        }
+      ],
+      "description": "Webgoat application: Introduction -> SqlInjectionLesson3",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson3": true
+      }
+    }
+  ]
+}

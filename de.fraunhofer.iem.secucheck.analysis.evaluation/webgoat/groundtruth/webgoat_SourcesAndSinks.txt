@@ -1,0 +1,4 @@
+org.springframework.web.bind.annotation.RequestParam -> _PARAMETER_SOURCE_
+<java.sql.Statement: java.sql.ResultSet executeQuery(java.lang.String)> -> _SINK_
+<java.sql.Statement: int executeUpdate(java.lang.String)> -> _SINK_
+<java.sql.PreparedStatement: java.sql.ResultSet executeQuery()> -> _SINK_

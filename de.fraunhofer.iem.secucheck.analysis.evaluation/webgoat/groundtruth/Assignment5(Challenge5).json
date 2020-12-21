@@ -1,0 +1,36 @@
+{
+  "fileName": "Assignment5.jar",
+  "findings": [
+    {
+      "source": {
+        "targetName": "@RequestParam String password_login",
+        "targetNo": 1,
+        "statement": "public AttackResult login(@RequestParam String username_login, @RequestParam String password_login) throws Exception {",
+        "methodName": "public AttackResult login(@RequestParam String username_login, @RequestParam String password_login)",
+        "className": "org.owasp.webgoat.challenges.challenge5.Assignment5",
+        "lineNo": 51
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet resultSet = statement.executeQuery();",
+        "methodName": "public AttackResult login(@RequestParam String username_login, @RequestParam String password_login)",
+        "className": "org.owasp.webgoat.challenges.challenge5.Assignment5",
+        "lineNo": 60
+      },
+      "intermediateFlows": [
+        {
+          "statement": "PreparedStatement statement = connection.prepareStatement(\"select password from challenge_users where userid = '\" + username_login + \"' and password = '\" + password_login + \"'\");",
+          "methodName": "public AttackResult login(@RequestParam String username_login, @RequestParam String password_login)",
+          "className": "org.owasp.webgoat.challenges.challenge5.Assignment5",
+          "lineNo": 59
+        }
+      ],
+      "description": "Webgoat application: Challenge5 -> Assignment5",
+      "isNegative": false,
+      "attributes": {
+        "Assignment5": true
+      }
+    }
+  ]
+}

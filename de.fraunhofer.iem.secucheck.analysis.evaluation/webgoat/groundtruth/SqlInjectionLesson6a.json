@@ -1,0 +1,48 @@
+{
+  "fileName": "SqlInjectionLesson6a.jar",
+  "findings": [
+    {
+      "source": {
+        "targetName": "@RequestParam String userid_6a",
+        "targetNo": 1,
+        "statement": "public AttackResult completed(@RequestParam String userid_6a) {",
+        "methodName": "public AttackResult completed(@RequestParam String userid_6a)",
+        "className": "org.owasp.webgoat.sql_injection.advanced.SqlInjectionLesson6a",
+        "lineNo": 51
+      },
+      "sink": {
+        "targetName": "executeQuery",
+        "targetNo": 1,
+        "statement": "ResultSet results = statement.executeQuery(query);",
+        "methodName": "public AttackResult injectableQuery(String accountName)",
+        "className": "org.owasp.webgoat.sql_injection.advanced.SqlInjectionLesson6a",
+        "lineNo": 67
+      },
+      "intermediateFlows": [
+        {
+          "statement": "return injectableQuery(userid_6a);",
+          "methodName": "public AttackResult completed(@RequestParam String userid_6a)",
+          "className": "org.owasp.webgoat.sql_injection.advanced.SqlInjectionLesson6a",
+          "lineNo": 52
+        },
+        {
+          "statement": "public AttackResult injectableQuery(String accountName) {",
+          "methodName": "public AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.advanced.SqlInjectionLesson6a",
+          "lineNo": 56
+        },
+        {
+          "statement": "query = \"SELECT * FROM user_data WHERE last_name = '\" + accountName + \"'\";",
+          "methodName": "public AttackResult injectableQuery(String accountName)",
+          "className": "org.owasp.webgoat.sql_injection.advanced.SqlInjectionLesson6a",
+          "lineNo": 60
+        }
+      ],
+      "description": "Webgoat application: Advanced -> SqlInjectionLesson6a",
+      "isNegative": false,
+      "attributes": {
+        "SqlInjectionLesson6a": true
+      }
+    }
+  ]
+}
