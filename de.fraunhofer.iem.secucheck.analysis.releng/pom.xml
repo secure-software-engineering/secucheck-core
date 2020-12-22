@@ -15,6 +15,8 @@
  		<module>../de.fraunhofer.iem.secucheck.analysis</module>
  		<module>../de.fraunhofer.iem.secucheck.analysis.process</module>
 		<module>../de.fraunhofer.iem.secucheck.analysis.process.client</module>
+		<module>../de.fraunhofer.iem.secucheck.ftql</module>
+ 		<module>../de.fraunhofer.iem.secucheck.tql.reader</module>
 	</modules>
 
 	<properties>

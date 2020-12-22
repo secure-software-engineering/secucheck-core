@@ -91,10 +91,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		if (infoFlow.isResultAvailable()) {
 			InfoflowResults map = infoFlow.getResults();
-			
-			for (DataFlowResult dataFlowResult : map.getResultSet()) {
-				SameTypedPair<LocationDetails> locationPair = getLocationDetailsPair(singleFlow, dataFlowResult);
-				reachMap.add(new DifferentTypedPair<>(singleFlow, locationPair));
+			if (map.size() > 0) {
+				for (DataFlowResult dataFlowResult : map.getResultSet()) {
+					SameTypedPair<LocationDetails> locationPair = getLocationDetailsPair(singleFlow, dataFlowResult);
+					reachMap.add(new DifferentTypedPair<>(singleFlow, locationPair));
+				}
 			}
 		}
 				
