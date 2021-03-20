@@ -63,17 +63,31 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 
 			if (Utility.toStringEquals(statement.getMethod(), 
 					Utility.wrapInAngularBrackets(flowMethod.getSignature()))) {
-				sourceMethods.add(statement.getMethod());
+				//Todo: Update
+
 
 				if (flowMethod.getInputParameters() != null) {
 					for (InputParameter input : flowMethod.getInputParameters()) {
 						int parameterIndex = input.getNumber();
 						if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
-							out.add(new ForwardQuery(cfgEdge,
-									new AllocVal(
-											statement.getMethod().getParameterLocals().get(parameterIndex),
-											statement,
-											statement.getMethod().getParameterLocals().get(parameterIndex))));
+
+							String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
+
+							if (statement.toString().contains("@parameter") && statement.toString().contains(param)) {
+
+								if (!sourceMethods.contains(statement.getMethod())) {
+									out.add(new ForwardQuery(cfgEdge,
+											new AllocVal(
+													statement.getMethod().getParameterLocals().get(parameterIndex),
+													statement,
+													statement.getMethod().getParameterLocals().get(parameterIndex))));
+
+									sourceMethods.add(statement.getMethod());
+
+									System.out.println("Added = " + statement.toString() + " § " + statement.getMethod()
+											+ " § " + cfgEdge.getY().getStartLineNumber());
+								}
+							}
 						}
 					}
 				}
