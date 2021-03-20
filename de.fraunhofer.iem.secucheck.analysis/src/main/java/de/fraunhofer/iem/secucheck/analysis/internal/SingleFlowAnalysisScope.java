@@ -45,7 +45,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 	@Override
 	protected Collection<? extends Query> generate(Edge cfgEdge) {
 		Set<Query> out = Sets.newHashSet();
-		
+
 		// The target statement for the current edge.
 		Statement statement = cfgEdge.getTarget();
 		
@@ -57,23 +57,40 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		Collection<Val> sinkVariables = generatedSinkVariables(this.taintFlow, statement);
 		
 		sinkVariables.forEach(v -> out.add(BackwardQuery.make(cfgEdge, v)));
-		
+
 		// Find source methods.	
 		for (Method flowMethod : this.taintFlow.getFrom()) {
+
 			if (Utility.toStringEquals(statement.getMethod(), 
 					Utility.wrapInAngularBrackets(flowMethod.getSignature()))) {
 				sourceMethods.add(statement.getMethod());
+
+				if (flowMethod.getInputParameters() != null) {
+					for (InputParameter input : flowMethod.getInputParameters()) {
+						int parameterIndex = input.getNumber();
+						if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
+							out.add(new ForwardQuery(cfgEdge,
+									new AllocVal(
+											statement.getMethod().getParameterLocals().get(parameterIndex),
+											statement,
+											statement.getMethod().getParameterLocals().get(parameterIndex))));
+						}
+					}
+				}
 			}
 		}
 
 		// Find target methods.				
 		for (Method flowMethod : this.taintFlow.getTo()) {
+			//System.out.print(flowMethod.getSignature() + " ====== " + statement.getMethod());
 			if (Utility.toStringEquals(statement.getMethod(), 
 					Utility.wrapInAngularBrackets(flowMethod.getSignature()))) {
+				//System.out.print("<<< Added >>>");
 				sinkMethods.add(statement.getMethod());
 			}
+			//System.out.println();
 		}
-		
+
 		return out;
 	}
 	
@@ -84,13 +101,13 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 			
 			String sourceSootSignature = Utility.wrapInAngularBrackets(sourceMethod.getSignature());
 			Collection<Val> out = Sets.newHashSet();
-			
+
 			if (Utility.toStringEquals(statement.getMethod(), sourceSootSignature) && 
 					statement.isIdentityStmt()) {	
 
 				// Left and Right Op() methods don't work for IdentityStmt inside JimpleStatement.
 				if (statement instanceof JimpleStatement) {
-					
+
 					JimpleStatement jimpleStament = (JimpleStatement) statement;
 					IdentityStmt identityStmt = (IdentityStmt)jimpleStament.getDelegate();
 					
@@ -157,7 +174,8 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 			Statement statement) {
 		
 		for (Method sinkMethod : partialFlow.getTo()) {
-			
+
+			//System.out.print("Sink ===--->>> " + sinkMethod.getSignature() + " ----- ");
 			String sinkSootSignature = Utility.wrapInAngularBrackets(sinkMethod.getSignature());
 			Collection<Val> out = Sets.newHashSet();
 			
@@ -170,6 +188,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 					for (InputParameter input : sinkMethod.getInputParameters()) {
 						int parameterIndex = input.getNumber();
 						if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+							//System.out.println("Added");
 							out.add(statement.getInvokeExpr().getArg(parameterIndex));
 						}
 					}
@@ -180,7 +199,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 						statement.getInvokeExpr().isInstanceInvokeExpr()) {
 					out.add(statement.getInvokeExpr().getBase());
 				}
-				
+
 				return out;
 			}
 
