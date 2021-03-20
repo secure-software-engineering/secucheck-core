@@ -48,7 +48,8 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
 	private final TaintFlowQueryImpl singleFlow;
 	private final SecucheckAnalysisConfiguration configuration;
-	
+
+	private BoomerangPretransformer boomerangPretransformer = new BoomerangPretransformer();
 	private final TaintFlowQueryResult result;
 	
 	public BoomerangSingleFlowAnalysis(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
@@ -72,7 +73,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		BoomerangPretransformer.v().apply();
 		PackManager.v().getPack("wjtp").apply();
-		new BoomerangPretransformer().reset();
+		boomerangPretransformer.reset();
 		return this.result;		
 	}	
 	
