@@ -72,7 +72,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		BoomerangPretransformer.v().apply();
 		PackManager.v().getPack("wjtp").apply();
-		
+		new BoomerangPretransformer().reset();
 		return this.result;		
 	}	
 	
@@ -103,7 +103,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
 		Boomerang boomerang = getBoomerang(analysisScope, callGraph);
 		Seeds seeds = computeSeeds(analysisScope);
-		
+
 		if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
 			
 			List<Method> sanitizers = getSanitizers(singleFlow);
@@ -200,7 +200,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		for (Entry<ForwardQuery,ForwardBoomerangResults<Weight.NoWeight>> sourceEntry 
 				: sourceResults.entrySet()) {
-			
+
 			for (BackwardQuery sink : sinks) {
 				
 				if (isValidPath(sourceEntry.getValue(), sink)) {
@@ -221,7 +221,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		
 		Edge sinkEdge = sink.cfgEdge();
 		Val sinkValue = sink.var();
-		
+
 		return table.contains(sinkEdge, sinkValue);
 		
 	}
@@ -303,8 +303,18 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 			} else if (q instanceof ForwardQuery) {
 				sources.add((ForwardQuery) q);
 			}
-		} 
-		
+		}
+
+		System.out.println("\n\n\nSources:");
+		for (ForwardQuery forwardQuery : sources) {
+			System.out.println(forwardQuery.var().m().toString());
+		}
+
+		System.out.println("\n\n\nSinks:");
+		for (BackwardQuery backwardQuery : sinks) {
+			System.out.println(backwardQuery.var().m().toString());
+		}
+
 		return new Seeds(sources, sinks);
 	}
 	
