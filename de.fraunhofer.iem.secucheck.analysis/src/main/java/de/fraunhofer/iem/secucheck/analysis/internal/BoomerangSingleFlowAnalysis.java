@@ -268,7 +268,7 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		endDetails.setUsageMethodSignature(end.cfgEdge().getY().getMethod().getSubSignature());
 		endDetails.setUsageClassName(end.cfgEdge().getY().getMethod().getDeclaringClass().getName());
 		endDetails.setType(LocationType.Sink);		
-		
+
 		return new SameTypedPair<LocationDetails>(startDetails, endDetails);
 		
 	}
@@ -309,12 +309,12 @@ class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 		for (ForwardQuery forwardQuery : sources) {
 			System.out.println(forwardQuery.var().m().toString());
 		}
-
+/*
 		System.out.println("\n\n\nSinks:");
 		for (BackwardQuery backwardQuery : sinks) {
 			System.out.println(backwardQuery.var().m().toString());
 		}
-
+*/
 		return new Seeds(sources, sinks);
 	}
 	
