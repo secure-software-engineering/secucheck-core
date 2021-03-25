@@ -1,2 +1,5 @@
 /server-input.txt
 /target/
+*.iml
+.idea
+.settings
