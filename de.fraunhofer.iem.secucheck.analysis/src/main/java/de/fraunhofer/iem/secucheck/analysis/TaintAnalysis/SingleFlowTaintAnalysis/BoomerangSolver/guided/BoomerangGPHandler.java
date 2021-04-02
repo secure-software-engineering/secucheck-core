@@ -10,7 +10,6 @@ import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.jimple.JimpleVal;
-import com.google.common.collect.Sets;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
@@ -18,7 +17,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JInvokeStmt;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     private final ArrayList<BackwardQuery> foundSinks = new ArrayList<>();

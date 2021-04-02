@@ -5,7 +5,6 @@ import boomerang.scene.DeclaredMethod;
 import boomerang.scene.Method;
 import boomerang.scene.jimple.JimpleDeclaredMethod;
 import boomerang.scene.jimple.JimpleMethod;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.BoomerangGPHandler;
 import soot.SootClass;
 
 public class CustomDataFlowScope implements DataFlowScope {
@@ -24,7 +23,6 @@ public class CustomDataFlowScope implements DataFlowScope {
         if (method.getSignature().equals(BoomerangGPHandler.SB_APPEND)) {
             return true;
         }
-
 
 
         return ((SootClass) m.getDeclaringClass().getDelegate()).isPhantom() || m.isNative();

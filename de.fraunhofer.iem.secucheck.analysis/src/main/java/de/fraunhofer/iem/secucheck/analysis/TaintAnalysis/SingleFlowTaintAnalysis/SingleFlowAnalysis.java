@@ -3,5 +3,5 @@ package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.TaintFlowQueryResult;
 
 public interface SingleFlowAnalysis {
-	TaintFlowQueryResult run() throws Exception;
+    TaintFlowQueryResult run() throws Exception;
 }

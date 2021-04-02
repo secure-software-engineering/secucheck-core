@@ -1,46 +1,42 @@
 package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
 
-import java.util.*;
-import java.util.Map.Entry;
-
-import boomerang.*;
-import boomerang.guided.DemandDrivenGuidedAnalysis;
-import boomerang.scene.*;
-import boomerang.scene.jimple.JimpleVal;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
-
+import boomerang.BackwardQuery;
+import boomerang.Boomerang;
+import boomerang.ForwardQuery;
+import boomerang.Query;
 import boomerang.results.ForwardBoomerangResults;
+import boomerang.scene.AllocVal;
+import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
+import boomerang.scene.Statement;
+import boomerang.scene.Val;
 import boomerang.scene.jimple.BoomerangPretransformer;
 import boomerang.scene.jimple.JimpleStatement;
+import boomerang.scene.jimple.JimpleVal;
 import boomerang.scene.jimple.SootCallGraph;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.*;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.BoomerangGPHandler;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.CustomDataFlowScope;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.MyDefaultBoomerangOptions;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.SecucheckBoomerangDemandDrivenAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.SingleFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationDetails;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationType;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.TaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationDetails;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationType;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.TaintFlowQueryResult;
-import soot.Body;
-import soot.PackManager;
-import soot.SceneTransformer;
-import soot.SootMethod;
-import soot.Transform;
+import soot.*;
 import soot.jimple.IdentityStmt;
 import soot.jimple.JimpleBody;
 import soot.jimple.ParameterRef;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JNopStmt;
-
 import wpds.impl.Weight;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 

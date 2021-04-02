@@ -16,75 +16,75 @@ import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintA
  */
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
-	protected final ReentrantLock lock;  
-	protected SecucheckAnalysisConfiguration configuration;
-	protected long analysisTime;
-	
-	public SecucheckTaintAnalysisBase(SecucheckAnalysisConfiguration configuration) {
-		this.lock = new ReentrantLock();
-		this.configuration = configuration;
-	}
-	
-	@Override
-	public void setConfiguration(SecucheckAnalysisConfiguration configuration) {
-		this.configuration = configuration;
-	}
-	
-	@Override
-	public SecucheckAnalysisConfiguration getConfiguration() {
-		return this.configuration;
-	}
-	
-	@Override
-	public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries) 
-			throws Exception  {		
-		Utility.ValidateCompositeFlowQueries(flowQueries);
-		Utility.ValidateConfigruation(this.configuration);
-		lock.lock();
-		try {
-			return executeAnalysis(flowQueries);
-		} finally {
-			lock.unlock();
-		}
-	}
-		
-	private SecucheckTaintAnalysisResult executeAnalysis(List<CompositeTaintFlowQueryImpl> flowQueries) 
-			throws Exception {
+    protected final ReentrantLock lock;
+    protected SecucheckAnalysisConfiguration configuration;
+    protected long analysisTime;
 
-		long startTime = System.currentTimeMillis();
+    public SecucheckTaintAnalysisBase(SecucheckAnalysisConfiguration configuration) {
+        this.lock = new ReentrantLock();
+        this.configuration = configuration;
+    }
 
-		SingleFlowAnalysisFactory analysisFactory = 
-				new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), this.configuration);
-		
-		SecucheckTaintAnalysisResult result = new SecucheckTaintAnalysisResult();
-		
-		for (CompositeTaintFlowQueryImpl flowQuery : flowQueries) {
-			
-			if (this.configuration.getListener() != null && 
-					this.configuration.getListener().isCancelled()) {
-				break;
-			}
-			
-			CompositeTaintFlowAnalysis analysis = new CompositeTaintFlowAnalysisImpl(flowQuery,
-					analysisFactory, this.configuration.getListener());
-			
-			CompositeTaintFlowQueryResult singleResult = analysis.run();
-			
-			if (singleResult.size() != 0) {
-				result.addResult(flowQuery, singleResult);
-			}
-			
-			if (this.configuration.getListener() != null) {
-				this.configuration.getListener()
-					.reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
-			}
-		}
+    @Override
+    public void setConfiguration(SecucheckAnalysisConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
-		long endTime = System.currentTimeMillis();
+    @Override
+    public SecucheckAnalysisConfiguration getConfiguration() {
+        return this.configuration;
+    }
 
-		analysisTime = endTime - startTime;
+    @Override
+    public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries)
+            throws Exception {
+        Utility.ValidateCompositeFlowQueries(flowQueries);
+        Utility.ValidateConfigruation(this.configuration);
+        lock.lock();
+        try {
+            return executeAnalysis(flowQueries);
+        } finally {
+            lock.unlock();
+        }
+    }
 
-		return result;
-	}
+    private SecucheckTaintAnalysisResult executeAnalysis(List<CompositeTaintFlowQueryImpl> flowQueries)
+            throws Exception {
+
+        long startTime = System.currentTimeMillis();
+
+        SingleFlowAnalysisFactory analysisFactory =
+                new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), this.configuration);
+
+        SecucheckTaintAnalysisResult result = new SecucheckTaintAnalysisResult();
+
+        for (CompositeTaintFlowQueryImpl flowQuery : flowQueries) {
+
+            if (this.configuration.getListener() != null &&
+                    this.configuration.getListener().isCancelled()) {
+                break;
+            }
+
+            CompositeTaintFlowAnalysis analysis = new CompositeTaintFlowAnalysisImpl(flowQuery,
+                    analysisFactory, this.configuration.getListener());
+
+            CompositeTaintFlowQueryResult singleResult = analysis.run();
+
+            if (singleResult.size() != 0) {
+                result.addResult(flowQuery, singleResult);
+            }
+
+            if (this.configuration.getListener() != null) {
+                this.configuration.getListener()
+                        .reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        analysisTime = endTime - startTime;
+
+        return result;
+    }
 
 }
