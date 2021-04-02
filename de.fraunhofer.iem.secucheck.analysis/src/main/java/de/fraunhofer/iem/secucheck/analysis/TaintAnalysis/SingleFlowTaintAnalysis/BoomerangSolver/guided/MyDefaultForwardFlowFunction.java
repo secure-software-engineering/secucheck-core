@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
 import boomerang.BoomerangOptions;
 import boomerang.ForwardQuery;

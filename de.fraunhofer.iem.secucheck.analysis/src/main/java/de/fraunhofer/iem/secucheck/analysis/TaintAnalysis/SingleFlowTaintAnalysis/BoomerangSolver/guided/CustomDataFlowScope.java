@@ -1,10 +1,11 @@
-package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
 import boomerang.scene.DataFlowScope;
 import boomerang.scene.DeclaredMethod;
 import boomerang.scene.Method;
 import boomerang.scene.jimple.JimpleDeclaredMethod;
 import boomerang.scene.jimple.JimpleMethod;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.BoomerangGPHandler;
 import soot.SootClass;
 
 public class CustomDataFlowScope implements DataFlowScope {

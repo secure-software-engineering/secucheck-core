@@ -17,6 +17,10 @@ import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.*;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.BoomerangGPHandler;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.CustomDataFlowScope;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.MyDefaultBoomerangOptions;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided.SecucheckBoomerangDemandDrivenAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
@@ -187,22 +191,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 							"<ON{F}java.lang.StringBuilder: GO{F}java.lang.StringBuilder append(java.lang.String)>",
 							"<GO{B}java.lang.StringBuilder: ON{B}java.lang.String toString()>");
 */
-            //	for (Query source : sources) {
-            DemandDrivenGuidedAnalysis demandDrivenGuidedAnalysis = new DemandDrivenGuidedAnalysis(
-                    new BoomerangGPHandler(),
-                    new MyDefaultBoomerangOptions(),
-                    new CustomDataFlowScope());
-
-            QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run((Query) sources.toArray()[0]);
-
-            Set<Query> queries = queryGraph.getNodes();
-
-            System.out.println("Criticaöllll = " + queryGraph.getNodes().size() + " ---- " + queryGraph);
-
-            for (Query query : queries) {
-                System.out.println(query);
-            }
-            //	}
+            SecucheckBoomerangDemandDrivenAnalysis.run(sources);
         }
 
         return reachMap;
