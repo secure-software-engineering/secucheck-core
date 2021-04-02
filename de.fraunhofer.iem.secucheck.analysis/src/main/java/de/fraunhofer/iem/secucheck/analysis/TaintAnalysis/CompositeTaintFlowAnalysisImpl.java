@@ -1,7 +1,7 @@
 package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis;
 
-import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysis;
-import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysisFactory;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.SingleFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.SingleFlowAnalysisFactory;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.AnalysisResultListener;
