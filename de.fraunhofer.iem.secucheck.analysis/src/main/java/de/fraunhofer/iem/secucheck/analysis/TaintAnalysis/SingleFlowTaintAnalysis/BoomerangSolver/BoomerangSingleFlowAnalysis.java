@@ -104,7 +104,9 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
         if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
 
-            List<Method> sanitizers = getSanitizers(singleFlow);
+            reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis().run(seeds.getSources(), seeds.getSinks(), singleFlow));
+
+            /*            List<Method> sanitizers = getSanitizers(singleFlow);
             Map<SootMethod, Body> oldMethodBodies = new HashMap<SootMethod, Body>();
 
             try {
@@ -114,7 +116,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
             } finally {
                 oldMethodBodies.entrySet().forEach(entry ->
                         entry.getKey().setActiveBody(entry.getValue()));
-            }
+            }*/
         }
 
         return reachMap;
@@ -191,7 +193,6 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 							"<ON{F}java.lang.StringBuilder: GO{F}java.lang.StringBuilder append(java.lang.String)>",
 							"<GO{B}java.lang.StringBuilder: ON{B}java.lang.String toString()>");
 */
-            SecucheckBoomerangDemandDrivenAnalysis.run(sources);
         }
 
         return reachMap;
@@ -251,8 +252,6 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         Val val = null;
         Statement stmt = null, tmp3 = null;
 
-        System.out.println("Size = " + table.cellSet().size());
-
         int size = table.cellSet().size() - 1;
 
         Table.Cell<Edge, Val, Weight.NoWeight> cell = null;
@@ -308,7 +307,6 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         Val val = null;
         Statement stmt = null, tmp3 = null;
 
-        System.out.println("Size = " + table.cellSet().size());
         for (Table.Cell<Edge, Val, Weight.NoWeight> cell : table.cellSet()) {
 
             tmp1 = cell.getRowKey();

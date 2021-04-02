@@ -10,16 +10,32 @@ import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.jimple.JimpleVal;
+import com.google.common.collect.Sets;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
+import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
+import de.fraunhofer.iem.secucheck.analysis.query.Method;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JInvokeStmt;
 
 import java.util.*;
 
 public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
+    private final ArrayList<BackwardQuery> foundSinks = new ArrayList<>();
+    private TaintFlowQueryImpl singleFlow;
+
     public static final String S_VALUE_OF = "<java.lang.String: java.lang.String valueOf(java.lang.Object)>";
     public static final String SB_TO_STRING = "<java.lang.StringBuilder: java.lang.String toString()>";
     public static final String SB_APPEND = "<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>";
     public static final String SB_INIT = "<java.lang.StringBuilder: void <init>(java.lang.String)>";
+
+    public BoomerangGPHandler(TaintFlowQueryImpl singleFlow) {
+        this.singleFlow = singleFlow;
+    }
+
+    public ArrayList<BackwardQuery> getFoundSinks() {
+        return foundSinks;
+    }
 
     private Collection<Query> processStatement(Statement statement, Val dataFlowVal, ControlFlowGraph.Edge dataFlowEdge) {
         ArrayList<Query> out = new ArrayList<Query>();
@@ -132,6 +148,42 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         return out;
     }
 
+    private boolean isSink(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+        boolean isSinkFound = false;
+
+        for (Method sinkMethod : singleFlow.getTo()) {
+
+            //System.out.print("Sink ===--->>> " + sinkMethod.getSignature() + " ----- ");
+            String sinkSootSignature = Utility.wrapInAngularBrackets(sinkMethod.getSignature());
+
+            if (statement.containsInvokeExpr() &&
+                    Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
+                            sinkSootSignature)) {
+
+                // Taint the return value.
+                if (sinkMethod.getInputParameters() != null) {
+                    for (InputParameter input : sinkMethod.getInputParameters()) {
+                        int parameterIndex = input.getNumber();
+                        if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                            foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex)));
+                            isSinkFound = true;
+                        }
+                    }
+                }
+
+                // Taint this object.
+                if (sinkMethod.isInputThis() &&
+                        statement.getInvokeExpr().isInstanceInvokeExpr()) {
+                    foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getBase()));
+                    isSinkFound = true;
+                }
+            }
+
+        }
+
+        // TODO: re-check the sink structure!!
+        return isSinkFound;
+    }
 
     @Override
     public Collection<Query> onForwardFlow(ForwardQuery query, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
@@ -140,12 +192,8 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
 
         //   System.out.println("Check = " + stmt + "\n" + stmt.getClass().getCanonicalName());
         if (stmt.containsInvokeExpr()) {
-            if (stmt.getInvokeExpr().getMethod().getSignature().contains("executeQuery")) {
-                System.out.println("\n\n\n\n\n\n\nHalf Hooorrrrrayyyyy\n\n\n\n\n\n\n\n");
-                if (dataFlowVal.toString().equals(stmt.getInvokeExpr().getArg(0).toString())) {
-                    System.out.println("\n\n\n\n\n\n\n\nHooorrrrayyyyy found taintflow!!!\n\n\n\n\n\n\n\n");
-
-                }
+            if (isSink(stmt, dataFlowEdge, dataFlowVal)) {
+                return Collections.emptyList();
             }
 
             out.addAll(processStatement(stmt, dataFlowVal, dataFlowEdge));
