@@ -9,12 +9,31 @@ import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
-public interface SecucheckAnalysis {	
-	
-	void setConfiguration(SecucheckAnalysisConfiguration configuration);
-	SecucheckAnalysisConfiguration getConfiguration();
-	
-	SecucheckTaintAnalysisResult run
-		(List<CompositeTaintFlowQueryImpl> flowQueries) 
-				throws Exception;
+/**
+ * Top level for the Secucheck analysis
+ */
+public interface SecucheckAnalysis {
+
+    /**
+     * Sets the configurations for the Secucheck analysis.
+     *
+     * @param configuration Configuration settings for analysis.
+     */
+    void setConfiguration(SecucheckAnalysisConfiguration configuration);
+
+    /**
+     * Getter for the configuration
+     *
+     * @return Secucheck configuration
+     */
+    SecucheckAnalysisConfiguration getConfiguration();
+
+    /**
+     * Runs the TaintAnalysis
+     *
+     * @param flowQueries TaintFlowQueries
+     * @return TaintAnalysis results
+     * @throws Exception Any kind of exceptions.
+     */
+    SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries) throws Exception;
 }

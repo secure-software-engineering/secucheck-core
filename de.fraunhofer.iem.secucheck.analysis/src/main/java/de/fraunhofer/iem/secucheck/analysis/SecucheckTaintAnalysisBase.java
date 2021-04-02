@@ -12,6 +12,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
+/**
+ * First level implementation of the SecucheckAnalysis. This valideates TaintFlowQuery, SecucheckConfiguration and run the analysis.
+ */
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
 	protected final ReentrantLock lock;  
@@ -48,7 +51,9 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 		
 	private SecucheckTaintAnalysisResult executeAnalysis(List<CompositeTaintFlowQueryImpl> flowQueries) 
 			throws Exception {
-				
+
+		long startTime = System.currentTimeMillis();
+
 		SingleFlowAnalysisFactory analysisFactory = 
 				new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), this.configuration);
 		
@@ -75,7 +80,11 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 					.reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
 			}
 		}
-		
+
+		long endTime = System.currentTimeMillis();
+
+		analysisTime = endTime - startTime;
+
 		return result;
 	}
 

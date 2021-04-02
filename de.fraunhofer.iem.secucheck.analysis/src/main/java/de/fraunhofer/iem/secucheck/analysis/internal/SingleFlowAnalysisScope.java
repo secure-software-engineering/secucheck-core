@@ -46,8 +46,11 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 	protected Collection<? extends Query> generate(Edge cfgEdge) {
 		Set<Query> out = Sets.newHashSet();
 
+	//	System.out.println("Start (" + cfgEdge.getMethod().getName() + ") = " + cfgEdge.getStart());
+	//	System.out.println("Target (" + cfgEdge.getMethod().getName() + ")= " + cfgEdge.getTarget());
+
 		// The target statement for the current edge.
-		Statement statement = cfgEdge.getTarget();
+		Statement statement = cfgEdge.getStart();
 		
 		Collection<Val> sourceVariables = 
 				generateSourceVariables(this.taintFlow, statement);

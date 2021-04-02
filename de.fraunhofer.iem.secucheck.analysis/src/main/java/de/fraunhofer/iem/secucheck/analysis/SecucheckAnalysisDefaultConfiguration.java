@@ -9,6 +9,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
+/**
+ * Default implementation of Secucheck Analysis configurations
+ */
 public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisConfiguration{
 	
 	private OS os;

@@ -10,6 +10,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
+/**
+ * Second level implementation of the SecucheckAnalysis. This sets the enviornment for the analysis.
+ */
 public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
 	
 	public SecucheckTaintAnalysis() {
