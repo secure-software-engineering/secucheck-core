@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
 
 import boomerang.scene.DataFlowScope;
 import boomerang.scene.DeclaredMethod;

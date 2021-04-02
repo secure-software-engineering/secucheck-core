@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
 
 
 import java.util.ArrayList;
@@ -23,9 +23,9 @@ import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.util.dot.DotGraph;
 
-class Utility {
-	
-	static void initializeSootWithEntryPoints(String sootClassPath, List<EntryPoint> entryPoints) 
+public class Utility {
+
+	public static void initializeSootWithEntryPoints(String sootClassPath, List<EntryPoint> entryPoints)
 			throws Exception {
 		
 		G.v().reset();
@@ -117,21 +117,21 @@ class Utility {
 			throw new Exception(message, e);
 		}
 	}
-	
-	static String getCombinedSootClassPath(OS os, String appClassPath, String sootClassPath) {
+
+	public static String getCombinedSootClassPath(OS os, String appClassPath, String sootClassPath) {
 		String separator = os == OS.WINDOWS ? ";" : ":";
 		return sootClassPath + separator + appClassPath;
 	}
-	
-	static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(CompositeTaintFlowQuery flowQuery) {
+
+	public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(CompositeTaintFlowQuery flowQuery) {
 		List<de.fraunhofer.iem.secucheck.analysis.query.Method> methods = new ArrayList<>();
 		for (TaintFlowQuery singleFlow: flowQuery.getTaintFlowQueries()) {
 			methods.addAll(getMethods(singleFlow));
 		}
 		return methods;
 	}
-		
-	static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(TaintFlowQuery flowQuery) {
+
+	public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(TaintFlowQuery flowQuery) {
 		List<de.fraunhofer.iem.secucheck.analysis.query.Method> methods = new ArrayList<>();
 		flowQuery.getFrom().forEach(y -> methods.add((Method)y));
 		flowQuery.getTo().forEach(y -> methods.add((Method)y));
@@ -144,14 +144,14 @@ class Utility {
 		
 		return methods;
 	}
-	
-	static SootMethod getSootMethod(boomerang.scene.Method method) {
+
+	public static SootMethod getSootMethod(boomerang.scene.Method method) {
 		WrappedClass wrappedClass = method.getDeclaringClass();
 		SootClass clazz = (SootClass) wrappedClass.getDelegate();
 		return clazz.getMethod(method.getSubSignature());
 	}
-	
-	static SootMethod getSootMethod(de.fraunhofer.iem.secucheck.analysis.query.Method method) {
+
+	public static SootMethod getSootMethod(de.fraunhofer.iem.secucheck.analysis.query.Method method) {
 		String[] signatures = method.getSignature().split(":");
 		SootClass sootClass = Scene.v().forceResolve(signatures[0], SootClass.BODIES);
 		if (sootClass != null && signatures.length >= 2) {
@@ -159,8 +159,8 @@ class Utility {
 		}
 		return null;
 	}
-	
-	static SootMethod findSourceMethodDefinition(TaintFlowQuery partialFlow, 
+
+	public static SootMethod findSourceMethodDefinition(TaintFlowQuery partialFlow,
 			SootMethod method, Stmt actualStatement) {
 		for (de.fraunhofer.iem.secucheck.analysis.query.Method sourceMethod : partialFlow.getFrom()) {
 			String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
@@ -173,8 +173,8 @@ class Utility {
 		}
 		return null;
 	}
-	
-	static SootMethod findSinkMethodDefinition(TaintFlowQuery partialFlow,
+
+	public static SootMethod findSinkMethodDefinition(TaintFlowQuery partialFlow,
 			SootMethod method, Stmt actualStatement) {
 		for (de.fraunhofer.iem.secucheck.analysis.query.Method sinkMethod : partialFlow.getTo()) {
 			String sinkSootSignature = "<" + sinkMethod.getSignature() + ">";

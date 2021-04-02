@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
 
 import boomerang.BoomerangOptions;
 import boomerang.ForwardQuery;
@@ -10,8 +10,6 @@ import boomerang.scene.Val;
 import wpds.interfaces.State;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {

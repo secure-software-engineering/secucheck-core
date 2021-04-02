@@ -18,7 +18,7 @@ import boomerang.scene.Val;
 import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.jimple.JimpleVal;
 import boomerang.scene.jimple.SootCallGraph;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.Utility;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;

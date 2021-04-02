@@ -1,8 +1,7 @@
-package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver;
 
 import boomerang.flowfunction.IForwardFlowFunction;
 import boomerang.scene.jimple.IntAndStringBoomerangOptions;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.MyDefaultForwardFlowFunction;
 
 public class MyDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
 
