@@ -1,9 +1,10 @@
-package de.fraunhofer.iem.secucheck.analysis.internal;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
 
 import boomerang.Boomerang;
 import boomerang.scene.AnalysisScope;
 import boomerang.scene.SootDataFlowScope;
 import boomerang.scene.jimple.SootCallGraph;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.TaintAnalysisOptions;
 import soot.Scene;
 
 public class SingleFlowBoomerang extends Boomerang { 

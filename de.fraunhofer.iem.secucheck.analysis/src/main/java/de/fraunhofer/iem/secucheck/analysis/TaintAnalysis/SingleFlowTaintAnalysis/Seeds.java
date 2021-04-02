@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.internal;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
 
 import java.util.Set;
 

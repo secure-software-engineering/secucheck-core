@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.internal;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -10,7 +10,6 @@ import com.google.common.collect.Sets;
 import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
-import boomerang.WeightedForwardQuery;
 import boomerang.scene.AllocVal;
 import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
@@ -19,16 +18,13 @@ import boomerang.scene.Val;
 import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.jimple.JimpleVal;
 import boomerang.scene.jimple.SootCallGraph;
-import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
-import soot.jimple.internal.JIdentityStmt;
-import wpds.impl.Weight;
-import wpds.impl.Weight;
 
 public class SingleFlowAnalysisScope extends AnalysisScope {
 
@@ -64,7 +60,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 		// Find source methods.	
 		for (Method flowMethod : this.taintFlow.getFrom()) {
 
-			if (Utility.toStringEquals(statement.getMethod(), 
+			if (Utility.toStringEquals(statement.getMethod(),
 					Utility.wrapInAngularBrackets(flowMethod.getSignature()))) {
 				//Todo: Update
 
