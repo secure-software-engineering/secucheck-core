@@ -4,11 +4,7 @@ import java.security.Permission;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
-import de.fraunhofer.iem.secucheck.analysis.query.OS;
-import de.fraunhofer.iem.secucheck.analysis.query.Solver;
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
-import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintAnalysisResult;
 
 /**
  * Second level implementation of the SecucheckAnalysis. This sets the enviornment for the analysis.

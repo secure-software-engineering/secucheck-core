@@ -3,14 +3,13 @@ package de.fraunhofer.iem.secucheck.analysis;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import boomerang.scene.jimple.SootCallGraph;
-import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysis;
-import de.fraunhofer.iem.secucheck.analysis.internal.CompositeTaintFlowAnalysisImpl;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.CompositeTaintFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.CompositeTaintFlowAnalysisImpl;
 import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysisFactory;
 import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysisFactoryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
-import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintAnalysisResult;
 
 /**
  * First level implementation of the SecucheckAnalysis. This valideates TaintFlowQuery, SecucheckConfiguration and run the analysis.

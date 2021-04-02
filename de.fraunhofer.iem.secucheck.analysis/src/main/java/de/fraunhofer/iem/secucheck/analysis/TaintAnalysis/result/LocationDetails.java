@@ -1,4 +1,4 @@
-package de.fraunhofer.iem.secucheck.analysis.result;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result;
 
 public class LocationDetails {
 	

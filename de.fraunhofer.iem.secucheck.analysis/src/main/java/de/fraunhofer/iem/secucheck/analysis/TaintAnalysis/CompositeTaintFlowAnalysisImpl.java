@@ -1,10 +1,12 @@
-package de.fraunhofer.iem.secucheck.analysis.internal;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis;
 
+import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.internal.SingleFlowAnalysisFactory;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
-import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.TaintFlowQueryResult;
 
 import java.util.List;
 

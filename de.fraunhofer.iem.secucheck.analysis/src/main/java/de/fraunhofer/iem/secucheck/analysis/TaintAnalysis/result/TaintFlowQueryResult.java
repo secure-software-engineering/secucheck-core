@@ -1,10 +1,11 @@
-package de.fraunhofer.iem.secucheck.analysis.result;
+package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.AnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.datastructures.Pair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 
