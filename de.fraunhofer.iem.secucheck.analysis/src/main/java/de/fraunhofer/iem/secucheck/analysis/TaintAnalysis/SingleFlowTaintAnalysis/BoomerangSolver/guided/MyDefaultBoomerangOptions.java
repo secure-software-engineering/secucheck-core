@@ -2,8 +2,14 @@ package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalys
 
 import boomerang.flowfunction.IForwardFlowFunction;
 import boomerang.scene.jimple.IntAndStringBoomerangOptions;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 
 public class MyDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
+    private TaintFlowQueryImpl singleFlow;
+
+    public MyDefaultBoomerangOptions(TaintFlowQueryImpl singleFlow) {
+        this.singleFlow = singleFlow;
+    }
 
     @Override
     public StaticFieldStrategy getStaticFieldStrategy() {
@@ -52,6 +58,6 @@ public class MyDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
 */
     @Override
     public IForwardFlowFunction getForwardFlowFunctions() {
-        return new MyDefaultForwardFlowFunction(this);
+        return new MyDefaultForwardFlowFunction(this, singleFlow);
     }
 }
