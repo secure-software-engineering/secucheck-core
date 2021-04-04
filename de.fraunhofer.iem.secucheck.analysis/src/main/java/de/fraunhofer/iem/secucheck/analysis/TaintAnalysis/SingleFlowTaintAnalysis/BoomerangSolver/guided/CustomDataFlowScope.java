@@ -12,6 +12,10 @@ public class CustomDataFlowScope implements DataFlowScope {
     public boolean isExcluded(DeclaredMethod method) {
         JimpleDeclaredMethod m = (JimpleDeclaredMethod) method;
 
+        if (method.getSignature().equals("<org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson2: java.lang.String sanitize(java.lang.String)>")) {
+            return true;
+        }
+
         if (method.getSignature().equals(BoomerangGPHandler.S_VALUE_OF)) {
             return true;
         }
@@ -30,6 +34,10 @@ public class CustomDataFlowScope implements DataFlowScope {
 
     public boolean isExcluded(Method method) {
         JimpleMethod m = (JimpleMethod) method;
+
+        if (m.getSubSignature().equals("java.lang.String sanitize(java.lang.String)")) {
+            return true;
+        }
 
         if (m.getSubSignature().equals("java.lang.String valueOf(java.lang.Object)")) {
             return true;
