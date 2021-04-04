@@ -25,10 +25,11 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         sinks.stream().forEach(sink -> foundSinks.put(sink, false));
 
         BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow);
+        MyDefaultBoomerangOptions myDefaultBoomerangOptions = new MyDefaultBoomerangOptions(singleFlow);
 
         DemandDrivenGuidedAnalysis demandDrivenGuidedAnalysis = new DemandDrivenGuidedAnalysis(
                 boomerangGPHandler,
-                new MyDefaultBoomerangOptions(),
+                myDefaultBoomerangOptions,
                 new CustomDataFlowScope());
 
         QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run((Query) sources.toArray()[0]);

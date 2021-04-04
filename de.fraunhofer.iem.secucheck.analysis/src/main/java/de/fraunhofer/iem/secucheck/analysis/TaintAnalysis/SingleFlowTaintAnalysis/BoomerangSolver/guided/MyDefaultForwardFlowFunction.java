@@ -1,21 +1,28 @@
 package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
+import boomerang.BackwardQuery;
 import boomerang.BoomerangOptions;
 import boomerang.ForwardQuery;
 import boomerang.flowfunction.DefaultForwardFlowFunction;
-import boomerang.scene.ControlFlowGraph;
-import boomerang.scene.Method;
-import boomerang.scene.Statement;
-import boomerang.scene.Val;
+import boomerang.scene.*;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
+import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
+import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import wpds.interfaces.State;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
+    private TaintFlowQueryImpl singleFlow;
 
-    public MyDefaultForwardFlowFunction(BoomerangOptions opts) {
+    public MyDefaultForwardFlowFunction(BoomerangOptions opts, TaintFlowQueryImpl singleFlow) {
         super(opts);
+        this.singleFlow = singleFlow;
     }
 
     @Override
@@ -26,36 +33,84 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
 
     @Override
     public Set<Val> callFlow(Statement callSite, Val fact, Method callee) {
-
-
-        Set<Val> res = super.callFlow(callSite, fact, callee);
-
-        if (callee.getSubSignature().contains("injectableQuery")) {
-            System.out.println("CALL_FLOW");
-            System.out.println(callSite);
-            System.out.println(fact);
-            System.out.println(callee);
-
-            for (Val val : res)
-                System.out.println(val);
+   /*     if (isSanitizer(callSite, fact, callee)){
+            System.out.println("Returning empty");
+            return Collections.emptySet();
         }
+*/
+        Set<Val> res = super.callFlow(callSite, fact, callee);
+/*
+        System.out.println("Returning non empty");
+        for (Val val : res) {
+            System.out.println("--> " + val);
+        }
+*/
         return res;
     }
 
     @Override
     public Collection<State> callToReturnFlow(ForwardQuery query, ControlFlowGraph.Edge edge, Val fact) {
 
+        if (edge.getStart().containsInvokeExpr()) {
+            if (isSanitizer(edge.getStart(), fact)) {
+                return Collections.emptyList();
+            }
+        }
 
-        Set<State> res = super.normalFlow(query, edge, fact);
+        Collection<State> res = super.normalFlow(query, edge, fact);
 
-        if (edge.getMethod().getSubSignature().contains("injectableQuery")) {
-            System.out.println("CALL_TO_RETURN_FLOW");
-            System.out.println(edge);
-            System.out.println(fact);
-
-            for (State state : res)
-                System.out.println(state);
+        for (State state : res) {
+            System.out.println(state);
         }
         return res;
+    }
+
+    private boolean isSanitizer(Statement callSite, Val fact) {
+        for (MethodImpl sanitizer : singleFlow.getNotThrough()) {
+            String sanitizerSootSignature = Utility.wrapInAngularBrackets(sanitizer.getSignature());
+
+            if (Utility.toStringEquals(callSite.getInvokeExpr().getMethod().getSignature(), sanitizerSootSignature)) {
+                // UnTaint the OutDeclaration.
+                if (sanitizer.getInputParameters() != null) {      // Check for the iputparameters for tainted values
+                    for (InputParameter input : sanitizer.getInputParameters()) {   // for each input parameters
+                        int parameterIndex = input.getNumber();
+                        if (callSite.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                            if (callSite.getInvokeExpr().getArg(parameterIndex).toString().equals(fact.toString())) {   // If the parameter is tainted, then untaint the output declaration
+
+                                if (sanitizer.getOutputParameters() != null) {
+                                    for (OutputParameter output : sanitizer.getOutputParameters()) {
+                                        int outputParameterIndex = output.getNumber();
+
+                                        if (parameterIndex == outputParameterIndex) {
+                                            System.out.println("Returning 100;");
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // UnTaint this object.
+                if (sanitizer.isInputThis() &&
+                        callSite.getInvokeExpr().isInstanceInvokeExpr()) {
+                    if (callSite.getInvokeExpr().getBase().toString().equals(fact.toString()))
+                        if (sanitizer.isOutputThis()) {
+                            System.out.println("Returning 100;");
+                            return true;
+                        }
+                }
+
+                // UnTaint this object.
+                if (sanitizer.getReturnValue() != null) {
+                    System.out.println("Returning 150; = " + callSite);
+                    return false;
+                }
+            }
+        }
+
+        System.out.println("Returning 200;");
+        return false;
     }
 }
