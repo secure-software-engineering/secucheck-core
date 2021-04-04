@@ -166,8 +166,10 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                     for (InputParameter input : sinkMethod.getInputParameters()) {
                         int parameterIndex = input.getNumber();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                            foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex)));
-                            isSinkFound = true;
+                            if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
+                                foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex)));
+                                isSinkFound = true;
+                            }
                         }
                     }
                 }
@@ -175,8 +177,10 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 // Taint this object.
                 if (sinkMethod.isInputThis() &&
                         statement.getInvokeExpr().isInstanceInvokeExpr()) {
-                    foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getBase()));
-                    isSinkFound = true;
+                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
+                        foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getBase()));
+                        isSinkFound = true;
+                    }
                 }
             }
 
