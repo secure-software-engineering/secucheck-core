@@ -1,10 +1,12 @@
 package de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
-import boomerang.BackwardQuery;
 import boomerang.BoomerangOptions;
 import boomerang.ForwardQuery;
 import boomerang.flowfunction.DefaultForwardFlowFunction;
-import boomerang.scene.*;
+import boomerang.scene.ControlFlowGraph;
+import boomerang.scene.Method;
+import boomerang.scene.Statement;
+import boomerang.scene.Val;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
@@ -14,7 +16,6 @@ import wpds.interfaces.State;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
@@ -57,12 +58,7 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
             }
         }
 
-        Collection<State> res = super.normalFlow(query, edge, fact);
-
-        for (State state : res) {
-            System.out.println(state);
-        }
-        return res;
+        return super.normalFlow(query, edge, fact);
     }
 
     private boolean isSanitizer(Statement callSite, Val fact) {
@@ -82,7 +78,6 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
                                         int outputParameterIndex = output.getNumber();
 
                                         if (parameterIndex == outputParameterIndex) {
-                                            System.out.println("Returning 100;");
                                             return true;
                                         }
                                     }
@@ -97,20 +92,17 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
                         callSite.getInvokeExpr().isInstanceInvokeExpr()) {
                     if (callSite.getInvokeExpr().getBase().toString().equals(fact.toString()))
                         if (sanitizer.isOutputThis()) {
-                            System.out.println("Returning 100;");
                             return true;
                         }
                 }
 
                 // UnTaint this object.
                 if (sanitizer.getReturnValue() != null) {
-                    System.out.println("Returning 150; = " + callSite);
                     return false;
                 }
             }
         }
 
-        System.out.println("Returning 200;");
         return false;
     }
 }

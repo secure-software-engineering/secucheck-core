@@ -81,8 +81,8 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 
                                     sourceMethods.add(statement.getMethod());
 
-                                    System.out.println("Added = " + statement.toString() + " § " + statement.getMethod()
-                                            + " § " + cfgEdge.getY().getStartLineNumber());
+                                 //   System.out.println("Added = " + statement.toString() + " § " + statement.getMethod()
+                                 //           + " § " + cfgEdge.getY().getStartLineNumber());
                                 }
                             }
                         }
