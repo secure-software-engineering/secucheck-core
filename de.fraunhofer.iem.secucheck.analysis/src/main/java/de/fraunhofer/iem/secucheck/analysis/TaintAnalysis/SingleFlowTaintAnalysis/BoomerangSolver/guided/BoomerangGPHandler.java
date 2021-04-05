@@ -13,6 +13,7 @@ import boomerang.scene.jimple.JimpleVal;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
+import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JInvokeStmt;
@@ -20,6 +21,7 @@ import soot.jimple.internal.JInvokeStmt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     private final ArrayList<BackwardQuery> foundSinks = new ArrayList<>();
@@ -190,6 +192,103 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         return isSinkFound;
     }
 
+    private Collection<Query> getOutForRequiredPropogator(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+        List<Query> queryList = new ArrayList<>();
+
+        if (requiredPropogatorMethod.getOutputParameters() != null) {
+            for (OutputParameter outputParameter : requiredPropogatorMethod.getOutputParameters()) {
+                int parameterIndex = outputParameter.getNumber();
+                if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                    System.out.println("Ok Entered here");
+                    queryList.add(new ForwardQuery(dataFlowEdge,
+                            new AllocVal(
+                                    statement.getInvokeExpr().getArg(parameterIndex),
+                                    statement,
+                                    statement.getInvokeExpr().getArg(parameterIndex)
+                            )
+                    ));
+                }
+            }
+        }
+
+        System.out.println("Ok Entered here 1.1 = " + requiredPropogatorMethod.isOutputThis() + " : " + statement.isAssign());
+        if (requiredPropogatorMethod.isOutputThis() &&
+                statement.getInvokeExpr().isInstanceInvokeExpr()) {
+            System.out.println("Ok Entered here 1");
+            queryList.add(new ForwardQuery(dataFlowEdge,
+                    new AllocVal(
+                            statement.getInvokeExpr().getBase(),
+                            statement,
+                            statement.getInvokeExpr().getBase()
+                    )
+            ));
+        }
+
+        if (requiredPropogatorMethod.getReturnValue() != null &&
+                statement.isAssign()) {
+            queryList.add(new ForwardQuery(dataFlowEdge,
+                    new AllocVal(
+                            statement.getLeftOp(),
+                            statement,
+                            statement.getLeftOp()
+                    )
+            ));
+        }
+
+        return queryList;
+    }
+
+    private Collection<Query> isRequiredPropogator(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+        List<Query> queryList = new ArrayList<>();
+
+        System.out.println("\n\n\n\n\n\n\nRequired Propogator check\n\n\n");
+        for (Method requiredPropogatorMethod : singleFlow.getThrough()) {
+
+            System.out.println("Flow Propo = " + requiredPropogatorMethod.getSignature());
+            String requiredPropogatorSootSignature = Utility.wrapInAngularBrackets(requiredPropogatorMethod.getSignature());
+
+            if (statement.containsInvokeExpr()) {
+                System.out.println("Check1 = " + Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
+                        requiredPropogatorSootSignature));
+                System.out.println(dataFlowEdge);
+                System.out.println(dataFlowVal);
+            }
+            if (statement.containsInvokeExpr() &&
+                    Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
+                            requiredPropogatorSootSignature)) {
+
+                // Taint the return value.
+                if (requiredPropogatorMethod.getInputParameters() != null) {
+                    for (InputParameter input : requiredPropogatorMethod.getInputParameters()) {
+                        int parameterIndex = input.getNumber();
+                        if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                            if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
+                                System.out.println("Entered here");
+                                queryList.addAll(getOutForRequiredPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                                return queryList;
+                            }
+                        }
+                    }
+                }
+
+                // Taint this object.
+                if (requiredPropogatorMethod.isInputThis() &&
+                        statement.getInvokeExpr().isInstanceInvokeExpr()) {
+                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
+                        queryList.addAll(getOutForRequiredPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                        return queryList;
+                    }
+                }
+            }
+
+        }
+
+        for (Query query : queryList) {
+            System.out.println(query);
+        }
+        return queryList;
+    }
+
     @Override
     public Collection<Query> onForwardFlow(ForwardQuery query, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         Statement stmt = dataFlowEdge.getStart();
@@ -200,6 +299,11 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             if (isSink(stmt, dataFlowEdge, dataFlowVal)) {
                 return Collections.emptyList();
             }
+
+            out.addAll(isRequiredPropogator(stmt, dataFlowEdge, dataFlowVal));
+
+            if (out.size() > 0)
+                return out;
 
             out.addAll(processStatement(stmt, dataFlowVal, dataFlowEdge));
 
