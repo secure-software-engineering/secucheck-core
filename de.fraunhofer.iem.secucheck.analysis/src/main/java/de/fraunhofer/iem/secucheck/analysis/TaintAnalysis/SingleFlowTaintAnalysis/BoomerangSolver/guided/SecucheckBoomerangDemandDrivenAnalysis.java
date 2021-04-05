@@ -46,11 +46,11 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
             }
 
             Set<Query> queries = queryGraph.getNodes();
-
+/*
             System.out.println("Critical = " + queries.size() + " : " + sinks.size());
             for (Query query : queries) {
                 System.out.println(query);
-            }
+            }*/
         }
 
         return reachMap;

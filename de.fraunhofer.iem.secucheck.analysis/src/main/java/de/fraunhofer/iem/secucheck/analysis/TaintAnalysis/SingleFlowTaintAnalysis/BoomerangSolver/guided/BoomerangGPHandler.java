@@ -211,10 +211,8 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             }
         }
 
-        System.out.println("Ok Entered here 1.1 = " + requiredPropogatorMethod.isOutputThis() + " : " + statement.isAssign());
         if (requiredPropogatorMethod.isOutputThis() &&
                 statement.getInvokeExpr().isInstanceInvokeExpr()) {
-            System.out.println("Ok Entered here 1");
             queryList.add(new ForwardQuery(dataFlowEdge,
                     new AllocVal(
                             statement.getInvokeExpr().getBase(),
@@ -241,18 +239,10 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     private Collection<Query> isRequiredPropogator(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         List<Query> queryList = new ArrayList<>();
 
-        System.out.println("\n\n\n\n\n\n\nRequired Propogator check\n\n\n");
         for (Method requiredPropogatorMethod : singleFlow.getThrough()) {
 
-            System.out.println("Flow Propo = " + requiredPropogatorMethod.getSignature());
             String requiredPropogatorSootSignature = Utility.wrapInAngularBrackets(requiredPropogatorMethod.getSignature());
 
-            if (statement.containsInvokeExpr()) {
-                System.out.println("Check1 = " + Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
-                        requiredPropogatorSootSignature));
-                System.out.println(dataFlowEdge);
-                System.out.println(dataFlowVal);
-            }
             if (statement.containsInvokeExpr() &&
                     Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
                             requiredPropogatorSootSignature)) {
@@ -263,7 +253,6 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                         int parameterIndex = input.getNumber();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
-                                System.out.println("Entered here");
                                 queryList.addAll(getOutForRequiredPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
                                 return queryList;
                             }
@@ -283,9 +272,6 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
 
         }
 
-        for (Query query : queryList) {
-            System.out.println(query);
-        }
         return queryList;
     }
 
