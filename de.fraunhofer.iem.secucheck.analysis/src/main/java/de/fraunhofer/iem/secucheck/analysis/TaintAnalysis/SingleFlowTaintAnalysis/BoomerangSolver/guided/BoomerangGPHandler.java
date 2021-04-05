@@ -8,147 +8,32 @@ import boomerang.scene.AllocVal;
 import boomerang.scene.ControlFlowGraph;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
-import boomerang.scene.jimple.JimpleStatement;
-import boomerang.scene.jimple.JimpleVal;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
-import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
-import de.fraunhofer.iem.secucheck.analysis.query.Method;
-import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
-import soot.jimple.internal.JAssignStmt;
-import soot.jimple.internal.JInvokeStmt;
+import de.fraunhofer.iem.secucheck.analysis.query.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This is the Secucheck DemandDriven Manager for Boomerang
+ *
+ * @author Ranjith Krishnamurthy
+ */
 public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     private final ArrayList<BackwardQuery> foundSinks = new ArrayList<>();
-    private TaintFlowQueryImpl singleFlow;
+    private final TaintFlowQueryImpl singleFlow;
+    private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
 
-    public static final String S_VALUE_OF = "<java.lang.String: java.lang.String valueOf(java.lang.Object)>";
-    public static final String SB_TO_STRING = "<java.lang.StringBuilder: java.lang.String toString()>";
-    public static final String SB_APPEND = "<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>";
-    public static final String SB_INIT = "<java.lang.StringBuilder: void <init>(java.lang.String)>";
-
-    public BoomerangGPHandler(TaintFlowQueryImpl singleFlow) {
+    public BoomerangGPHandler(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
         this.singleFlow = singleFlow;
+        this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
 
     public ArrayList<BackwardQuery> getFoundSinks() {
         return foundSinks;
-    }
-
-    private Collection<Query> processStatement(Statement statement, Val dataFlowVal, ControlFlowGraph.Edge dataFlowEdge) {
-        ArrayList<Query> out = new ArrayList<Query>();
-
-        // JimpleStatements
-        if (statement instanceof JimpleStatement) {
-            JimpleStatement jimpleStatement = (JimpleStatement) statement;
-
-            // JInvokeStmt
-            if (jimpleStatement.getDelegate() instanceof JInvokeStmt) {
-                JInvokeStmt jInvokeStmt = (JInvokeStmt) jimpleStatement.getDelegate();
-
-                // This condition is for StringBuilder <init>. If first arg or base is tainted, then taint the base.
-                if (statement.getInvokeExpr().getMethod().getSignature().equals(SB_INIT)) {
- /*                   if (dataFlowVal.toString().equals(statement.getInvokeExpr().getBase().toString())) {
-                        out.add(
-                                new ForwardQuery(
-                                        dataFlowEdge,
-                                        new AllocVal(
-                                                statement.getInvokeExpr().getBase(),
-                                                statement,
-                                                statement.getInvokeExpr().getBase()
-                                        )
-                                )
-                        );
-                    }
-*/
-                    if (dataFlowVal.toString().equals(statement.getInvokeExpr().getArg(0).toString())) {
-                        out.add(
-                                new ForwardQuery(
-                                        dataFlowEdge,
-                                        new AllocVal(
-                                                statement.getInvokeExpr().getBase(),
-                                                statement,
-                                                statement.getInvokeExpr().getBase()
-                                        )
-                                )
-                        );
-                    }
-                } // End of SB_INIT
-            } // End of JInvokeStmt
-
-            // JAssignStmt
-            if (jimpleStatement.getDelegate() instanceof JAssignStmt) {
-                JAssignStmt jAssignStmt = (JAssignStmt) jimpleStatement.getDelegate();
-
-                // This condition is for String valueOf. If first arg is tainted, then taint the base.
-                if (statement.getInvokeExpr().getMethod().getSignature().equals(S_VALUE_OF)) {
-                    if (statement.getInvokeExpr().getArg(0).toString().equals(dataFlowVal.toString())) {
-                        out.add(
-                                new ForwardQuery(
-                                        dataFlowEdge,
-                                        new AllocVal(
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod()),
-                                                statement,
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod())
-                                        )
-                                )
-                        );
-                    }
-                } // End of S_VALUE_OF
-
-                // This condition is for StringBuilder toString. If first arg is tainted, then taint the base.
-                if (statement.getInvokeExpr().getMethod().getSignature().equals(SB_TO_STRING)) {
-                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
-                        out.add(
-                                new ForwardQuery(
-                                        dataFlowEdge,
-                                        new AllocVal(
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod()),
-                                                statement,
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod())
-                                        )
-                                )
-                        );
-                    }
-                } // End of SB_TO_STRING
-
-                // This condition is for StringBuilder append. If first arg is tainted, then taint the base.
-                if (statement.getInvokeExpr().getMethod().getSignature().equals(SB_APPEND)) {
-                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
-                        out.add(
-                                new ForwardQuery(
-                                        dataFlowEdge,
-                                        new AllocVal(
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod()),
-                                                statement,
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod())
-                                        )
-                                )
-                        );
-                    }
-
-                    if (statement.getInvokeExpr().getArg(0).toString().equals(dataFlowVal.toString())) {
-                        out.add(
-                                new ForwardQuery(
-                                        dataFlowEdge,
-                                        new AllocVal(
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod()),
-                                                statement,
-                                                new JimpleVal(jAssignStmt.getLeftOp(), statement.getMethod())
-                                        )
-                                )
-                        );
-                    }
-                } // End of SB_APPEND
-            } // End of JAssignStmt
-        } // End of JimpleStatements
-
-        return out;
     }
 
     private boolean isSink(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
@@ -192,14 +77,13 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         return isSinkFound;
     }
 
-    private Collection<Query> getOutForRequiredPropogator(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    private Collection<Query> getOutForPropogator(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         List<Query> queryList = new ArrayList<>();
 
         if (requiredPropogatorMethod.getOutputParameters() != null) {
             for (OutputParameter outputParameter : requiredPropogatorMethod.getOutputParameters()) {
                 int parameterIndex = outputParameter.getNumber();
                 if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                    System.out.println("Ok Entered here");
                     queryList.add(new ForwardQuery(dataFlowEdge,
                             new AllocVal(
                                     statement.getInvokeExpr().getArg(parameterIndex),
@@ -236,10 +120,10 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         return queryList;
     }
 
-    private Collection<Query> isRequiredPropogator(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    private Collection<Query> isPropogator(List<MethodImpl> propogators, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         List<Query> queryList = new ArrayList<>();
 
-        for (Method requiredPropogatorMethod : singleFlow.getThrough()) {
+        for (Method requiredPropogatorMethod : propogators) {
 
             String requiredPropogatorSootSignature = Utility.wrapInAngularBrackets(requiredPropogatorMethod.getSignature());
 
@@ -253,7 +137,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                         int parameterIndex = input.getNumber();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
-                                queryList.addAll(getOutForRequiredPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                                queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
                                 return queryList;
                             }
                         }
@@ -264,7 +148,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 if (requiredPropogatorMethod.isInputThis() &&
                         statement.getInvokeExpr().isInstanceInvokeExpr()) {
                     if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
-                        queryList.addAll(getOutForRequiredPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                        queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
                         return queryList;
                     }
                 }
@@ -286,12 +170,14 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 return Collections.emptyList();
             }
 
-            out.addAll(isRequiredPropogator(stmt, dataFlowEdge, dataFlowVal));
+            out.addAll(isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal));
 
             if (out.size() > 0)
                 return out;
 
-            out.addAll(processStatement(stmt, dataFlowVal, dataFlowEdge));
+            out.addAll(isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal));
+
+            //out.addAll(processStatement(stmt, dataFlowVal, dataFlowEdge));
 
             if (stmt.getInvokeExpr().getMethod().getSignature().contains("concat"))
                 System.out.println("ConcatCritical = " + stmt.getInvokeExpr().getMethod().getSignature());

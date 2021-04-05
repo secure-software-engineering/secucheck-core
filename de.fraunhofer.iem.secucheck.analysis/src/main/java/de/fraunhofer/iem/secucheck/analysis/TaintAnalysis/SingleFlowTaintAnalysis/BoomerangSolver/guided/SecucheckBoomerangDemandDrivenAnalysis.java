@@ -6,6 +6,7 @@ import boomerang.Query;
 import boomerang.QueryGraph;
 import boomerang.guided.DemandDrivenGuidedAnalysis;
 import boomerang.scene.jimple.JimpleStatement;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.LocationType;
@@ -20,6 +21,12 @@ import wpds.impl.Weight;
 import java.util.*;
 
 public class SecucheckBoomerangDemandDrivenAnalysis {
+    private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
+
+    public SecucheckBoomerangDemandDrivenAnalysis(SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
+        this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
+    }
+
     public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, Set<BackwardQuery> sinks, TaintFlowQueryImpl singleFlow) {
 
         List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap =
@@ -29,9 +36,9 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
             HashMap<BackwardQuery, Boolean> foundSinks = new HashMap<>();
             sinks.stream().forEach(sink -> foundSinks.put(sink, false));
 
-            BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow);
+            BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow, this.secucheckAnalysisConfiguration);
             MyDefaultBoomerangOptions myDefaultBoomerangOptions = new MyDefaultBoomerangOptions(singleFlow);
-            CustomDataFlowScope customDataFlowScope = new CustomDataFlowScope(singleFlow.getNotThrough());
+            CustomDataFlowScope customDataFlowScope = new CustomDataFlowScope(singleFlow, this.secucheckAnalysisConfiguration);
 
             DemandDrivenGuidedAnalysis demandDrivenGuidedAnalysis = new DemandDrivenGuidedAnalysis(
                     boomerangGPHandler,
@@ -46,11 +53,11 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
             }
 
             Set<Query> queries = queryGraph.getNodes();
-/*
+
             System.out.println("Critical = " + queries.size() + " : " + sinks.size());
             for (Query query : queries) {
                 System.out.println(query);
-            }*/
+            }
         }
 
         return reachMap;

@@ -5,75 +5,62 @@ import boomerang.scene.DeclaredMethod;
 import boomerang.scene.Method;
 import boomerang.scene.jimple.JimpleDeclaredMethod;
 import boomerang.scene.jimple.JimpleMethod;
+import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
 import soot.SootClass;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CustomDataFlowScope implements DataFlowScope {
-    List<MethodImpl> sanitizers = new ArrayList<>();
+    private final TaintFlowQueryImpl singleFlow;
+    private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
 
-    public CustomDataFlowScope(List<MethodImpl> sanitizers) {
-        this.sanitizers.addAll(sanitizers);
+    public CustomDataFlowScope(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
+        this.singleFlow = singleFlow;
+        this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
+
     @Override
     public boolean isExcluded(DeclaredMethod method) {
         JimpleDeclaredMethod m = (JimpleDeclaredMethod) method;
 
-        for (MethodImpl sanitizer : sanitizers) {
+        for (MethodImpl sanitizer : singleFlow.getNotThrough()) {
             if (method.getSignature().equals(Utility.wrapInAngularBrackets(sanitizer.getSignature())))
                 return true;
         }
 
-        if (method.getSignature().equals("<org.owasp.webgoat.sql_injection.introduction.SqlInjectionLesson2: java.lang.String sanitize(java.lang.String)>")) {
-            return true;
-        }
-
-        if (method.getSignature().equals(BoomerangGPHandler.S_VALUE_OF)) {
-            return true;
-        }
-
-        if (method.getSignature().equals(BoomerangGPHandler.SB_TO_STRING)) {
-            return true;
-        }
-
-        if (method.getSignature().equals(BoomerangGPHandler.SB_APPEND)) {
-            return true;
+        for (MethodImpl gp : secucheckAnalysisConfiguration.getAnalysisGeneralPropagators()) {
+            if (method.getSignature().equals(Utility.wrapInAngularBrackets(gp.getSignature())))
+                return true;
         }
 
 
         return ((SootClass) m.getDeclaringClass().getDelegate()).isPhantom() || m.isNative();
     }
 
-    public boolean isExcluded(Method method) {
-        JimpleMethod m = (JimpleMethod) method;
-
-        for (MethodImpl sanitizer : sanitizers) {
-            String[] arr = Utility.wrapInAngularBrackets(sanitizer.getSignature()).split(" ");
+    private boolean findMethod(Method requestedMethod, List<MethodImpl> methods) {
+        for (MethodImpl method : methods) {
+            String[] arr = Utility.wrapInAngularBrackets(method.getSignature()).split(" ");
             String subSignature = arr[arr.length - 2] + " " + arr[arr.length - 1];
             subSignature = subSignature.replace(">", "");
 
-            if (m.getSubSignature().equals(subSignature))
+            if (requestedMethod.getSubSignature().equals(subSignature))
                 return true;
         }
 
-        if (m.getSubSignature().equals("java.lang.String sanitize(java.lang.String)")) {
-            return true;
-        }
+        return false;
+    }
 
-        if (m.getSubSignature().equals("java.lang.String valueOf(java.lang.Object)")) {
-            return true;
-        }
+    public boolean isExcluded(Method method) {
+        JimpleMethod m = (JimpleMethod) method;
 
-        if (m.getSubSignature().equals("java.lang.String toString()")) {
+        if (findMethod(m, singleFlow.getNotThrough()))
             return true;
-        }
 
-        if (m.getSubSignature().equals("java.lang.StringBuilder append(java.lang.String)")) {
+        if (findMethod(m, secucheckAnalysisConfiguration.getAnalysisGeneralPropagators()))
             return true;
-        }
 
         return ((SootClass) m.getDeclaringClass().getDelegate()).isPhantom() || m.isNative();
     }

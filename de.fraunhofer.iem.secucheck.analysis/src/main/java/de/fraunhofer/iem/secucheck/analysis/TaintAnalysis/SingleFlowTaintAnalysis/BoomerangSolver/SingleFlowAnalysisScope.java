@@ -8,16 +8,12 @@ import boomerang.scene.AnalysisScope;
 import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
-import boomerang.scene.jimple.JimpleStatement;
-import boomerang.scene.jimple.JimpleVal;
 import boomerang.scene.jimple.SootCallGraph;
 import com.google.common.collect.Sets;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
-import soot.jimple.IdentityStmt;
-import soot.jimple.ParameterRef;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,12 +36,10 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
     protected Collection<? extends Query> generate(Edge cfgEdge) {
         Set<Query> out = Sets.newHashSet();
 
-        //	System.out.println("Start (" + cfgEdge.getMethod().getName() + ") = " + cfgEdge.getStart());
-        //	System.out.println("Target (" + cfgEdge.getMethod().getName() + ")= " + cfgEdge.getTarget());
-
-        // The target statement for the current edge.
         Statement statement = cfgEdge.getStart();
-
+/*
+        System.out.println("----> " + statement);
+*/
         Collection<Val> sourceVariables =
                 generateSourceVariables(this.taintFlow, statement);
 
@@ -253,6 +247,4 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
         // TODO: re-check the sink structure!!
         return Collections.emptySet();
     }
-
-
 }

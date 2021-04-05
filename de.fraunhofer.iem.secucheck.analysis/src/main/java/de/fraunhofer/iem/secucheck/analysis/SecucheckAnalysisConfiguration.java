@@ -3,6 +3,7 @@ package de.fraunhofer.iem.secucheck.analysis;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
+import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.AnalysisResultListener;
@@ -22,6 +23,8 @@ public interface SecucheckAnalysisConfiguration {
 
     void setAnalysisEntryPoints(List<EntryPoint> entryPoints);
 
+    void setAnalysisGeneralPropagators(List<MethodImpl> generalPropagators);
+
     void setListener(AnalysisResultListener resultListener);
 
     OS getOs();
@@ -33,6 +36,8 @@ public interface SecucheckAnalysisConfiguration {
     String getApplicationClassPath();
 
     List<EntryPoint> getAnalysisEntryPoints();
+
+    List<MethodImpl> getAnalysisGeneralPropagators();
 
     AnalysisResultListener getListener();
 

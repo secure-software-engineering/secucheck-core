@@ -3,6 +3,7 @@ package de.fraunhofer.iem.secucheck.analysis;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
+import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.AnalysisResultListener;
@@ -17,6 +18,7 @@ public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisC
     private String appClassPath;
     private String sootClassPath;
     private List<EntryPoint> entryPoints;
+    private List<MethodImpl> generalPropagators;
     private AnalysisResultListener resultListener;
 
     @Override
@@ -42,6 +44,11 @@ public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisC
     @Override
     public void setAnalysisEntryPoints(List<EntryPoint> entryPoints) {
         this.entryPoints = entryPoints;
+    }
+
+    @Override
+    public void setAnalysisGeneralPropagators(List<MethodImpl> generalPropagators) {
+        this.generalPropagators = generalPropagators;
     }
 
     @Override
@@ -72,6 +79,11 @@ public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisC
     @Override
     public List<EntryPoint> getAnalysisEntryPoints() {
         return this.entryPoints;
+    }
+
+    @Override
+    public List<MethodImpl> getAnalysisGeneralPropagators() {
+        return generalPropagators;
     }
 
     @Override
