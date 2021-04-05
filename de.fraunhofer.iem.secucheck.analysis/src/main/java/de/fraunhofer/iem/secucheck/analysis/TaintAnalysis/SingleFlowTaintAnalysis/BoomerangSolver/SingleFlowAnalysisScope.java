@@ -62,10 +62,9 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
                     Utility.wrapInAngularBrackets(flowMethod.getSignature()))) {
                 //Todo: Update
 
-
-                if (flowMethod.getInputParameters() != null) {
-                    for (InputParameter input : flowMethod.getInputParameters()) {
-                        int parameterIndex = input.getNumber();
+                if (flowMethod.getOutputParameters() != null) {
+                    for (OutputParameter output : flowMethod.getOutputParameters()) {
+                        int parameterIndex = output.getNumber();
                         if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
 
                             String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
