@@ -21,43 +21,40 @@ import java.util.*;
 
 public class SecucheckBoomerangDemandDrivenAnalysis {
     public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, Set<BackwardQuery> sinks, TaintFlowQueryImpl singleFlow) {
-        HashMap<BackwardQuery, Boolean> foundSinks = new HashMap<>();
-        sinks.stream().forEach(sink -> foundSinks.put(sink, false));
-
-        BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow);
-        MyDefaultBoomerangOptions myDefaultBoomerangOptions = new MyDefaultBoomerangOptions(singleFlow);
-
-        DemandDrivenGuidedAnalysis demandDrivenGuidedAnalysis = new DemandDrivenGuidedAnalysis(
-                boomerangGPHandler,
-                myDefaultBoomerangOptions,
-                new CustomDataFlowScope());
-
-        QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run((Query) sources.toArray()[0]);
-
 
         List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap =
                 new ArrayList<>();
 
-        for (Query sink : boomerangGPHandler.getFoundSinks()) {
-            reachMap.add(new DifferentTypedPair<>(
-                    singleFlow, getLocationDetailsPair(singleFlow, (Query) sources.toArray()[0], sink)));
+        for (ForwardQuery source : sources) {
+            HashMap<BackwardQuery, Boolean> foundSinks = new HashMap<>();
+            sinks.stream().forEach(sink -> foundSinks.put(sink, false));
+
+            BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow);
+            MyDefaultBoomerangOptions myDefaultBoomerangOptions = new MyDefaultBoomerangOptions(singleFlow);
+            CustomDataFlowScope customDataFlowScope = new CustomDataFlowScope(singleFlow.getNotThrough());
+
+            DemandDrivenGuidedAnalysis demandDrivenGuidedAnalysis = new DemandDrivenGuidedAnalysis(
+                    boomerangGPHandler,
+                    myDefaultBoomerangOptions,
+                    customDataFlowScope);
+
+            QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run(source);
+
+            for (Query sink : boomerangGPHandler.getFoundSinks()) {
+                reachMap.add(new DifferentTypedPair<>(
+                        singleFlow, getLocationDetailsPair(singleFlow, source, sink)));
+            }
+
+            Set<Query> queries = queryGraph.getNodes();
+
+            System.out.println("Critical = " + queries.size() + " : " + sinks.size());
+            for (Query query : queries) {
+                System.out.println(query);
+            }
         }
 
         return reachMap;
-/*        Set<Query> queries = queryGraph.getNodes();
 
-        System.out.println("Critical = " + queries.size() + " : " + sinks.size());
-        for (BackwardQuery query : foundSinks) {
-            for (BackwardQuery sink : sinks) {
-                System.out.println(query.var().toString() + " --- " + sink.var().toString());
-                if (query.cfgEdge().toString().equals(sink.cfgEdge().toString())) {
-                    if (query.var().toString().equals(sink.var().toString())) {
-                        System.out.println("\n\n\n\n\n\nTaintFlow Found!!!\n\n\n");
-                    }
-                }
-            }
-            //System.out.println(query);
-        }*/
     }
 
     private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowQueryImpl flowQuery,
