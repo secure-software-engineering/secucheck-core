@@ -80,11 +80,15 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
     private void executeAnalysis() {
         // Propogator-less execution.
+        result.addQueryResultPairs(analyzePlainFlow(singleFlow));
+
+        /*
         if (isPropogatorless(this.singleFlow)) {
             result.addQueryResultPairs(analyzePlainFlow(singleFlow));
         } else {
             result.addQueryResultPairs(analyzePlainFlow(singleFlow));
         }
+         */
     }
 
     public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
@@ -95,7 +99,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
         SootCallGraph callGraph = new SootCallGraph();
         AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
-        Boomerang boomerang = getBoomerang(analysisScope, callGraph);
+    //    Boomerang boomerang = getBoomerang(analysisScope, callGraph);
         Seeds seeds = computeSeeds(analysisScope);
 
         if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
@@ -216,130 +220,6 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         }
 
         return reachMap;
-    }
-
-    ForwardQuery lastIterationQuery = null;
-
-    private List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> recursiveQuery(Boomerang boomerang,
-                                                                                                        Entry<ForwardQuery, ForwardBoomerangResults<Weight.NoWeight>> sourceEntry,
-                                                                                                        Set<BackwardQuery> sinks,
-                                                                                                        TaintFlowQueryImpl flowQuery) {
-
-        ForwardQuery newQuery = getLastValue(sourceEntry.getValue().asStatementValWeightTable(), sourceEntry.getKey());
-
-        if (lastIterationQuery != null && lastIterationQuery.toString().equals(newQuery.toString()))
-            return Collections.emptyList();
-
-        lastIterationQuery = newQuery;
-
-        if (newQuery.var() == null || newQuery.cfgEdge() == null) {
-            return Collections.emptyList();
-        }
-
-        BoomerangPretransformer.v().reset();
-        return analyzeInternal(boomerang, flowQuery, new HashSet() {{
-            add(newQuery);
-        }}, sinks);
-
-    }
-
-    private ForwardQuery getLastValue(Table<Edge, Val, Weight.NoWeight> table, ForwardQuery forwardQuery) {
-        Edge edge = null, tmp1 = null;
-        Val val = null;
-        Statement stmt = null, tmp3 = null;
-
-        int size = table.cellSet().size() - 1;
-
-        Table.Cell<Edge, Val, Weight.NoWeight> cell = null;
-
-
-        while (true) {
-            if (size < 0)
-                break;
-
-            cell = (Table.Cell<Edge, Val, Weight.NoWeight>) table.cellSet().toArray()[size--];
-
-            if (cell.getRowKey().getTarget().toString().contains("append")) {
-                tmp1 = cell.getRowKey();
-                edge = cell.getRowKey();
-
-                tmp3 = cell.getRowKey().getTarget();
-                stmt = cell.getRowKey().getTarget();
-//                System.out.println("CCheck = " + edge + "\n" + stmt);
-                JimpleStatement jimpleStament = (JimpleStatement) stmt;
-
-                if (jimpleStament.getDelegate() instanceof JAssignStmt) {
-                    JAssignStmt identityStmt = (JAssignStmt) jimpleStament.getDelegate();
-                    val = new JimpleVal(identityStmt.getLeftOp(), cell.getRowKey().getTarget().getMethod());
-                } else {
-                    val = cell.getRowKey().getTarget().getInvokeExpr().getBase();
-                    System.err.println("Its not JAssignStmt statement. Please check = " + jimpleStament.getDelegate().getClass().getCanonicalName()
-                            + " --- \n" + jimpleStament);
-                }
-
-                break;
-            }
-        }
-
-
-        if (edge == null || val == null || stmt == null) {
-            System.out.println("NULL CCCCCCCCRRRRRITICAL = " + tmp1);
-            System.out.println("val");
-            System.out.println(tmp3);
-        } else {
-            System.out.println("CCCCCCCCRRRRRITICAL = " + edge);
-            System.out.println(val);
-            System.out.println(stmt);
-        }
-
-        return new ForwardQuery(edge, new AllocVal(
-                val,
-                stmt,
-                val));
-    }
-
-    private ForwardQuery getLastValue1(Table<Edge, Val, Weight.NoWeight> table, ForwardQuery forwardQuery) {
-        Edge edge = null, tmp1 = null;
-        Val val = null;
-        Statement stmt = null, tmp3 = null;
-
-        for (Table.Cell<Edge, Val, Weight.NoWeight> cell : table.cellSet()) {
-
-            tmp1 = cell.getRowKey();
-
-            tmp3 = cell.getRowKey().getTarget();
-            if (cell.getColumnKey().toString().equals(forwardQuery.var().toString())) {
-                if (!cell.getRowKey().toString().equals(forwardQuery.cfgEdge().toString())) {
-                    edge = cell.getRowKey();
-
-                    stmt = cell.getRowKey().getTarget();
-                    JimpleStatement jimpleStament = (JimpleStatement) stmt;
-
-                    if (jimpleStament.getDelegate() instanceof JAssignStmt) {
-                        JAssignStmt identityStmt = (JAssignStmt) jimpleStament.getDelegate();
-                        val = new JimpleVal(identityStmt.getLeftOp(), cell.getRowKey().getTarget().getMethod());
-                    } else {
-                        System.err.println("Its not JAssignStmt statement. Please check = " + jimpleStament.getDelegate().getClass().getCanonicalName()
-                                + " --- \n" + jimpleStament);
-                    }
-                }
-            }
-        }
-
-        if (edge == null || val == null || stmt == null) {
-            System.out.println("NULL CCCCCCCCRRRRRITICAL = " + tmp1);
-            System.out.println("val");
-            System.out.println(tmp3);
-        } else {
-            System.out.println("CCCCCCCCRRRRRITICAL = " + edge);
-            System.out.println(val);
-            System.out.println(stmt);
-        }
-
-        return new ForwardQuery(edge, new AllocVal(
-                val,
-                stmt,
-                val));
     }
 
     private boolean isValidPath(ForwardBoomerangResults<Weight.NoWeight> sourceResult,
