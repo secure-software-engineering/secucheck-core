@@ -108,10 +108,45 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
     private Collection<Val> generateSourceVariables(TaintFlowQuery partialFlow,
                                                     Statement statement) {
 
+        Collection<Val> out = Sets.newHashSet();
+
         for (Method sourceMethod : partialFlow.getFrom()) {
 
             String sourceSootSignature = Utility.wrapInAngularBrackets(sourceMethod.getSignature());
-            Collection<Val> out = Sets.newHashSet();
+
+            if (statement.containsInvokeExpr()) {
+           //     System.out.println("TaintFlow source = " + sourceSootSignature);
+           //     System.out.println("Statement source = " + statement.getInvokeExpr().getMethod().getSignature());
+                if (Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(), sourceSootSignature)) {
+                    // Taint the return value
+            //        System.out.println("EEntered");
+                    if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
+
+                        out.add(new AllocVal(statement.getLeftOp(), statement, statement.getLeftOp()));
+                    }
+
+                    if (sourceMethod.getOutputParameters() != null) {
+                        for (OutputParameter output : sourceMethod.getOutputParameters()) {
+                            int parameterIndex = output.getNumber();
+                            if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                                out.add(statement.getInvokeExpr().getArg(parameterIndex));
+                            }
+                        }
+                    }
+
+                    // Taint this object
+                    if (sourceMethod.isOutputThis() &&
+                            statement.getInvokeExpr().isInstanceInvokeExpr()) {
+                        out.add(new AllocVal(statement.getInvokeExpr().getBase(), statement, statement.getInvokeExpr().getBase()));
+                    }
+                }
+            }
+        }
+
+        return out;
+/*
+
+
 
             if (Utility.toStringEquals(statement.getMethod(), sourceSootSignature) &&
                     statement.isIdentityStmt()) {
@@ -178,7 +213,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 //		{
 //			// TODO:handle this
 //		} 
-        return Collections.emptySet();
+        return Collections.emptySet();*/
     }
 
     private Collection<Val> generatedSinkVariables(TaintFlowQuery partialFlow,
