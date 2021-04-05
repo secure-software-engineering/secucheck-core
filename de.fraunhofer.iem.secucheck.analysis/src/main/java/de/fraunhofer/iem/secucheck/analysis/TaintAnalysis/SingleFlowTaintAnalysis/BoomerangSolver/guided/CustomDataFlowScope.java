@@ -55,7 +55,6 @@ public class CustomDataFlowScope implements DataFlowScope {
             String subSignature = arr[arr.length - 2] + " " + arr[arr.length - 1];
             subSignature = subSignature.replace(">", "");
 
-            System.out.println("SubSignature = " + subSignature);
             if (m.getSubSignature().equals(subSignature))
                 return true;
         }
