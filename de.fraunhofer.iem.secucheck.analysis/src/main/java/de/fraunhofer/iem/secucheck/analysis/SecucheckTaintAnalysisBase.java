@@ -10,7 +10,7 @@ import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintFlowQueryResult
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 /**
- * First level implementation of the SecucheckAnalysis. This valideates TaintFlowQuery, SecucheckConfiguration and run the analysis.
+ * First level implementation of the SecucheckAnalysis. This validates TaintFlowQuery, SecucheckConfiguration and run the analysis.
  */
 public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
@@ -36,34 +36,44 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
     @Override
     public SecucheckTaintAnalysisResult run(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
-        Utility.ValidateCompositeFlowQueries(flowQueries);
-        Utility.ValidateConfigruation(this.configuration);
+        Utility.ValidateSecucheckTaintFlowQueries(flowQueries);  // Validate the TaintFlowQuery before starting analysis
+        Utility.ValidateConfigruation(this.configuration);  // Validate the SecucheckAnalysisConfiguration
+
+        // Lock and run the analysis
         lock.lock();
+
         try {
             return executeAnalysis(flowQueries);
         } finally {
-            lock.unlock();
+            lock.unlock();  // Release the lock for next run
         }
     }
 
+    /**
+     * This method calls the SecucheckTaintFlowQueryAnalysis for each TaintFlowQuery
+     *
+     * @param flowQueries List of TaintFlowQueries
+     * @return complete SecucheckTaintAnalysis
+     * @throws Exception Any exception
+     */
     private SecucheckTaintAnalysisResult executeAnalysis(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
 
-        long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();    // Save the start time
 
         SingleFlowAnalysisFactory analysisFactory =
                 new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), this.configuration);
 
         SecucheckTaintAnalysisResult result = new SecucheckTaintAnalysisResult();
 
-        for (SecucheckTaintFlowQueryImpl flowQuery : flowQueries) {
+        for (SecucheckTaintFlowQueryImpl flowQuery : flowQueries) { // for each TaintFlowQuery
 
             if (this.configuration.getListener() != null &&
-                    this.configuration.getListener().isCancelled()) {
+                    this.configuration.getListener().isCancelled()) {   // Analysis is cancelled by the client then stop the analysis
                 break;
             }
 
-            CompositeTaintFlowAnalysis analysis = new CompositeTaintFlowAnalysisImpl(flowQuery,
+            SecucheckTaintFlowQueryAnalysis analysis = new SecucheckTaintFlowQueryAnalysisImpl(flowQuery,
                     analysisFactory, this.configuration.getListener());
 
             SecucheckTaintFlowQueryResult singleResult = analysis.run();
@@ -78,10 +88,13 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
             }
         }
 
-        long endTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis(); // Record the end time
 
-        analysisTime = endTime - startTime;
+        analysisTime = endTime - startTime; // Elapsed time of analysis run
 
+        System.out.println("\n\n\n*******************************************************\n");
+        System.out.println("Analysis took " + analysisTime + " milli-seconds");
+        System.out.println("\n*******************************************************\n\n\n");
         return result;
     }
 

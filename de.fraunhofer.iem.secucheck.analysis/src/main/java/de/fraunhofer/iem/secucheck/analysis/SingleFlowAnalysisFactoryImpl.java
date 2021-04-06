@@ -8,6 +8,9 @@ import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
+/**
+ * This implements the SingleFlowAnalysisFactory. This calls the respective solver to solve the each TaintFlow
+ */
 public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory {
 
     private Solver solver;

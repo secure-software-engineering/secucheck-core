@@ -26,7 +26,7 @@ public interface SecucheckAnalysis {
     SecucheckAnalysisConfiguration getConfiguration();
 
     /**
-     * Runs the TaintAnalysis
+     * Runs the TaintAnalysis for the given list of TaintFlowQueries
      *
      * @param flowQueries TaintFlowQueries
      * @return TaintAnalysis results

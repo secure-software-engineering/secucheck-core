@@ -20,13 +20,19 @@ public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
         super(config);
     }
 
+    /**
+     * Here, soot calls System.exit() in case of problems. This shuts down the process.
+     * Therefore we must prevent System.exit() using Security Manager
+     *
+     * @param flowQueries List of TaintFlowQueries
+     * @return Complete SecucheckTaintFlowAnalysisResult
+     * @throws Exception Any exception
+     */
     @Override
     public SecucheckTaintAnalysisResult run(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
         super.lock.lock();
         try {
-            // soot calls System.exit() in case of problems. This shuts down the process.
-            // Therefore we must prevent System.exit() using Security Manager
             SecurityManager previousManager = System.getSecurityManager();
             try {
                 System.setSecurityManager(new SecurityManager() {

@@ -10,15 +10,20 @@ import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 
 import java.util.List;
 
-public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysis {
+/**
+ * Implementation of the SecucheckTaintFlowQueryAnalysis
+ * <p>
+ * This class iterates through the given SecucheckTaintFlowQuery and calls the solver that solves the single TaintFlow in each TaintFLowQuery.
+ */
+public class SecucheckTaintFlowQueryAnalysisImpl implements SecucheckTaintFlowQueryAnalysis {
 
     private final SecucheckTaintFlowQuery flowQuery;
     private final SingleFlowAnalysisFactory analysisFactory;
     private final AnalysisResultListener resultListener;
 
-    public CompositeTaintFlowAnalysisImpl(SecucheckTaintFlowQuery flowQuery,
-                                          SingleFlowAnalysisFactory analysisFactory,
-                                          AnalysisResultListener resultListener)
+    public SecucheckTaintFlowQueryAnalysisImpl(SecucheckTaintFlowQuery flowQuery,
+                                               SingleFlowAnalysisFactory analysisFactory,
+                                               AnalysisResultListener resultListener)
             throws Exception {
         this.flowQuery = flowQuery;
         this.analysisFactory = analysisFactory;
