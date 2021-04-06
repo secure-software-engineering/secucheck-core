@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: SecuCheck Analysis Process Client
-Bundle-SymbolicName: de.fraunhofer.iem.secucheck.analysis.process.client
-Bundle-Version: 0.0.1.qualifier
-Bundle-Vendor: Fraunhofer IEM, Software Campus
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Automatic-Module-Name: de.fraunhofer.iem.secucheck.analysis.process.client
-Bundle-ClassPath: .
