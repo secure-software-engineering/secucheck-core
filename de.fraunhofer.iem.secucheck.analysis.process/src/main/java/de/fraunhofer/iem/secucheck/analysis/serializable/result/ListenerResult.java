@@ -1,8 +1,8 @@
 package de.fraunhofer.iem.secucheck.analysis.serializable.result;
 
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
-import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
-import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.TaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.AnalysisMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.MessageType;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;

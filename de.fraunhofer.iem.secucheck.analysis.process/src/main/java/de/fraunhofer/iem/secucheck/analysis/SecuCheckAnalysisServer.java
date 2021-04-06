@@ -5,14 +5,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.AnalysisResultListener;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.TaintFlowQueryResult;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
-import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
-import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ReportType;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessageSerializer;
