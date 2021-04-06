@@ -1,5 +1,12 @@
 package de.fraunhofer.iem.secucheck.analysis.datastructures;
 
+/**
+ * This is the Pair type with two elements are of different type.
+ *
+ * @param <T> First Type
+ * @param <V> Second Type
+ * @author Tareen, Abdul Rehman
+ */
 public class DifferentTypedPair<T, V> implements Pair<T, V> {
 
     private T first;
