@@ -176,14 +176,8 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 return out;
 
             out.addAll(isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal));
-
-            //out.addAll(processStatement(stmt, dataFlowVal, dataFlowEdge));
-
-            if (stmt.getInvokeExpr().getMethod().getSignature().contains("concat"))
-                System.out.println("ConcatCritical = " + stmt.getInvokeExpr().getMethod().getSignature());
         }
 
-        //     System.out.println("Size = " + arrayList.size() + " Query " + query);
         return out;
     }
 
