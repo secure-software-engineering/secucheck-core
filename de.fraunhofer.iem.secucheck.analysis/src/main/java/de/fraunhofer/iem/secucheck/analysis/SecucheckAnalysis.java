@@ -2,8 +2,9 @@ package de.fraunhofer.iem.secucheck.analysis;
 
 import java.util.List;
 
+import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintAnalysisResult;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 /**
  * Top level for the Secucheck analysis

@@ -9,27 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
+    <artifactId>de.fraunhofer.iem.secucheck.analysis.configuration</artifactId>
+
 
     <dependencies>
-        <dependency>
-            <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.configuration</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.implementation</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
             <artifactId>de.fraunhofer.iem.secucheck.analysis.query</artifactId>

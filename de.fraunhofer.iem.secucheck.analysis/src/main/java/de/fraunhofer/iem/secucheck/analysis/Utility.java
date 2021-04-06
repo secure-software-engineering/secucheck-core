@@ -1,5 +1,6 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
+import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;

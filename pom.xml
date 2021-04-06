@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.fraunhofer.iem.secucheck</groupId>
+    <artifactId>secucheck-core</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>SecuCheck Analysis Core</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>soot-snapshot</id>
+            <name>soot snapshot</name>
+            <url>https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>soot-release</id>
+            <name>soot release</name>
+            <url>https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github</id>
+            <name>CodeShield-Security</name>
+            <url>https://maven.pkg.github.com/CodeShield-Security/SPDS/</url>
+        </repository>
+    </repositories>
+
+    <modules>
+        <module>de.fraunhofer.iem.secucheck.analysis.datastructures</module>
+        <module>de.fraunhofer.iem.secucheck.analysis.query</module>
+        <module>de.fraunhofer.iem.secucheck.analysis.result</module>
+        <module>de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis</module>
+        <module>de.fraunhofer.iem.secucheck.analysis.configuration</module>
+        <module>de.fraunhofer.iem.secucheck.analysis.implementation</module>
+        <module>de.fraunhofer.iem.secucheck.analysis</module>
+    </modules>
+</project>
