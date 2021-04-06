@@ -1,33 +1,23 @@
 package de.fraunhofer.iem.secucheck.analysis.client;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.ProcessBuilder.Redirect;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.commons.io.FileUtils;
-
-import de.fraunhofer.iem.secucheck.analysis.query.OS;
-import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.SecucheckAnalysisConfiguration;
+import de.fraunhofer.iem.secucheck.analysis.TaintAnalysis.result.SecucheckTaintAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
-import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
-import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessage;
 import de.fraunhofer.iem.secucheck.analysis.serializable.ProcessMessageSerializer;
 import de.fraunhofer.iem.secucheck.analysis.serializable.query.CompleteQuery;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.CompleteResult;
 import de.fraunhofer.iem.secucheck.analysis.serializable.result.ListenerResult;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
+import java.lang.ProcessBuilder.Redirect;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 public final class SecuCheckTaintAnalysisOutOfProcess implements SecucheckAnalysis {
 	
