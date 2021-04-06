@@ -101,12 +101,12 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
                 sources.add((ForwardQuery) q);
             }
         }
-
+/*
         System.out.println("\n\n\nSources: " + sources.size());
         for (ForwardQuery forwardQuery : sources) {
             System.out.println(forwardQuery.var());
         }
-/*
+
 		System.out.println("\n\n\nSinks:");
 		for (BackwardQuery backwardQuery : sinks) {
 			System.out.println(backwardQuery.var().m().toString());
