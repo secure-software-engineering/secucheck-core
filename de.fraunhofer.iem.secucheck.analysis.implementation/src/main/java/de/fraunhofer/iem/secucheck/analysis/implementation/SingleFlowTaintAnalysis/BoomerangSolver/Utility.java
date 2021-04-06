@@ -7,12 +7,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import boomerang.scene.WrappedClass;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import soot.G;
 import soot.Scene;
 import soot.SootClass;
@@ -123,15 +123,15 @@ public class Utility {
         return sootClassPath + separator + appClassPath;
     }
 
-    public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(CompositeTaintFlowQuery flowQuery) {
+    public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(SecucheckTaintFlowQuery flowQuery) {
         List<de.fraunhofer.iem.secucheck.analysis.query.Method> methods = new ArrayList<>();
-        for (TaintFlowQuery singleFlow : flowQuery.getTaintFlowQueries()) {
+        for (TaintFlow singleFlow : flowQuery.getTaintFlows()) {
             methods.addAll(getMethods(singleFlow));
         }
         return methods;
     }
 
-    public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(TaintFlowQuery flowQuery) {
+    public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(TaintFlow flowQuery) {
         List<de.fraunhofer.iem.secucheck.analysis.query.Method> methods = new ArrayList<>();
         flowQuery.getFrom().forEach(y -> methods.add((Method) y));
         flowQuery.getTo().forEach(y -> methods.add((Method) y));
@@ -160,7 +160,7 @@ public class Utility {
         return null;
     }
 
-    public static SootMethod findSourceMethodDefinition(TaintFlowQuery partialFlow,
+    public static SootMethod findSourceMethodDefinition(TaintFlow partialFlow,
                                                         SootMethod method, Stmt actualStatement) {
         for (de.fraunhofer.iem.secucheck.analysis.query.Method sourceMethod : partialFlow.getFrom()) {
             String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
@@ -174,7 +174,7 @@ public class Utility {
         return null;
     }
 
-    public static SootMethod findSinkMethodDefinition(TaintFlowQuery partialFlow,
+    public static SootMethod findSinkMethodDefinition(TaintFlow partialFlow,
                                                       SootMethod method, Stmt actualStatement) {
         for (de.fraunhofer.iem.secucheck.analysis.query.Method sinkMethod : partialFlow.getTo()) {
             String sinkSootSignature = "<" + sinkMethod.getSignature() + ">";
@@ -186,7 +186,7 @@ public class Utility {
         return null;
     }
 
-    public static void loadAllParticipantMethods(TaintFlowQueryImpl singleFlow) {
+    public static void loadAllParticipantMethods(TaintFlowImpl singleFlow) {
         // Resolve all methods. This is necessary if a flow participant is not part of
         // the user code...
         // See: https://github.com/secure-software-engineering/secucheck/issues/11

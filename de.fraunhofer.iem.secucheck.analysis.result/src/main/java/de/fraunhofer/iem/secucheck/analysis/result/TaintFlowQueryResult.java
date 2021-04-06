@@ -2,28 +2,28 @@ package de.fraunhofer.iem.secucheck.analysis.result;
 
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaintFlowQueryResult implements AnalysisResult {
 
-    private final List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> resultMap;
+    private final List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> resultMap;
 
     public TaintFlowQueryResult() {
         this.resultMap =
-                new ArrayList<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>();
+                new ArrayList<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>();
     }
 
-    public void addQueryResultPair(TaintFlowQueryImpl query,
+    public void addQueryResultPair(TaintFlowImpl query,
                                    SameTypedPair<LocationDetails> result) {
         this.resultMap.add(
-                new DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>(query, result));
+                new DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>(query, result));
     }
 
     public void addQueryResultPairs(
-            List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> pairs) {
+            List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> pairs) {
         this.resultMap.addAll(pairs);
     }
 
@@ -36,7 +36,7 @@ public class TaintFlowQueryResult implements AnalysisResult {
         return this.resultMap.size();
     }
 
-    public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
+    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
     getQueryResultMap() {
         return this.resultMap;
     }

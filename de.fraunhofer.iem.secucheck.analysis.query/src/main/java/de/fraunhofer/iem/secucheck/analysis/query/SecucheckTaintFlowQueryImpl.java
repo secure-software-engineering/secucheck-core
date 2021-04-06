@@ -3,22 +3,25 @@ package de.fraunhofer.iem.secucheck.analysis.query;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuery {
+/**
+ * Implementation of the CompositeTaintFlowQuery. This is copyable.
+ */
+public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuery {
 
-    private final List<TaintFlowQueryImpl> taintFlowQueries;
+    private final List<TaintFlowImpl> taintFlowQueries;
 
     private String message;
     private ReportSite reportLocation;
 
-    public CompositeTaintFlowQueryImpl() {
-        this.taintFlowQueries = new ArrayList<TaintFlowQueryImpl>();
+    public SecucheckTaintFlowQueryImpl() {
+        this.taintFlowQueries = new ArrayList<TaintFlowImpl>();
     }
 
-    public void addQuery(TaintFlowQueryImpl query) {
+    public void addQuery(TaintFlowImpl query) {
         this.taintFlowQueries.add(query);
     }
 
-    public List<TaintFlowQueryImpl> getTaintFlowQueries() {
+    public List<TaintFlowImpl> getTaintFlows() {
         return taintFlowQueries;
     }
 
@@ -43,9 +46,9 @@ public final class CompositeTaintFlowQueryImpl implements CompositeTaintFlowQuer
     }
 
     @Override
-    public void copyTo(CompositeTaintFlowQuery copy) {
+    public void copyTo(SecucheckTaintFlowQuery copy) {
         copy.setReportLocation(this.getReportLocation());
         copy.setReportMessage(this.getReportMessage());
-        copy.getTaintFlowQueries().addAll(this.getTaintFlowQueries());
+        copy.getTaintFlows().addAll(this.getTaintFlows());
     }
 }

@@ -8,16 +8,16 @@ import boomerang.scene.jimple.JimpleMethod;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import soot.SootClass;
 
 import java.util.List;
 
 public class CustomDataFlowScope implements DataFlowScope {
-    private final TaintFlowQueryImpl singleFlow;
+    private final TaintFlowImpl singleFlow;
     private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
 
-    public CustomDataFlowScope(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
+    public CustomDataFlowScope(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
         this.singleFlow = singleFlow;
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }

@@ -24,10 +24,10 @@ import java.util.List;
  */
 public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     private final ArrayList<BackwardQuery> foundSinks = new ArrayList<>();
-    private final TaintFlowQueryImpl singleFlow;
+    private final TaintFlowImpl singleFlow;
     private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
 
-    public BoomerangGPHandler(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
+    public BoomerangGPHandler(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
         this.singleFlow = singleFlow;
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
@@ -51,7 +51,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 // Taint the return value.
                 if (sinkMethod.getInputParameters() != null) {
                     for (InputParameter input : sinkMethod.getInputParameters()) {
-                        int parameterIndex = input.getNumber();
+                        int parameterIndex = input.getParamID();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
                                 foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex)));
@@ -82,7 +82,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
 
         if (requiredPropogatorMethod.getOutputParameters() != null) {
             for (OutputParameter outputParameter : requiredPropogatorMethod.getOutputParameters()) {
-                int parameterIndex = outputParameter.getNumber();
+                int parameterIndex = outputParameter.getParamID();
                 if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                     queryList.add(new ForwardQuery(dataFlowEdge,
                             new AllocVal(
@@ -134,7 +134,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 // Taint the return value.
                 if (requiredPropogatorMethod.getInputParameters() != null) {
                     for (InputParameter input : requiredPropogatorMethod.getInputParameters()) {
-                        int parameterIndex = input.getNumber();
+                        int parameterIndex = input.getParamID();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
                                 queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));

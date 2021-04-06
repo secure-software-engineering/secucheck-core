@@ -1,26 +1,26 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class SecucheckTaintAnalysisResult implements AnalysisResult {
 
-    private List<DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>> results;
+    private List<DifferentTypedPair<SecucheckTaintFlowQueryImpl, CompositeTaintFlowQueryResult>> results;
 
     public SecucheckTaintAnalysisResult() {
-        this.results = new ArrayList<DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>>();
+        this.results = new ArrayList<DifferentTypedPair<SecucheckTaintFlowQueryImpl, CompositeTaintFlowQueryResult>>();
     }
 
-    public void addResult(CompositeTaintFlowQueryImpl compositeQuery, CompositeTaintFlowQueryResult result) {
+    public void addResult(SecucheckTaintFlowQueryImpl compositeQuery, CompositeTaintFlowQueryResult result) {
         this.results.add(
-                new DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>
+                new DifferentTypedPair<SecucheckTaintFlowQueryImpl, CompositeTaintFlowQueryResult>
                         (compositeQuery, result));
     }
 
-    public List<DifferentTypedPair<CompositeTaintFlowQueryImpl, CompositeTaintFlowQueryResult>> getResults() {
+    public List<DifferentTypedPair<SecucheckTaintFlowQueryImpl, CompositeTaintFlowQueryResult>> getResults() {
         return this.results;
     }
 

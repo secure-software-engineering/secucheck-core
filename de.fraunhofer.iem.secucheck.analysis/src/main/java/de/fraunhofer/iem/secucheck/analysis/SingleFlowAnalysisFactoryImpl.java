@@ -6,7 +6,7 @@ import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfi
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.BoomerangSingleFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.FlowDroidSolver.FlowDroidSingleFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
 public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory {
 
@@ -19,7 +19,7 @@ public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory 
     }
 
     @Override
-    public SingleFlowAnalysis create(TaintFlowQueryImpl flowQuery) {
+    public SingleFlowAnalysis create(TaintFlowImpl flowQuery) {
 
         switch (solver) {
             case BOOMERANG3:

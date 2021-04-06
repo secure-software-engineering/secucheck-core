@@ -11,7 +11,7 @@ import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import wpds.interfaces.State;
 
 import java.util.Collection;
@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.Set;
 
 public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
-    private TaintFlowQueryImpl singleFlow;
+    private TaintFlowImpl singleFlow;
 
-    public MyDefaultForwardFlowFunction(BoomerangOptions opts, TaintFlowQueryImpl singleFlow) {
+    public MyDefaultForwardFlowFunction(BoomerangOptions opts, TaintFlowImpl singleFlow) {
         super(opts);
         this.singleFlow = singleFlow;
     }
@@ -69,13 +69,13 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
                 // UnTaint the OutDeclaration.
                 if (sanitizer.getInputParameters() != null) {      // Check for the iputparameters for tainted values
                     for (InputParameter input : sanitizer.getInputParameters()) {   // for each input parameters
-                        int parameterIndex = input.getNumber();
+                        int parameterIndex = input.getParamID();
                         if (callSite.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             if (callSite.getInvokeExpr().getArg(parameterIndex).toString().equals(fact.toString())) {   // If the parameter is tainted, then untaint the output declaration
 
                                 if (sanitizer.getOutputParameters() != null) {
                                     for (OutputParameter output : sanitizer.getOutputParameters()) {
-                                        int outputParameterIndex = output.getNumber();
+                                        int outputParameterIndex = output.getParamID();
 
                                         if (parameterIndex == outputParameterIndex) {
                                             return true;

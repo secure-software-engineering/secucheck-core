@@ -2,12 +2,12 @@ package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnaly
 
 import boomerang.flowfunction.IForwardFlowFunction;
 import boomerang.scene.jimple.IntAndStringBoomerangOptions;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
 public class MyDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
-    private TaintFlowQueryImpl singleFlow;
+    private TaintFlowImpl singleFlow;
 
-    public MyDefaultBoomerangOptions(TaintFlowQueryImpl singleFlow) {
+    public MyDefaultBoomerangOptions(TaintFlowImpl singleFlow) {
         this.singleFlow = singleFlow;
     }
 

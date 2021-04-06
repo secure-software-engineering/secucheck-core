@@ -13,7 +13,7 @@ import com.google.common.collect.Sets;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,12 +22,12 @@ import java.util.Set;
 
 public class SingleFlowAnalysisScope extends AnalysisScope {
 
-    private final TaintFlowQuery taintFlow;
+    private final TaintFlow taintFlow;
 
     private final Set<boomerang.scene.Method> sourceMethods = new HashSet<>();
     private final Set<boomerang.scene.Method> sinkMethods = new HashSet<>();
 
-    public SingleFlowAnalysisScope(TaintFlowQuery taintFlow, SootCallGraph sootCallGraph) {
+    public SingleFlowAnalysisScope(TaintFlow taintFlow, SootCallGraph sootCallGraph) {
         super(sootCallGraph);
         this.taintFlow = taintFlow;
     }
@@ -58,7 +58,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 
                 if (flowMethod.getOutputParameters() != null) {
                     for (OutputParameter output : flowMethod.getOutputParameters()) {
-                        int parameterIndex = output.getNumber();
+                        int parameterIndex = output.getParamID();
                         if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
 
                             String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
@@ -98,7 +98,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
         return out;
     }
 
-    private Collection<Val> generateSourceVariables(TaintFlowQuery partialFlow,
+    private Collection<Val> generateSourceVariables(TaintFlow partialFlow,
                                                     Statement statement) {
 
         Collection<Val> out = Sets.newHashSet();
@@ -120,7 +120,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 
                     if (sourceMethod.getOutputParameters() != null) {
                         for (OutputParameter output : sourceMethod.getOutputParameters()) {
-                            int parameterIndex = output.getNumber();
+                            int parameterIndex = output.getParamID();
                             if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                                 out.add(statement.getInvokeExpr().getArg(parameterIndex));
                             }
@@ -209,7 +209,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
         return Collections.emptySet();*/
     }
 
-    private Collection<Val> generatedSinkVariables(TaintFlowQuery partialFlow,
+    private Collection<Val> generatedSinkVariables(TaintFlow partialFlow,
                                                    Statement statement) {
 
         for (Method sinkMethod : partialFlow.getTo()) {
@@ -225,7 +225,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
                 // Taint the return value.
                 if (sinkMethod.getInputParameters() != null) {
                     for (InputParameter input : sinkMethod.getInputParameters()) {
-                        int parameterIndex = input.getNumber();
+                        int parameterIndex = input.getParamID();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             //System.out.println("Added");
                             out.add(statement.getInvokeExpr().getArg(parameterIndex));

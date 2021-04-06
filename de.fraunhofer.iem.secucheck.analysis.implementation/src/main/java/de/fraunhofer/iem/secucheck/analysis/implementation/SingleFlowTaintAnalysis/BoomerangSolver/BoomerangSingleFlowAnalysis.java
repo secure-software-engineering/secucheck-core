@@ -12,8 +12,8 @@ import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfi
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided.SecucheckBoomerangDemandDrivenAnalysis;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
 import soot.PackManager;
@@ -24,12 +24,12 @@ import java.util.*;
 
 public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
-    private final TaintFlowQueryImpl singleFlow;
+    private final TaintFlowImpl singleFlow;
     private final SecucheckAnalysisConfiguration configuration;
 
     private final TaintFlowQueryResult result;
 
-    public BoomerangSingleFlowAnalysis(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
+    public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
         this.result = new TaintFlowQueryResult();
@@ -66,10 +66,10 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         result.addQueryResultPairs(analyzePlainFlow(singleFlow));
     }
 
-    public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
-    analyzePlainFlow(TaintFlowQueryImpl singleFlow) {
+    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    analyzePlainFlow(TaintFlowImpl singleFlow) {
 
-        List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
+        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
                 reachMap = new ArrayList<>();
 
         SootCallGraph callGraph = new SootCallGraph();
@@ -83,7 +83,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         return reachMap;
     }
 
-    private AnalysisScope getAnalysisScope(TaintFlowQuery taintFlow, SootCallGraph callGraph) {
+    private AnalysisScope getAnalysisScope(TaintFlow taintFlow, SootCallGraph callGraph) {
         return new SingleFlowAnalysisScope(taintFlow, callGraph);
     }
 

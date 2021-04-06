@@ -13,8 +13,8 @@ import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
@@ -36,12 +36,12 @@ import soot.options.Options;
 
 public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 
-    private final TaintFlowQueryImpl singleFlow;
+    private final TaintFlowImpl singleFlow;
     private final SecucheckAnalysisConfiguration configuration;
 
     private final TaintFlowQueryResult result;
 
-    public FlowDroidSingleFlowAnalysis(TaintFlowQueryImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
+    public FlowDroidSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
         this.result = new TaintFlowQueryResult();
@@ -69,11 +69,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return this.result;
     }
 
-    public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
-    analyzePlainFlow(TaintFlowQueryImpl singleFlow, Infoflow infoFlow,
+    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    analyzePlainFlow(TaintFlowImpl singleFlow, Infoflow infoFlow,
                      DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration) {
 
-        List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
+        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
                 reachMap = new ArrayList<>();
 
         List<String> sources = getCanonicalMethodSignatures(singleFlow.getFrom());
@@ -103,16 +103,16 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return reachMap;
     }
 
-    public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
-    analyzePropogatorFlow(TaintFlowQueryImpl singleFlow, Infoflow infoFlow,
+    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    analyzePropogatorFlow(TaintFlowImpl singleFlow, Infoflow infoFlow,
                           DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration) {
 
         /* Each occurance of a propogator/desanitizer would break a single
          * TaintFlow into two logical TaintFlows, this generates
          * these TaintFlows. */
 
-        TaintFlowQueryImpl newQuery1 = new TaintFlowQueryImpl(),
-                newQuery2 = new TaintFlowQueryImpl();
+        TaintFlowImpl newQuery1 = new TaintFlowImpl(),
+                newQuery2 = new TaintFlowImpl();
 
         newQuery1.getFrom().addAll(singleFlow.getFrom());
 
@@ -127,16 +127,16 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 
         newQuery2.getTo().addAll(singleFlow.getTo());
 
-        List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>>
+        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
                 originalReachMap = new ArrayList<>(),
                 reachMap1 = analyzePlainFlow(newQuery1, infoFlow, entryPointCreator, configuration),
                 reachMap2 = analyzePlainFlow(newQuery2, infoFlow, entryPointCreator, configuration);
 
         if (reachMap1.size() != 0 && reachMap2.size() != 0) {
-            for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
+            for (DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>
                     sourcePair : reachMap1) {
 
-                for (DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
+                for (DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>
                         sinkPair : reachMap2) {
 
                     if (isSourceAndSinkMatching(sourcePair.getSecond(), sinkPair.getSecond())) {
@@ -144,7 +144,7 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
                                 stitchSourceAndSink(sourcePair.getSecond(), sinkPair.getSecond());
 
                         originalReachMap.add(new
-                                DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>
+                                DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>
                                 (singleFlow, stichedPair));
                     }
                 }
@@ -195,11 +195,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return infoFlow;
     }
 
-    private boolean isPropogatorless(TaintFlowQueryImpl singleFlow) {
+    private boolean isPropogatorless(TaintFlowImpl singleFlow) {
         return singleFlow.getThrough() == null || singleFlow.getThrough().size() == 0;
     }
 
-    private List<Method> getSanitizers(TaintFlowQuery partFlow) {
+    private List<Method> getSanitizers(TaintFlow partFlow) {
         List<Method> sanitizers = new ArrayList<Method>();
 
         if (partFlow.getNotThrough() != null)
@@ -267,7 +267,7 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return true;
     }
 
-    private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowQueryImpl singleFlow,
+    private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowImpl singleFlow,
                                                                   DataFlowResult dataFlowResult) {
 
         ResultSourceInfo sourceInfo = dataFlowResult.getSource();

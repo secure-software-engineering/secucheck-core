@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysisFactory;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
@@ -34,7 +34,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
     }
 
     @Override
-    public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries)
+    public SecucheckTaintAnalysisResult run(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
         Utility.ValidateCompositeFlowQueries(flowQueries);
         Utility.ValidateConfigruation(this.configuration);
@@ -46,7 +46,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
         }
     }
 
-    private SecucheckTaintAnalysisResult executeAnalysis(List<CompositeTaintFlowQueryImpl> flowQueries)
+    private SecucheckTaintAnalysisResult executeAnalysis(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
 
         long startTime = System.currentTimeMillis();
@@ -56,7 +56,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
         SecucheckTaintAnalysisResult result = new SecucheckTaintAnalysisResult();
 
-        for (CompositeTaintFlowQueryImpl flowQuery : flowQueries) {
+        for (SecucheckTaintFlowQueryImpl flowQuery : flowQueries) {
 
             if (this.configuration.getListener() != null &&
                     this.configuration.getListener().isCancelled()) {

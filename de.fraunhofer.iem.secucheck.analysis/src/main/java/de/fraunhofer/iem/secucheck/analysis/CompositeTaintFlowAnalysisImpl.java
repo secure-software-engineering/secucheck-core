@@ -1,10 +1,9 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
-import de.fraunhofer.iem.secucheck.analysis.CompositeTaintFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysisFactory;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
 import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
@@ -13,11 +12,11 @@ import java.util.List;
 
 public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysis {
 
-    private final CompositeTaintFlowQuery flowQuery;
+    private final SecucheckTaintFlowQuery flowQuery;
     private final SingleFlowAnalysisFactory analysisFactory;
     private final AnalysisResultListener resultListener;
 
-    public CompositeTaintFlowAnalysisImpl(CompositeTaintFlowQuery flowQuery,
+    public CompositeTaintFlowAnalysisImpl(SecucheckTaintFlowQuery flowQuery,
                                           SingleFlowAnalysisFactory analysisFactory,
                                           AnalysisResultListener resultListener)
             throws Exception {
@@ -31,9 +30,9 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
 
         CompositeTaintFlowQueryResult result = new CompositeTaintFlowQueryResult();
 
-        List<TaintFlowQueryImpl> flows = flowQuery.getTaintFlowQueries();
+        List<TaintFlowImpl> flows = flowQuery.getTaintFlows();
 
-        for (TaintFlowQueryImpl originalFlow : flows) {
+        for (TaintFlowImpl originalFlow : flows) {
 
             if (this.resultListener != null && this.resultListener.isCancelled()) {
                 break;
@@ -50,7 +49,7 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
             if (this.resultListener != null) {
                 this.resultListener.reportFlowResult(returnResult);
             }
-            result.addResult((TaintFlowQueryImpl) originalFlow, returnResult);
+            result.addResult((TaintFlowImpl) originalFlow, returnResult);
         }
 
         return result;

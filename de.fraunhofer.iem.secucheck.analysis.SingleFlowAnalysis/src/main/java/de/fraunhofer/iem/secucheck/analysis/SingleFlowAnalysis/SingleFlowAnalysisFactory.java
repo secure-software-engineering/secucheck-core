@@ -1,9 +1,9 @@
 package de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis;
 
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
 public interface SingleFlowAnalysisFactory {
 
-    SingleFlowAnalysis create(TaintFlowQueryImpl flowQuery);
+    SingleFlowAnalysis create(TaintFlowImpl flowQuery);
 
 }

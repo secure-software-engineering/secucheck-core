@@ -4,7 +4,7 @@ import java.security.Permission;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 /**
@@ -21,7 +21,7 @@ public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
     }
 
     @Override
-    public SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries)
+    public SecucheckTaintAnalysisResult run(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
         super.lock.lock();
         try {

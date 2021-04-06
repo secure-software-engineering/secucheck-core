@@ -2,6 +2,9 @@ package de.fraunhofer.iem.secucheck.analysis.query;
 
 import java.util.List;
 
+/**
+ * Implementation of Method
+ */
 public final class MethodImpl implements Method {
 
     private boolean isOutputThis;

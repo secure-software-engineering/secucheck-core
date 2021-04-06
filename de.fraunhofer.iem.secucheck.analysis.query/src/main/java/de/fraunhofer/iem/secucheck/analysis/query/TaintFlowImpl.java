@@ -3,14 +3,17 @@ package de.fraunhofer.iem.secucheck.analysis.query;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class TaintFlowQueryImpl implements TaintFlowQuery {
+/**
+ * Implementation of TaintFlow
+ */
+public final class TaintFlowImpl implements TaintFlow {
 
     private final List<MethodImpl> froms;
     private final List<MethodImpl> tos;
     private final List<MethodImpl> notThroughs;
     private final List<MethodImpl> throughs;
 
-    public TaintFlowQueryImpl() {
+    public TaintFlowImpl() {
         this.froms = new ArrayList<MethodImpl>();
         this.tos = new ArrayList<MethodImpl>();
         this.notThroughs = new ArrayList<MethodImpl>();

@@ -10,7 +10,7 @@ import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfi
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
 import soot.SootMethod;
@@ -27,9 +27,9 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
 
-    public List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, Set<BackwardQuery> sinks, TaintFlowQueryImpl singleFlow) {
+    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, Set<BackwardQuery> sinks, TaintFlowImpl singleFlow) {
 
-        List<DifferentTypedPair<TaintFlowQueryImpl, SameTypedPair<LocationDetails>>> reachMap =
+        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> reachMap =
                 new ArrayList<>();
 
         for (ForwardQuery source : sources) {
@@ -64,7 +64,7 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
     }
 
-    private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowQueryImpl flowQuery,
+    private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowImpl flowQuery,
                                                                   Query start, Query end) {
 
         LocationDetails startDetails = new LocationDetails();

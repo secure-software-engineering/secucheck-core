@@ -3,7 +3,7 @@ package de.fraunhofer.iem.secucheck.analysis;
 import java.util.List;
 
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 /**
@@ -32,5 +32,5 @@ public interface SecucheckAnalysis {
      * @return TaintAnalysis results
      * @throws Exception Any kind of exceptions.
      */
-    SecucheckTaintAnalysisResult run(List<CompositeTaintFlowQueryImpl> flowQueries) throws Exception;
+    SecucheckTaintAnalysisResult run(List<SecucheckTaintFlowQueryImpl> flowQueries) throws Exception;
 }

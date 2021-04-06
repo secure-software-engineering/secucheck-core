@@ -1,29 +1,29 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQuery;
-import de.fraunhofer.iem.secucheck.analysis.query.CompositeTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQuery;
+import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 
 import java.util.List;
 
 public class Utility {
 
-    public static void ValidateCompositeFlowQueries(List<? super CompositeTaintFlowQueryImpl> flowQueries)
+    public static void ValidateCompositeFlowQueries(List<? super SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
         for (Object object : flowQueries) {
 
             if (object == null)
                 throw new Exception("Please specify not null composite flow query.");
 
-            CompositeTaintFlowQuery compositeFlow = (CompositeTaintFlowQuery) object;
+            SecucheckTaintFlowQuery compositeFlow = (SecucheckTaintFlowQuery) object;
             ValidateCompositeFlowQuery(compositeFlow);
         }
     }
 
-    public static void ValidateCompositeFlowQuery(CompositeTaintFlowQuery flowQuery)
+    public static void ValidateCompositeFlowQuery(SecucheckTaintFlowQuery flowQuery)
             throws Exception {
-        for (TaintFlowQuery singleFlow : flowQuery.getTaintFlowQueries()) {
+        for (TaintFlow singleFlow : flowQuery.getTaintFlows()) {
 
             if (singleFlow == null)
                 throw new Exception("Please specify not null single flow query.");
@@ -32,7 +32,7 @@ public class Utility {
         }
     }
 
-    public static void ValidateSingleFlowQuery(TaintFlowQuery flowQuery) throws Exception {
+    public static void ValidateSingleFlowQuery(TaintFlow flowQuery) throws Exception {
         if (flowQuery.getFrom() == null || flowQuery.getFrom().size() == 0)
             throw new Exception("For a valid taint flow query there must be some source specified.");
         if (flowQuery.getTo() == null || flowQuery.getTo().size() == 0)

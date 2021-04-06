@@ -5,7 +5,6 @@ package de.fraunhofer.iem.secucheck.analysis.datastructures;
  *
  * @param <T> First element type
  * @param <V> Second element type
- * @author Tareen, Abdul Rehman
  */
 public interface Pair<T, V> {
     /**
