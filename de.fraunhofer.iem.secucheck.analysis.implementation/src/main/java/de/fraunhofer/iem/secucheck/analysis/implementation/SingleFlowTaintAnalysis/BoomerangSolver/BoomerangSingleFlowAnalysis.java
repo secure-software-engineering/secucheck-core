@@ -74,10 +74,11 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
         SootCallGraph callGraph = new SootCallGraph();
         AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
-        Seeds seeds = computeSeeds(analysisScope);
+        //Seeds seeds = computeSeeds(analysisScope);
+        Set<ForwardQuery> source = computeSeeds(analysisScope);
 
-        if (seeds.getSources().size() != 0 && seeds.getSinks().size() != 0) {
-            reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).run(seeds.getSources(), seeds.getSinks(), singleFlow));
+        if (source.size() != 0) {
+            reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).run(source, singleFlow));
         }
 
         return reachMap;
@@ -88,7 +89,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
     }
 
 
-    private Seeds computeSeeds(AnalysisScope analysisScope) {
+    private Set<ForwardQuery> computeSeeds(AnalysisScope analysisScope) {
 
         Set<ForwardQuery> sources = Sets.newHashSet();
         Set<BackwardQuery> sinks = Sets.newHashSet();
@@ -112,6 +113,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 			System.out.println(backwardQuery.var().m().toString());
 		}
 */
-        return new Seeds(sources, sinks);
+        return sources;
+        //return new Seeds(sources, sinks);
     }
 }

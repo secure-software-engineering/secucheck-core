@@ -27,14 +27,14 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
 
-    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, Set<BackwardQuery> sinks, TaintFlowImpl singleFlow) {
+    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, TaintFlowImpl singleFlow) {
 
         List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> reachMap =
                 new ArrayList<>();
 
         for (ForwardQuery source : sources) {
-            HashMap<BackwardQuery, Boolean> foundSinks = new HashMap<>();
-            sinks.stream().forEach(sink -> foundSinks.put(sink, false));
+            //HashMap<BackwardQuery, Boolean> foundSinks = new HashMap<>();
+            //sinks.stream().forEach(sink -> foundSinks.put(sink, false));
 
             BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow, this.secucheckAnalysisConfiguration);
             MyDefaultBoomerangOptions myDefaultBoomerangOptions = new MyDefaultBoomerangOptions(singleFlow);
