@@ -1,9 +1,9 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintFlowQueryResult;
 
 public interface CompositeTaintFlowAnalysis {
 
-    CompositeTaintFlowQueryResult run() throws Exception;
+    SecucheckTaintFlowQueryResult run() throws Exception;
 
 }

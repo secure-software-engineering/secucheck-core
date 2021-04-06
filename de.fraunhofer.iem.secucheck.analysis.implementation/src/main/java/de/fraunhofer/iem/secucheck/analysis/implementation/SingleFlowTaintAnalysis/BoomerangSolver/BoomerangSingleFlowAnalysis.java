@@ -15,7 +15,7 @@ import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
-import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 import soot.PackManager;
 import soot.SceneTransformer;
 import soot.Transform;
@@ -27,16 +27,16 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
     private final TaintFlowImpl singleFlow;
     private final SecucheckAnalysisConfiguration configuration;
 
-    private final TaintFlowQueryResult result;
+    private final TaintFlowResult result;
 
     public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
-        this.result = new TaintFlowQueryResult();
+        this.result = new TaintFlowResult();
     }
 
     @Override
-    public TaintFlowQueryResult run() throws Exception {
+    public TaintFlowResult run() throws Exception {
 
         String classPath = Utility.getCombinedSootClassPath(this.configuration.getOs(),
                 this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());

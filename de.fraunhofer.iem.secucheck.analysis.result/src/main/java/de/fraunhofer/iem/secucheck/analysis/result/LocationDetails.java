@@ -1,18 +1,53 @@
 package de.fraunhofer.iem.secucheck.analysis.result;
 
+/**
+ * This class represents the Location details on the IDE
+ */
 public class LocationDetails {
 
+    /**
+     * This is the source/sink method's class name
+     */
     private String sourceClassName;
+
+    /**
+     * This is the class name in which the taintflow is found
+     */
     private String usageClassName;
 
+    /**
+     * Method signature of the source/sink method
+     */
     private String methodSignature;
+
+    /**
+     * Method signature of the method in which the taintflow is found
+     */
     private String usageMethodSignature;
 
+    /**
+     * Start line number of the taint flow
+     */
     private int usageStartLineNumber;
+
+    /**
+     * End line number of the taint flow
+     */
     private int usageEndLineNumber;
+
+    /**
+     * Start column number of the taint flow
+     */
     private int usageStartColNumber;
+
+    /**
+     * End column number of the taint flow
+     */
     private int usageEndColNumber;
 
+    /**
+     * Type of the location. SOURCE, SINK or SOURCEANDSINK
+     */
     private LocationType type;
 
     public LocationDetails() {

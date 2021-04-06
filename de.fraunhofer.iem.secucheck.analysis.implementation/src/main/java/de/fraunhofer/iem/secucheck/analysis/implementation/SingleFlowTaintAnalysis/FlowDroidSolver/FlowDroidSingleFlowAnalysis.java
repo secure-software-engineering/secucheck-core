@@ -17,7 +17,7 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
-import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 import soot.Body;
 import soot.Scene;
 import soot.SootClass;
@@ -39,17 +39,17 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
     private final TaintFlowImpl singleFlow;
     private final SecucheckAnalysisConfiguration configuration;
 
-    private final TaintFlowQueryResult result;
+    private final TaintFlowResult result;
 
     public FlowDroidSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
-        this.result = new TaintFlowQueryResult();
+        this.result = new TaintFlowResult();
     }
 
 
     @Override
-    public TaintFlowQueryResult run() throws Exception {
+    public TaintFlowResult run() throws Exception {
 
         String classPath = Utility.getCombinedSootClassPath(this.configuration.getOs(),
                 this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());

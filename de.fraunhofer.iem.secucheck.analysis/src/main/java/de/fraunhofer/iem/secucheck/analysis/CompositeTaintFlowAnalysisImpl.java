@@ -5,8 +5,8 @@ import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysi
 import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQuery;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.AnalysisResultListener;
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
-import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 
 import java.util.List;
 
@@ -26,9 +26,9 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
     }
 
     @Override
-    public CompositeTaintFlowQueryResult run() throws Exception {
+    public SecucheckTaintFlowQueryResult run() throws Exception {
 
-        CompositeTaintFlowQueryResult result = new CompositeTaintFlowQueryResult();
+        SecucheckTaintFlowQueryResult result = new SecucheckTaintFlowQueryResult();
 
         List<TaintFlowImpl> flows = flowQuery.getTaintFlows();
 
@@ -39,7 +39,7 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
             }
 
             SingleFlowAnalysis analysis = analysisFactory.create(originalFlow);
-            TaintFlowQueryResult returnResult = analysis.run();
+            TaintFlowResult returnResult = analysis.run();
 
             if (returnResult.size() == 0) {
                 result.clear();
@@ -47,7 +47,7 @@ public class CompositeTaintFlowAnalysisImpl implements CompositeTaintFlowAnalysi
             }
 
             if (this.resultListener != null) {
-                this.resultListener.reportFlowResult(returnResult);
+                this.resultListener.reportTaintFlowResult(returnResult);
             }
             result.addResult((TaintFlowImpl) originalFlow, returnResult);
         }

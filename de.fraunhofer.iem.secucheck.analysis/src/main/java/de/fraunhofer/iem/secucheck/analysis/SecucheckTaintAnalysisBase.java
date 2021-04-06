@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysisFactory;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
-import de.fraunhofer.iem.secucheck.analysis.result.CompositeTaintFlowQueryResult;
+import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintFlowQueryResult;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
 
 /**
@@ -66,7 +66,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
             CompositeTaintFlowAnalysis analysis = new CompositeTaintFlowAnalysisImpl(flowQuery,
                     analysisFactory, this.configuration.getListener());
 
-            CompositeTaintFlowQueryResult singleResult = analysis.run();
+            SecucheckTaintFlowQueryResult singleResult = analysis.run();
 
             if (singleResult.size() != 0) {
                 result.addResult(flowQuery, singleResult);
@@ -74,7 +74,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
             if (this.configuration.getListener() != null) {
                 this.configuration.getListener()
-                        .reportCompositeFlowResult((CompositeTaintFlowQueryResult) singleResult);
+                        .reportSecucheckTaintFlowQueryResult((SecucheckTaintFlowQueryResult) singleResult);
             }
         }
 
