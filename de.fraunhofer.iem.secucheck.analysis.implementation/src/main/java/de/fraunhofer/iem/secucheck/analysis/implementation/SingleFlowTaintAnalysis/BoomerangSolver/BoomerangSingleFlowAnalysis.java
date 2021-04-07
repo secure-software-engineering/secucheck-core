@@ -1,6 +1,5 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver;
 
-import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
 import boomerang.scene.AnalysisScope;
@@ -22,11 +21,24 @@ import soot.Transform;
 
 import java.util.*;
 
+/**
+ * Boomerang Solver, that solves the single TaintFlow spec
+ */
 public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
+    /**
+     * Current single TaintFlow specification
+     */
     private final TaintFlowImpl singleFlow;
+
+    /**
+     * SecucheckAnalysisConfiguration given by the client
+     */
     private final SecucheckAnalysisConfiguration configuration;
 
+    /**
+     * TaintFlowResult for the single TaintFlow specification
+     */
     private final TaintFlowResult result;
 
     public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
@@ -35,6 +47,12 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         this.result = new TaintFlowResult();
     }
 
+    /**
+     * Initializes the soot and run the analysis
+     *
+     * @return TaintFlowResult for the current single TaintFlow specification
+     * @throws Exception Any exception
+     */
     @Override
     public TaintFlowResult run() throws Exception {
 
@@ -54,7 +72,12 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         return this.result;
     }
 
-    private SceneTransformer createAnalysisTransformer() throws Exception {
+    /**
+     * Creates the analysis transformer
+     *
+     * @return SceneTransformer
+     */
+    private SceneTransformer createAnalysisTransformer() {
         return new SceneTransformer() {
             protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
                 executeAnalysis();
@@ -62,58 +85,66 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         };
     }
 
+    /**
+     * Starts the analysis
+     */
     private void executeAnalysis() {
         result.addQueryResultPairs(analyzePlainFlow(singleFlow));
     }
 
+    /**
+     * First it finds the seeds using the AnalysisScope, Then it runs the SecuchcekDemandDrivenAnalysis for finding the TaintFlows based on
+     * the Boomeranf DemandDrivenAnalysis
+     *
+     * @param singleFlow Current single TaintFlow specification
+     * @return List of Tainflow locations details for the current single TaintFlow specification
+     */
     public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
     analyzePlainFlow(TaintFlowImpl singleFlow) {
 
         List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
                 reachMap = new ArrayList<>();
 
+        // First get the seeds --- source ForwardQuery
         SootCallGraph callGraph = new SootCallGraph();
         AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
-        //Seeds seeds = computeSeeds(analysisScope);
+
         Set<ForwardQuery> source = computeSeeds(analysisScope);
 
-        if (source.size() != 0) {
+        if (source.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
             reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).run(source, singleFlow));
         }
 
         return reachMap;
     }
 
+    /**
+     * Returns the Analysiscope for finding the seeds
+     *
+     * @param taintFlow Current single TaintFlow specification
+     * @param callGraph Soot callgraph
+     * @return AnalysisScope
+     */
     private AnalysisScope getAnalysisScope(TaintFlow taintFlow, SootCallGraph callGraph) {
         return new SingleFlowAnalysisScope(taintFlow, callGraph);
     }
 
-
+    /**
+     * Start finding the seeds from the AnalysisScope
+     *
+     * @param analysisScope AnalysisScope
+     * @return Seeds-- ForwardQuery for each source method found in AnalysisScope
+     */
     private Set<ForwardQuery> computeSeeds(AnalysisScope analysisScope) {
 
         Set<ForwardQuery> sources = Sets.newHashSet();
-        Set<BackwardQuery> sinks = Sets.newHashSet();
         Collection<Query> computeSeeds = analysisScope.computeSeeds();
 
         for (Query q : computeSeeds) {
-            if (q instanceof BackwardQuery) {
-                sinks.add((BackwardQuery) q);
-            } else if (q instanceof ForwardQuery) {
+            if (q instanceof ForwardQuery) {
                 sources.add((ForwardQuery) q);
             }
         }
-/*
-        System.out.println("\n\n\nSources: " + sources.size());
-        for (ForwardQuery forwardQuery : sources) {
-            System.out.println(forwardQuery.var());
-        }
-
-		System.out.println("\n\n\nSinks:");
-		for (BackwardQuery backwardQuery : sinks) {
-			System.out.println(backwardQuery.var().m().toString());
-		}
-*/
         return sources;
-        //return new Seeds(sources, sinks);
     }
 }

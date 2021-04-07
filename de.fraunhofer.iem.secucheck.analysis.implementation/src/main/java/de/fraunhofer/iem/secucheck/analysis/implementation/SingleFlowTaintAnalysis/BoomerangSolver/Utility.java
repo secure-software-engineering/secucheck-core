@@ -23,8 +23,20 @@ import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.util.dot.DotGraph;
 
+//Todo: update the documentation for this class
+
+/**
+ * Utility
+ */
 public class Utility {
 
+    /**
+     * Initializes the soot
+     *
+     * @param sootClassPath Soot class path
+     * @param entryPoints   Entry points for the analysis
+     * @throws Exception Any exception
+     */
     public static void initializeSootWithEntryPoints(String sootClassPath, List<EntryPoint> entryPoints)
             throws Exception {
 
@@ -75,10 +87,11 @@ public class Utility {
         Scene.v().loadNecessaryClasses();
     }
 
-    private static boolean includeJDK() {
-        return true;
-    }
-
+    /**
+     * Exclude the mentioned packages from analysis
+     *
+     * @return List of package to be excluded
+     */
     public static List<String> excludedPackages() {
         List<String> excludedPackages = new LinkedList<>();
         excludedPackages.add("sun.*");

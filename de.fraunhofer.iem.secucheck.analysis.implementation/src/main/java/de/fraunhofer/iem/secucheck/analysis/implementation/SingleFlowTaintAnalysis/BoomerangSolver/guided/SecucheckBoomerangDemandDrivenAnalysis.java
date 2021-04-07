@@ -1,6 +1,5 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
-import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
 import boomerang.QueryGraph;
@@ -20,54 +19,63 @@ import wpds.impl.Weight;
 
 import java.util.*;
 
+/**
+ * This is the Secucheck DemandDrivenAnalysis based on the Boomerang DemandDrivenAnalysis
+ */
 public class SecucheckBoomerangDemandDrivenAnalysis {
+    /**
+     * SecucheckAnalysisConfiguration given by the client
+     */
     private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
 
     public SecucheckBoomerangDemandDrivenAnalysis(SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
 
+    /**
+     * Runs the DemandDrivenAnalysis
+     *
+     * @param sources    Set of sources(ForwardQuery--- seeds)
+     * @param singleFlow Current single TaintFlow specification---looking for this TaintFlow
+     * @return Returns the result for the single given TaintFlow-specification ( There may be more than one TaintFlow in the result)
+     */
     public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, TaintFlowImpl singleFlow) {
 
-        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> reachMap =
-                new ArrayList<>();
+        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> reachMap = new ArrayList<>();
 
         for (ForwardQuery source : sources) {
-            //HashMap<BackwardQuery, Boolean> foundSinks = new HashMap<>();
-            //sinks.stream().forEach(sink -> foundSinks.put(sink, false));
-
             BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow, this.secucheckAnalysisConfiguration);
-            MyDefaultBoomerangOptions myDefaultBoomerangOptions = new MyDefaultBoomerangOptions(singleFlow);
+            SecucheckDefaultBoomerangOptions secucheckDefaultBoomerangOptions = new SecucheckDefaultBoomerangOptions(singleFlow);
             CustomDataFlowScope customDataFlowScope = new CustomDataFlowScope(singleFlow, this.secucheckAnalysisConfiguration);
 
             DemandDrivenGuidedAnalysis demandDrivenGuidedAnalysis = new DemandDrivenGuidedAnalysis(
                     boomerangGPHandler,
-                    myDefaultBoomerangOptions,
+                    secucheckDefaultBoomerangOptions,
                     customDataFlowScope);
 
             QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run(source);
 
             for (Query sink : boomerangGPHandler.getFoundSinks()) {
-                reachMap.add(new DifferentTypedPair<>(
-                        singleFlow, getLocationDetailsPair(singleFlow, source, sink)));
+                reachMap.add(new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)));
             }
-
-            Set<Query> queries = queryGraph.getNodes();
-/*
-            System.out.println("Critical = " + queries.size() + " : " + sinks.size());
-            for (Query query : queries) {
-                System.out.println(query);
-            }*/
         }
 
         return reachMap;
 
     }
 
-    private SameTypedPair<LocationDetails> getLocationDetailsPair(TaintFlowImpl flowQuery,
-                                                                  Query start, Query end) {
+    /**
+     * Creates the Location detail for the found taintflow
+     *
+     * @param start Source
+     * @param end   Sink
+     * @return Location details
+     */
+    private SameTypedPair<LocationDetails> getLocationDetailsPair(Query start, Query end) {
 
+        // source location detail
         LocationDetails startDetails = new LocationDetails();
+
         startDetails.setSourceClassName(start.cfgEdge().getMethod().getDeclaringClass().getName());
         startDetails.setMethodSignature(start.cfgEdge().getMethod().getSubSignature());
 
@@ -76,6 +84,7 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         if (start.cfgEdge().getX().isIdentityStmt() && start.cfgEdge().getX() instanceof JimpleStatement) {
             JimpleStatement jimpleStament = (JimpleStatement) start.cfgEdge().getX();
             IdentityStmt identityStmt = (IdentityStmt) jimpleStament.getDelegate();
+
             if (identityStmt.getRightOp() instanceof ParameterRef) {
                 SootMethod sootMethod = Utility.getSootMethod(start.cfgEdge().getX().getMethod());
                 startDetails.setUsageStartLineNumber(sootMethod.getJavaSourceStartLineNumber());
@@ -94,7 +103,9 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         startDetails.setUsageClassName(start.cfgEdge().getX().getMethod().getDeclaringClass().getName());
         startDetails.setType(LocationType.Source);
 
+        // Sink location detail
         LocationDetails endDetails = new LocationDetails();
+
         endDetails.setSourceClassName(end.cfgEdge().getMethod().getDeclaringClass().getName());
         endDetails.setMethodSignature(end.cfgEdge().getMethod().getSubSignature());
 
@@ -108,6 +119,5 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         endDetails.setType(LocationType.Sink);
 
         return new SameTypedPair<LocationDetails>(startDetails, endDetails);
-
     }
 }

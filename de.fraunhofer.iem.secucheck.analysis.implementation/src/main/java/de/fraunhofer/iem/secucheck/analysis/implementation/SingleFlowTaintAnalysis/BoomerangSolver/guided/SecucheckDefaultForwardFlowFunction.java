@@ -4,7 +4,6 @@ import boomerang.BoomerangOptions;
 import boomerang.ForwardQuery;
 import boomerang.flowfunction.DefaultForwardFlowFunction;
 import boomerang.scene.ControlFlowGraph;
-import boomerang.scene.Method;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
@@ -16,44 +15,32 @@ import wpds.interfaces.State;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
-public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
-    private TaintFlowImpl singleFlow;
+/**
+ * Secucheck default forward flow function for the Boomerang DemandDriven analysis
+ */
+public class SecucheckDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
+    // Current single TaintFlow specification
+    private final TaintFlowImpl singleFlow;
 
-    public MyDefaultForwardFlowFunction(BoomerangOptions opts, TaintFlowImpl singleFlow) {
+    public SecucheckDefaultForwardFlowFunction(BoomerangOptions opts, TaintFlowImpl singleFlow) {
         super(opts);
         this.singleFlow = singleFlow;
     }
 
-    @Override
-    public Set<State> normalFlow(ForwardQuery query, ControlFlowGraph.Edge nextEdge, Val fact) {
-
-        return super.normalFlow(query, nextEdge, fact);
-    }
-
-    @Override
-    public Set<Val> callFlow(Statement callSite, Val fact, Method callee) {
-   /*     if (isSanitizer(callSite, fact, callee)){
-            System.out.println("Returning empty");
-            return Collections.emptySet();
-        }
-*/
-        Set<Val> res = super.callFlow(callSite, fact, callee);
-/*
-        System.out.println("Returning non empty");
-        for (Val val : res) {
-            System.out.println("--> " + val);
-        }
-*/
-        return res;
-    }
-
+    /**
+     * In callToReturnFlow function, we check is there a sanitizer method call. If there is a sanitizer method call,
+     * Then based on the specfication, we kill the fact.
+     *
+     * @param query Forward query
+     * @param edge  dataflow edge
+     * @param fact  fact
+     * @return List of state based on the specification of sanitizers. If no sanitizer then call the super.callToReturnFlow
+     */
     @Override
     public Collection<State> callToReturnFlow(ForwardQuery query, ControlFlowGraph.Edge edge, Val fact) {
-
         if (edge.getStart().containsInvokeExpr()) {
-            if (isSanitizer(edge.getStart(), fact)) {
+            if (isSanitizer(edge.getStart(), fact)) {   // If sanitizer and current fact is need to be killed by the specs then kill the fact
                 return Collections.emptyList();
             }
         }
@@ -61,6 +48,19 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
         return super.normalFlow(query, edge, fact);
     }
 
+    /**
+     * Checks whether the current statement contain the sanitizer method call.
+     * <p>
+     * Criteria for isSanitizer to return true is:
+     * if there is a sanitizer method call and there is a tainted variable (fact) in the InFlow. Then check for the OutFlow in specs.
+     * If fact is equal to the OutFlow in the specs then returns true ( in this case it kill the fact) otherwise it return false (will not kill fact).
+     * <p>
+     * Note: If there is sanitizer and OutFlow is return value then it return true because there is nothing to kill the left op.
+     *
+     * @param callSite statement that contains the callsite
+     * @param fact     fact
+     * @return True if it satisfies the criteria
+     */
     private boolean isSanitizer(Statement callSite, Val fact) {
         for (MethodImpl sanitizer : singleFlow.getNotThrough()) {
             String sanitizerSootSignature = Utility.wrapInAngularBrackets(sanitizer.getSignature());
@@ -102,7 +102,6 @@ public class MyDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
                 }
             }
         }
-
         return false;
     }
 }

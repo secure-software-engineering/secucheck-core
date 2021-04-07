@@ -4,10 +4,20 @@ import boomerang.flowfunction.IForwardFlowFunction;
 import boomerang.scene.jimple.IntAndStringBoomerangOptions;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
-public class MyDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
-    private TaintFlowImpl singleFlow;
+/**
+ * Default Boomerang options for the DemandDriven analysis
+ * <p>
+ * Note:
+ * 1. Currently maxFieldDepth, maxUnbalancedCallDepth, and maxCallDepth is hard coded to 5.
+ * 2. Since our implementation uses only BackwardQuery, therefore we are using custom ForwardFlow functions only.
+ */
+public class SecucheckDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
+    /**
+     * Current single TaintFlow specification
+     */
+    private final TaintFlowImpl singleFlow;
 
-    public MyDefaultBoomerangOptions(TaintFlowImpl singleFlow) {
+    public SecucheckDefaultBoomerangOptions(TaintFlowImpl singleFlow) {
         this.singleFlow = singleFlow;
     }
 
@@ -46,18 +56,8 @@ public class MyDefaultBoomerangOptions extends IntAndStringBoomerangOptions {
         return true;
     }
 
-    /*
-    @Override
-    public Optional<AllocVal> getAllocationVal(Method m, Statement stmt, Val fact) {
-        System.out.println("Method = " + m);
-        System.out.println("Statement = " + stmt);
-        System.out.println("Fact = " + fact);
-        System.out.println(super.getAllocationVal(m, stmt, fact).get());
-        return super.getAllocationVal(m, stmt, fact);
-    }
-*/
     @Override
     public IForwardFlowFunction getForwardFlowFunctions() {
-        return new MyDefaultForwardFlowFunction(this, singleFlow);
+        return new SecucheckDefaultForwardFlowFunction(this, singleFlow);
     }
 }
