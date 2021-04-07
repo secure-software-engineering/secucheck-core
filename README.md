@@ -5,6 +5,22 @@ Boomerang 3.x and Flowdroid.
 Boomerang 3.x tested for WebGoat, fluentTQL catalog and it finds the TaintFlows. Flowdroid is currently 
 under development.
 
+## How to build secucheck-core manually?
+- Clone secuchek-core
+```shell script
+git clone https://github.com/secure-software-engineering/secucheck-core.git
+```
+
+- change path to root directory of secucheck-core project
+```shell script
+cd secucheck-core
+```
+
+- build the project 
+```shell script
+mvn clean install
+```
+
 ## secucheck-core structure
 | Project | Description | can use in client side? |
 | ------- | ----------- | ----------------------- |
