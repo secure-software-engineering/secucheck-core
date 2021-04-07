@@ -16,6 +16,11 @@ git clone https://github.com/secure-software-engineering/secucheck-core.git
 cd secucheck-core
 ```
 
+- change the branch to feature/paper
+```shell script
+git checkout origin/feature/paper
+```
+
 - build the project 
 ```shell script
 mvn clean install
