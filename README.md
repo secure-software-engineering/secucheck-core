@@ -15,3 +15,49 @@ under development.
 | de.fraunhofer.iem.secucheck.analysis.query | TaintFlow query independent of other TaintFlowQuery language | Yes | 
 | de.fraunhofer.iem.secucheck.analysis.result | Taint analysis results classes | Yes | 
 | de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis | Interface for taint analysis for single taintflow specification | No
+
+## Required maven dependency to use secucheck-core at client side.
+- de.fraunhofer.iem.secucheck.analysis
+```xml
+<dependency>
+    <groupId>de.fraunhofer.iem.secucheck</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
+</dependency>
+```
+
+- de.fraunhofer.iem.secucheck.analysis.configuration
+```xml
+<dependency>
+    <groupId>de.fraunhofer.iem.secucheck</groupId>
+    <artifactId>de.fraunhofer.iem.secucheck.analysis.configuration</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+- de.fraunhofer.iem.secucheck.analysis.result
+```xml
+<dependency>
+    <groupId>de.fraunhofer.iem.secucheck</groupId>
+    <artifactId>de.fraunhofer.iem.secucheck.analysis.result</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+- de.fraunhofer.iem.secucheck.analysis.query
+```xml
+<dependency>
+    <groupId>de.fraunhofer.iem.secucheck</groupId>
+    <artifactId>de.fraunhofer.iem.secucheck.analysis.query</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+- de.fraunhofer.iem.secucheck.analysis.datastructures
+```xml
+<dependency>
+    <groupId>de.fraunhofer.iem.secucheck</groupId>
+    <artifactId>de.fraunhofer.iem.secucheck.analysis.datastructures</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
