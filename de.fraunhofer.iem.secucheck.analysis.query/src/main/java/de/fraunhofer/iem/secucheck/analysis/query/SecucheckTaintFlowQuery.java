@@ -43,4 +43,11 @@ public interface SecucheckTaintFlowQuery extends Copyable<SecucheckTaintFlowQuer
      * @param message report message
      */
     void setReportMessage(String message);
+
+    /**
+     * Returns the ID of the TaintFlowQuery
+     *
+     * @return ID of the TaintFlowQuery
+     */
+    int getId();
 }

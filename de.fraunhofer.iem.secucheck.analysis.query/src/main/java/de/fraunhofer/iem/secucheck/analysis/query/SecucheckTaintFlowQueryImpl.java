@@ -9,12 +9,14 @@ import java.util.List;
 public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuery {
 
     private final List<TaintFlowImpl> taintFlowQueries;
+    private final int id;
 
     private String message;
     private ReportSite reportLocation;
 
-    public SecucheckTaintFlowQueryImpl() {
+    public SecucheckTaintFlowQueryImpl(int id) {
         this.taintFlowQueries = new ArrayList<TaintFlowImpl>();
+        this.id = id;
     }
 
     public void addQuery(TaintFlowImpl query) {
@@ -50,5 +52,10 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
         copy.setReportLocation(this.getReportLocation());
         copy.setReportMessage(this.getReportMessage());
         copy.getTaintFlows().addAll(this.getTaintFlows());
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 }
