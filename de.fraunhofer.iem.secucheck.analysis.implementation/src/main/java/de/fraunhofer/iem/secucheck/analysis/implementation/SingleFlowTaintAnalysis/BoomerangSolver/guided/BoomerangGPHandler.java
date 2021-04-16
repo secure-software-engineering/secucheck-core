@@ -11,6 +11,7 @@ import boomerang.scene.Val;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.query.*;
+import soot.jimple.internal.JDynamicInvokeExpr;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -163,6 +164,43 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     }
 
     /**
+     * This method checks whether the statement inflow is tainted based on the fluentTQL specification given.
+     *
+     * @param requiredPropogatorMethod FluentTQL method that contains the specification
+     * @param statement                Statement
+     * @param dataFlowEdge             Dataflow edge
+     * @param dataFlowVal              Fact
+     * @return List of Query based on the OutFlow of the required propagator
+     */
+    private Collection<Query> getQueriesBasedOnTheRules(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+        List<Query> queryList = new ArrayList<>();
+
+        // Check for InFlow parameter
+        if (requiredPropogatorMethod.getInputParameters() != null) {
+            for (InputParameter input : requiredPropogatorMethod.getInputParameters()) {
+                int parameterIndex = input.getParamID();
+                if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                    if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
+                        queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                        return queryList;
+                    }
+                }
+            }
+        }
+
+        // Check for InFlow this-object
+        if (requiredPropogatorMethod.isInputThis() &&
+                statement.getInvokeExpr().isInstanceInvokeExpr()) {
+            if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
+                queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                return queryList;
+            }
+        }
+
+        return queryList;
+    }
+
+    /**
      * This method check whether the current statement contains a propagator.
      *
      * @param propogators  List of propagators from the specification
@@ -175,34 +213,17 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         List<Query> queryList = new ArrayList<>();
 
         for (Method requiredPropogatorMethod : propogators) {
-
             String requiredPropogatorSootSignature = Utility.wrapInAngularBrackets(requiredPropogatorMethod.getSignature());
 
             if (statement.containsInvokeExpr() &&
                     Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
                             requiredPropogatorSootSignature)) { // If there is a propagator, then check is there a tainted variable going into the method
 
-                // Check for InFlow parameter
-                if (requiredPropogatorMethod.getInputParameters() != null) {
-                    for (InputParameter input : requiredPropogatorMethod.getInputParameters()) {
-                        int parameterIndex = input.getParamID();
-                        if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                            if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
-                                queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
-                                return queryList;
-                            }
-                        }
-                    }
-                }
+                queryList.addAll(getQueriesBasedOnTheRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
 
-                // Check for InFlow this-object
-                if (requiredPropogatorMethod.isInputThis() &&
-                        statement.getInvokeExpr().isInstanceInvokeExpr()) {
-                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
-                        queryList.addAll(getOutForPropogator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
-                        return queryList;
-                    }
-                }
+            } else if (statement.getInvokeExpr().getMethod().getSubSignature().equals(requiredPropogatorMethod.getSignature())) { // For Java 11
+                // Todo: Check and model it correctly to handle the Java 11 dynamic calls.
+                queryList.addAll(getQueriesBasedOnTheRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
             }
 
         }
