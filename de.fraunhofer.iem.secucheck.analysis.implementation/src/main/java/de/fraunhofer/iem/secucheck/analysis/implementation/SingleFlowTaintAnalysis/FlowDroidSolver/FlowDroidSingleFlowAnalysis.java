@@ -1,28 +1,17 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.FlowDroidSolver;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
-import de.fraunhofer.iem.secucheck.analysis.query.Method;
-import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
-import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
+import de.fraunhofer.iem.secucheck.analysis.query.*;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
-import soot.Body;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
+import soot.*;
 import soot.jimple.JimpleBody;
+import soot.jimple.Stmt;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.config.IInfoflowConfig;
@@ -31,23 +20,78 @@ import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.results.ResultSinkInfo;
 import soot.jimple.infoflow.results.ResultSourceInfo;
+import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.internal.JNopStmt;
+import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.options.Options;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+
+/**
+ * This is the FlowDroid solver
+ */
 public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 
+    /**
+     * Single TaintFlow
+     */
     private final TaintFlowImpl singleFlow;
+
+    /**
+     * SecuCheck configuration
+     */
     private final SecucheckAnalysisConfiguration configuration;
 
+    /**
+     * TaintFlow result
+     */
     private final TaintFlowResult result;
 
+    /**
+     * Constructor
+     *
+     * @param singleFlow    Single TaintFlow
+     * @param configuration SecuCheck configuration
+     */
     public FlowDroidSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
         this.result = new TaintFlowResult();
     }
 
+    /**
+     * This method reads the EasyTaintWrapper required for the FlowDroid from the resource folder.
+     * <p>
+     * Note: For now it is taken from the file manually. In Future, this file has to be generated during runtime from the
+     * FluenTQL general propogators
+     *
+     * @return EasyTaintWrapper for the FlowDroid (For propogators)
+     */
+    private EasyTaintWrapper getTaintWrapper() {
+        String fileName = "EasyTaintWrapperSource.txt";
 
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        String content = "";
+        try (InputStream inputStream = classLoader.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return new EasyTaintWrapper(inputStream);
+            }
+        } catch (IOException exception) {
+            System.out.println(Arrays.toString(exception.getStackTrace()));
+        }
+
+        return null;
+    }
+
+    /**
+     * Runs the Analysis
+     *
+     * @return TaintFlow result
+     * @throws Exception If fails to initialize the Soot
+     */
     @Override
     public TaintFlowResult run() throws Exception {
 
@@ -60,6 +104,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         List<String> entryMethods = getCanonicalEntryMethodSignatures(configuration.getAnalysisEntryPoints());
         DefaultEntryPointCreator entryPointCreator = new DefaultEntryPointCreator(entryMethods);
         Infoflow infoFlow = getInfoFlow();
+        EasyTaintWrapper easyTaintWrapper = getTaintWrapper();
+
+        if (easyTaintWrapper != null) {
+            infoFlow.setTaintWrapper(easyTaintWrapper);
+        }
 
         if (isPropogatorless(this.singleFlow)) {
             result.addQueryResultPairs(analyzePlainFlow(singleFlow, infoFlow, entryPointCreator, this.configuration));
@@ -69,6 +118,15 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return this.result;
     }
 
+    /**
+     * Analyzes the single TaintFlow
+     *
+     * @param singleFlow        TaintFLow
+     * @param infoFlow          InfoFlow
+     * @param entryPointCreator Entry point for the Infoflow
+     * @param configuration     SecuCheck configuration
+     * @return Result
+     */
     public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
     analyzePlainFlow(TaintFlowImpl singleFlow, Infoflow infoFlow,
                      DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration) {
@@ -103,14 +161,23 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return reachMap;
     }
 
+    /**
+     * If there is a propogators mentioned in the specification, then this method is called. In this method
+     * TaintFlow is divided into two taintflows from source to required propogator and second taintflow is from
+     * required propogator to sink.
+     *
+     * @param singleFlow        TaintFLow
+     * @param infoFlow          InfoFlow
+     * @param entryPointCreator Entry point for the Infoflow
+     * @param configuration     SecuCheck configuration
+     * @return Result
+     */
     public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
     analyzePropogatorFlow(TaintFlowImpl singleFlow, Infoflow infoFlow,
                           DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration) {
 
-        /* Each occurance of a propogator/desanitizer would break a single
-         * TaintFlow into two logical TaintFlows, this generates
-         * these TaintFlows. */
-
+        //TODO: If there is a multiple through's is mentioned in the specification, then code might not handle that,
+        // needs to check that in future.
         TaintFlowImpl newQuery1 = new TaintFlowImpl(),
                 newQuery2 = new TaintFlowImpl();
 
@@ -179,6 +246,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return methodNames;
     }
 
+    /**
+     * Returns the Infoflow for flowdroid
+     *
+     * @return Infoflow
+     */
     private static Infoflow getInfoFlow() {
         Infoflow infoFlow = new Infoflow();
         infoFlow.setSootConfig(new IInfoflowConfig() {
@@ -192,6 +264,8 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
             }
         });
         infoFlow.getConfig().setInspectSinks(false);
+        infoFlow.getConfig().setInspectSources(false);
+        infoFlow.getConfig().setLogSourcesAndSinks(true);
         return infoFlow;
     }
 
@@ -276,32 +350,55 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         startDetails.setSourceClassName(sourceInfo.getStmt().getInvokeExpr().getMethodRef().getDeclaringClass().getName());
         startDetails.setMethodSignature(sourceInfo.getStmt().getInvokeExpr().getMethodRef().getSubSignature().getString());
 
+        // TODO: Not visible in the new Soot version.
+        JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG();
 
-        startDetails.setUsageStartLineNumber(sourceInfo.getStmt().getJavaSourceStartLineNumber());
+        int sourceLineNumber = -1;
+        int sourceColNumber = -1;
+        for (Unit unit : Scene.v().getMethod(icfg.getMethodOf(sourceInfo.getStmt()).getSignature()).getActiveBody().getUnits()) {
+            Stmt stmt = (Stmt) unit;
+
+            if (sourceInfo.getStmt().equals(stmt)) {
+                sourceLineNumber = stmt.getJavaSourceStartLineNumber();
+                sourceColNumber = stmt.getJavaSourceStartColumnNumber();
+            }
+        }
+
+        startDetails.setUsageStartLineNumber(sourceLineNumber);
         startDetails.setUsageEndLineNumber(-1);
-        startDetails.setUsageStartColumnNumber(sourceInfo.getStmt().getJavaSourceStartColumnNumber());
+        startDetails.setUsageStartColumnNumber(sourceColNumber);
         startDetails.setUsageEndColumnNumber(-1);
 
-        // TODO: Not visible in the new Soot version.
-        startDetails.setUsageMethodSignature(sourceInfo.getStmt().getInvokeExpr().getMethod().getSubSignature());
-        startDetails.setUsageClassName(sourceInfo.getStmt().getInvokeExpr().getMethod().getDeclaringClass().getName());
+        startDetails.setUsageMethodSignature(icfg.getMethodOf(sourceInfo.getStmt()).getSignature());
+        startDetails.setUsageClassName(icfg.getMethodOf(sourceInfo.getStmt()).getDeclaringClass().getName());
         startDetails.setType(LocationType.Source);
 
         ResultSinkInfo sinkInfo = dataFlowResult.getSink();
+
+        int sinkLineNumber = -1;
+        int sinkColNumber = -1;
+        for (Unit unit : icfg.getMethodOf(sinkInfo.getStmt()).getActiveBody().getUnits()) {
+            Stmt stmt = (Stmt) unit;
+
+            if (sourceInfo.getStmt().equals(stmt)) {
+                sinkLineNumber = stmt.getJavaSourceStartLineNumber();
+                sinkColNumber = stmt.getJavaSourceStartColumnNumber();
+            }
+        }
 
         LocationDetails endDetails = new LocationDetails();
         // TODO: Not visible in the new Soot version.
         endDetails.setSourceClassName(sinkInfo.getStmt().getInvokeExpr().getMethodRef().getDeclaringClass().getName());
         endDetails.setMethodSignature(sinkInfo.getStmt().getInvokeExpr().getMethodRef().getSubSignature().getString());
 
-        endDetails.setUsageStartLineNumber(sinkInfo.getStmt().getJavaSourceStartLineNumber());
+        endDetails.setUsageStartLineNumber(sinkLineNumber);
         endDetails.setUsageEndLineNumber(-1);
-        endDetails.setUsageStartColumnNumber(sinkInfo.getStmt().getJavaSourceStartColumnNumber());
+        endDetails.setUsageStartColumnNumber(sinkColNumber);
         endDetails.setUsageEndColumnNumber(-1);
 
         // TODO: Not visible in the new Soot version.
-        endDetails.setUsageMethodSignature(sinkInfo.getStmt().getInvokeExpr().getMethod().getSubSignature());
-        endDetails.setUsageClassName(sinkInfo.getStmt().getInvokeExpr().getMethod().getDeclaringClass().getName());
+        endDetails.setUsageMethodSignature(icfg.getMethodOf(sinkInfo.getStmt()).getSignature());
+        endDetails.setUsageClassName(icfg.getMethodOf(sinkInfo.getStmt()).getDeclaringClass().getName());
         endDetails.setType(LocationType.Sink);
 
         return new SameTypedPair<LocationDetails>(startDetails, endDetails);
