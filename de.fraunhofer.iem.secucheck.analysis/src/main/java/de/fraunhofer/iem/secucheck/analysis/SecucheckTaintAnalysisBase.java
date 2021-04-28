@@ -1,5 +1,7 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -16,7 +18,6 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
     protected final ReentrantLock lock;
     protected SecucheckAnalysisConfiguration configuration;
-    protected long analysisTime;
 
     public SecucheckTaintAnalysisBase(SecucheckAnalysisConfiguration configuration) {
         this.lock = new ReentrantLock();
@@ -58,13 +59,16 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
      */
     private SecucheckTaintAnalysisResult executeAnalysis(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
-
-        long startTime = System.currentTimeMillis();    // Save the start time
-
         SingleFlowAnalysisFactory analysisFactory =
                 new SingleFlowAnalysisFactoryImpl(this.configuration.getSolver(), this.configuration);
 
         SecucheckTaintAnalysisResult result = new SecucheckTaintAnalysisResult();
+
+        long startTime = System.currentTimeMillis();    // Save the start time
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        result.setStartTime(dateTimeFormatter.format(LocalDateTime.now()));
 
         for (SecucheckTaintFlowQueryImpl flowQuery : flowQueries) { // for each TaintFlowQuery
 
@@ -88,13 +92,11 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
             }
         }
 
+        result.setEndTime(dateTimeFormatter.format(LocalDateTime.now()));
+
         long endTime = System.currentTimeMillis(); // Record the end time
 
-        analysisTime = endTime - startTime; // Elapsed time of analysis run
-
-        System.out.println("\n\n\n*******************************************************\n");
-        System.out.println("Analysis took " + analysisTime + " milli-seconds");
-        System.out.println("\n*******************************************************\n\n\n");
+        result.setExecutionTime(endTime - startTime);
         return result;
     }
 

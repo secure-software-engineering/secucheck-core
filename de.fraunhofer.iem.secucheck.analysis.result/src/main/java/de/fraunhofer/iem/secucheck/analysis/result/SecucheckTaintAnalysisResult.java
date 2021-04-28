@@ -12,6 +12,36 @@ import java.util.List;
 public final class SecucheckTaintAnalysisResult implements AnalysisResult {
 
     private List<DifferentTypedPair<SecucheckTaintFlowQueryImpl, SecucheckTaintFlowQueryResult>> results;
+    private String startTime;
+    private String endTime;
+    private long elapsedTime;
+
+    @Override
+    public String getStartTime() {
+        return this.startTime;
+    }
+
+    @Override
+    public String getEndTime() {
+        return this.endTime;
+    }
+
+    @Override
+    public long getExecutionTime() {
+        return this.elapsedTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setExecutionTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
+    }
 
     public SecucheckTaintAnalysisResult() {
         this.results = new ArrayList<DifferentTypedPair<SecucheckTaintFlowQueryImpl, SecucheckTaintFlowQueryResult>>();
