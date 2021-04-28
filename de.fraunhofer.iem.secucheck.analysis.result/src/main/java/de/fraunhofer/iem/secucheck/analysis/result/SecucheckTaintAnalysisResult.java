@@ -16,17 +16,14 @@ public final class SecucheckTaintAnalysisResult implements AnalysisResult {
     private String endTime;
     private long elapsedTime;
 
-    @Override
     public String getStartTime() {
         return this.startTime;
     }
 
-    @Override
     public String getEndTime() {
         return this.endTime;
     }
 
-    @Override
     public long getExecutionTime() {
         return this.elapsedTime;
     }
