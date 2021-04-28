@@ -97,7 +97,7 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
         long endTime = System.currentTimeMillis(); // Record the end time
 
         result.setExecutionTimeInMilliSec(endTime - startTime);
-        result.setExecutionTimeInMilliSec(((endTime - startTime) / 1000));
+        result.setExecutionTimeInSec(((endTime - startTime) * 1.0) / 1000);
 
         return result;
     }
