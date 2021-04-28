@@ -14,7 +14,8 @@ public final class SecucheckTaintAnalysisResult implements AnalysisResult {
     private List<DifferentTypedPair<SecucheckTaintFlowQueryImpl, SecucheckTaintFlowQueryResult>> results;
     private String startTime;
     private String endTime;
-    private long elapsedTime;
+    private long elapsedTimeInMilliSec;
+    private double elapsedTimeInSec;
 
     public String getStartTime() {
         return this.startTime;
@@ -24,8 +25,12 @@ public final class SecucheckTaintAnalysisResult implements AnalysisResult {
         return this.endTime;
     }
 
-    public long getExecutionTime() {
-        return this.elapsedTime;
+    public long getExecutionTimeInMilliSec() {
+        return this.elapsedTimeInMilliSec;
+    }
+
+    public double getExecutionTimeInSec() {
+        return this.elapsedTimeInSec;
     }
 
     public void setStartTime(String startTime) {
@@ -36,8 +41,12 @@ public final class SecucheckTaintAnalysisResult implements AnalysisResult {
         this.endTime = endTime;
     }
 
-    public void setExecutionTime(long elapsedTime) {
-        this.elapsedTime = elapsedTime;
+    public void setExecutionTimeInSec(double elapsedTime) {
+        this.elapsedTimeInSec = elapsedTime;
+    }
+
+    public void setExecutionTimeInMilliSec(long elapsedTime) {
+        this.elapsedTimeInMilliSec = elapsedTime;
     }
 
     public SecucheckTaintAnalysisResult() {
