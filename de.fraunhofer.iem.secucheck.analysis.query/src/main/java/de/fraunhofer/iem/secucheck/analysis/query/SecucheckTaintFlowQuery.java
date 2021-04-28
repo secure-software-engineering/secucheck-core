@@ -49,5 +49,5 @@ public interface SecucheckTaintFlowQuery extends Copyable<SecucheckTaintFlowQuer
      *
      * @return ID of the TaintFlowQuery
      */
-    int getId();
+    String getId();
 }

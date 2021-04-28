@@ -23,8 +23,7 @@ public class SecucheckTaintFlowQueryAnalysisImpl implements SecucheckTaintFlowQu
 
     public SecucheckTaintFlowQueryAnalysisImpl(SecucheckTaintFlowQuery flowQuery,
                                                SingleFlowAnalysisFactory analysisFactory,
-                                               AnalysisResultListener resultListener)
-            throws Exception {
+                                               AnalysisResultListener resultListener) {
         this.flowQuery = flowQuery;
         this.analysisFactory = analysisFactory;
         this.resultListener = resultListener;
