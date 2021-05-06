@@ -7,13 +7,16 @@
 
     <groupId>de.fraunhofer.iem.secucheck</groupId>
     <artifactId>secucheck-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>SCC-1.0.0</version>
     <packaging>pom</packaging>
     <name>SecuCheck Analysis Core</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!--The whole project uses the currently working project version-->
+        <secucheck.core.version>${project.version}</secucheck.core.version>
     </properties>
 
     <repositories>
