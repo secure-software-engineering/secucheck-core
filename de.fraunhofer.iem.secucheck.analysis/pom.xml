@@ -22,6 +22,7 @@
             <groupId>de.fraunhofer.iem.secucheck</groupId>
             <artifactId>de.fraunhofer.iem.secucheck.analysis.implementation</artifactId>
             <version>${secucheck.core.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -46,6 +47,7 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
