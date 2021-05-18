@@ -8,6 +8,7 @@ import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.query.*;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
+import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 import soot.*;
 import soot.jimple.JimpleBody;
@@ -127,11 +128,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
      * @param configuration     SecuCheck configuration
      * @return Result
      */
-    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    public List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
     analyzePlainFlow(TaintFlowImpl singleFlow, Infoflow infoFlow,
                      DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration) {
 
-        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+        List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
                 reachMap = new ArrayList<>();
 
         List<String> sources = getCanonicalMethodSignatures(singleFlow.getFrom());
@@ -153,7 +154,11 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
             if (map.size() > 0) {
                 for (DataFlowResult dataFlowResult : map.getResultSet()) {
                     SameTypedPair<LocationDetails> locationPair = getLocationDetailsPair(singleFlow, dataFlowResult);
-                    reachMap.add(new DifferentTypedPair<>(singleFlow, locationPair));
+                    SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
+                            new DifferentTypedPair<>(singleFlow, locationPair),
+                            null
+                    );
+                    reachMap.add(new DifferentTypedPair<>(singleFlow, res));
                 }
             }
         }
@@ -172,7 +177,7 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
      * @param configuration     SecuCheck configuration
      * @return Result
      */
-    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    public List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
     analyzePropogatorFlow(TaintFlowImpl singleFlow, Infoflow infoFlow,
                           DefaultEntryPointCreator entryPointCreator, SecucheckAnalysisConfiguration configuration) {
 
@@ -194,25 +199,27 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 
         newQuery2.getTo().addAll(singleFlow.getTo());
 
-        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+        List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
                 originalReachMap = new ArrayList<>(),
                 reachMap1 = analyzePlainFlow(newQuery1, infoFlow, entryPointCreator, configuration),
                 reachMap2 = analyzePlainFlow(newQuery2, infoFlow, entryPointCreator, configuration);
 
         if (reachMap1.size() != 0 && reachMap2.size() != 0) {
-            for (DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>
+            for (DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>
                     sourcePair : reachMap1) {
 
-                for (DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>
+                for (DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>
                         sinkPair : reachMap2) {
 
-                    if (isSourceAndSinkMatching(sourcePair.getSecond(), sinkPair.getSecond())) {
+                    if (isSourceAndSinkMatching(sourcePair.getSecond().getLocationDetails().getSecond(),
+                            sinkPair.getSecond().getLocationDetails().getSecond())) {
                         SameTypedPair<LocationDetails> stichedPair =
-                                stitchSourceAndSink(sourcePair.getSecond(), sinkPair.getSecond());
+                                stitchSourceAndSink(sourcePair.getSecond().getLocationDetails().getSecond(),
+                                        sinkPair.getSecond().getLocationDetails().getSecond());
 
                         originalReachMap.add(new
-                                DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>
-                                (singleFlow, stichedPair));
+                                DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>
+                                (singleFlow, new SingleTaintFlowAnalysisResult(new DifferentTypedPair<>(singleFlow, stichedPair), null)));
                     }
                 }
 

@@ -12,11 +12,20 @@ import java.util.List;
  */
 public class TaintFlowResult implements AnalysisResult {
 
-    private final List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> resultMap;
+    private final List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>> resultMap;
+    private int seedCount = 0;
+
+    public void setSeedCount(int seedCount) {
+        this.seedCount = seedCount;
+    }
+
+    public int getSeedCount() {
+        return seedCount;
+    }
 
     public TaintFlowResult() {
         this.resultMap =
-                new ArrayList<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>();
+                new ArrayList<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>();
     }
 
     /**
@@ -26,13 +35,13 @@ public class TaintFlowResult implements AnalysisResult {
      * @param result    LocationDetail of this TaintFlow found
      */
     public void addQueryResultPair(TaintFlowImpl taintFlow,
-                                   SameTypedPair<LocationDetails> result) {
+                                   SingleTaintFlowAnalysisResult result) {
         this.resultMap.add(
-                new DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>(taintFlow, result));
+                new DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>(taintFlow, result));
     }
 
     public void addQueryResultPairs(
-            List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> pairs) {
+            List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>> pairs) {
         this.resultMap.addAll(pairs);
     }
 
@@ -45,7 +54,7 @@ public class TaintFlowResult implements AnalysisResult {
         return this.resultMap.size();
     }
 
-    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    public List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
     getQueryResultMap() {
         return this.resultMap;
     }

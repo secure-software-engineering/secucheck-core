@@ -14,6 +14,7 @@ import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
+import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 import soot.PackManager;
 import soot.SceneTransformer;
@@ -55,7 +56,6 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
      */
     @Override
     public TaintFlowResult run() throws Exception {
-
         String classPath = Utility.getCombinedSootClassPath(this.configuration.getOs(),
                 this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());
 
@@ -99,10 +99,10 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
      * @param singleFlow Current single TaintFlow specification
      * @return List of Tainflow locations details for the current single TaintFlow specification
      */
-    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+    public List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
     analyzePlainFlow(TaintFlowImpl singleFlow) {
 
-        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>>
+        List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
                 reachMap = new ArrayList<>();
 
         // First get the seeds --- source ForwardQuery
@@ -110,6 +110,8 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
 
         Set<ForwardQuery> source = computeSeeds(analysisScope);
+
+        result.setSeedCount(source.size());
 
         if (source.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
             reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).run(source, singleFlow));

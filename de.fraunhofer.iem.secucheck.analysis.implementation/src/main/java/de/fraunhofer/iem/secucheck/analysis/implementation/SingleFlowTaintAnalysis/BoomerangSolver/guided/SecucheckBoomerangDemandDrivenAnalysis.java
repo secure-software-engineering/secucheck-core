@@ -1,5 +1,6 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
+import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
 import boomerang.QueryGraph;
@@ -9,9 +10,12 @@ import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfi
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.TaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
+import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
 import soot.SootMethod;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
@@ -39,12 +43,14 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
      * @param singleFlow Current single TaintFlow specification---looking for this TaintFlow
      * @return Returns the result for the single given TaintFlow-specification ( There may be more than one TaintFlow in the result)
      */
-    public List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> run(Set<ForwardQuery> sources, TaintFlowImpl singleFlow) {
+    public List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>> run(Set<ForwardQuery> sources, TaintFlowImpl singleFlow) {
 
-        List<DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>>> reachMap = new ArrayList<>();
+        List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>> reachMap = new ArrayList<>();
 
         for (ForwardQuery source : sources) {
-            BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow, this.secucheckAnalysisConfiguration);
+            BoomerangTaintFlowPath boomerangTaintFlowPath = new BoomerangTaintFlowPath(
+                    source, null, true, false);
+            BoomerangGPHandler boomerangGPHandler = new BoomerangGPHandler(singleFlow, this.secucheckAnalysisConfiguration, boomerangTaintFlowPath);
             SecucheckDefaultBoomerangOptions secucheckDefaultBoomerangOptions = new SecucheckDefaultBoomerangOptions(singleFlow);
             CustomDataFlowScope customDataFlowScope = new CustomDataFlowScope(singleFlow, this.secucheckAnalysisConfiguration);
 
@@ -55,8 +61,14 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
             QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run(source);
 
-            for (Query sink : boomerangGPHandler.getFoundSinks()) {
-                reachMap.add(new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)));
+            for (DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> sinkNode : boomerangGPHandler.getFoundSinks()) {
+                BackwardQuery sink = sinkNode.getFirst();
+                TaintFlowPathUtility.print(sinkNode.getSecond());
+                SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
+                        new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)),
+                        sinkNode.getSecond()
+                );
+                reachMap.add(new DifferentTypedPair<>(singleFlow, res));
             }
         }
 

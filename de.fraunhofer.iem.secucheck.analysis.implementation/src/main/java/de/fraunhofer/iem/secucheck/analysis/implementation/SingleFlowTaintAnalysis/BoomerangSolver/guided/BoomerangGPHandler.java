@@ -9,14 +9,13 @@ import boomerang.scene.ControlFlowGraph;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.TaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.query.*;
-import soot.jimple.internal.JDynamicInvokeExpr;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * This is the Secucheck DemandDriven Manager for Boomerang
@@ -28,7 +27,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      * List of found sinks. Whenever SecucheckDemandDrivenManager finds a sink with a taintflow then it creates a
      * BackwardQuery and adds it to this list.
      */
-    private final ArrayList<BackwardQuery> foundSinks = new ArrayList<>();
+    private final ArrayList<DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath>> foundSinks = new ArrayList<>();
 
     /**
      * Current single TaintFlow specification, that the current analysis running for.
@@ -40,15 +39,19 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      */
     private final SecucheckAnalysisConfiguration secucheckAnalysisConfiguration;
 
+    private final BoomerangTaintFlowPath tempPath;
+
     /**
      * Constructor
      *
      * @param singleFlow                     Single TaintFlow specification
      * @param secucheckAnalysisConfiguration SecuchcekAnalysisConfiguration given by the client
      */
-    public BoomerangGPHandler(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration) {
+    public BoomerangGPHandler(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration secucheckAnalysisConfiguration, BoomerangTaintFlowPath initialPath) {
         this.singleFlow = singleFlow;
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
+        this.tempPath = initialPath;
+
     }
 
     /**
@@ -56,7 +59,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      *
      * @return List of found sinks
      */
-    public ArrayList<BackwardQuery> getFoundSinks() {
+    public ArrayList<DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath>> getFoundSinks() {
         return foundSinks;
     }
 
@@ -68,9 +71,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      * @param dataFlowVal  Fact: dataFlowVal
      * @return True is there is a sink method call and TaintFlow exist.
      */
-    private boolean isSink(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
-        boolean isSinkFound = false;
-
+    private BackwardQuery isSink(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         for (Method sinkMethod : singleFlow.getTo()) {
             String sinkSootSignature = Utility.wrapInAngularBrackets(sinkMethod.getSignature());
 
@@ -86,8 +87,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                         int parameterIndex = input.getParamID();
                         if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                             if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
-                                foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex)));
-                                isSinkFound = true;
+                                return BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex));
                             }
                         }
                     }
@@ -97,15 +97,14 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 if (sinkMethod.isInputThis() &&
                         statement.getInvokeExpr().isInstanceInvokeExpr()) {
                     if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
-                        foundSinks.add(BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getBase()));
-                        isSinkFound = true;
+                        return BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getBase());
                     }
                 }
             }
 
         }
 
-        return isSinkFound;
+        return null;
     }
 
     /**
@@ -244,17 +243,44 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         Statement stmt = dataFlowEdge.getStart();
         ArrayList<Query> out = new ArrayList<Query>();
 
+        //TODO: check isPostProcessing enabled
+        BoomerangTaintFlowPath parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
+
         if (stmt.containsInvokeExpr()) {
-            if (isSink(stmt, dataFlowEdge, dataFlowVal)) {
+            BackwardQuery sinkQuery = isSink(stmt, dataFlowEdge, dataFlowVal);
+            if (sinkQuery != null) {
+                //TODO: check isPostProcessing enabled
+                BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                        sinkQuery, parentNode, false, true);
+                parentNode.addNewChild(finalSinkNode);
+                BoomerangTaintFlowPath singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSinkNode);
+                DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> res = new DifferentTypedPair<>(sinkQuery, singleTaintFlowPath);
+                foundSinks.add(res);
                 return Collections.emptyList();
             }
 
-            out.addAll(isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal));
+            Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal);
+
+            for (Query propQuery : prop) {
+                //TODO: check isPostProcessing enabled
+                BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                        propQuery, parentNode, false, false);
+                parentNode.addNewChild(finalSinkNode);
+                out.add(propQuery);
+            }
 
             if (out.size() > 0)
                 return out;
 
-            out.addAll(isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal));
+            Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal);
+
+            for (Query generalPropQuery : generalProp) {
+                //TODO: check isPostProcessing enabled
+                BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                        generalPropQuery, parentNode, false, false);
+                parentNode.addNewChild(finalSinkNode);
+                out.add(generalPropQuery);
+            }
         }
 
         return out;
