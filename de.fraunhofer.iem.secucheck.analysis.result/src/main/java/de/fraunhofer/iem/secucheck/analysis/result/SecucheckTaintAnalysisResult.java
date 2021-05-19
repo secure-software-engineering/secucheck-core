@@ -16,6 +16,15 @@ public final class SecucheckTaintAnalysisResult implements AnalysisResult {
     private String endTime;
     private long elapsedTimeInMilliSec;
     private double elapsedTimeInSec;
+    private int totalSeedCount;
+
+    public int getTotalSeedCount() {
+        return totalSeedCount;
+    }
+
+    public void setTotalSeedCount(int totalSeedCount) {
+        this.totalSeedCount = totalSeedCount;
+    }
 
     public String getStartTime() {
         return this.startTime;

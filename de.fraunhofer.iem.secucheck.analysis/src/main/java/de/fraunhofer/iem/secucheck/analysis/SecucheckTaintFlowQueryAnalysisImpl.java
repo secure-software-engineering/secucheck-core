@@ -36,6 +36,8 @@ public class SecucheckTaintFlowQueryAnalysisImpl implements SecucheckTaintFlowQu
 
         List<TaintFlowImpl> flows = flowQuery.getTaintFlows();
 
+        int totalSeedCount = 0;
+
         for (TaintFlowImpl originalFlow : flows) {
 
             if (this.resultListener != null && this.resultListener.isCancelled()) {
@@ -44,6 +46,8 @@ public class SecucheckTaintFlowQueryAnalysisImpl implements SecucheckTaintFlowQu
 
             SingleFlowAnalysis analysis = analysisFactory.create(originalFlow);
             TaintFlowResult returnResult = analysis.run();
+
+            totalSeedCount += returnResult.getSeedCount();
 
             if (returnResult.size() == 0) {
                 result.clear();
@@ -55,6 +59,8 @@ public class SecucheckTaintFlowQueryAnalysisImpl implements SecucheckTaintFlowQu
             }
             result.addResult((TaintFlowImpl) originalFlow, returnResult);
         }
+
+        result.setTotalSeedCount(totalSeedCount);
 
         return result;
 

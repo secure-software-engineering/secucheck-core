@@ -12,6 +12,15 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 public final class SecucheckTaintFlowQueryResult implements AnalysisResult {
 
     private final List<DifferentTypedPair<TaintFlowImpl, TaintFlowResult>> results;
+    private int totalSeedCount = 0;
+
+    public int getTotalSeedCount() {
+        return totalSeedCount;
+    }
+
+    public void setTotalSeedCount(int totalSeedCount) {
+        this.totalSeedCount = totalSeedCount;
+    }
 
     public SecucheckTaintFlowQueryResult() {
         this.results = new ArrayList<DifferentTypedPair<TaintFlowImpl, TaintFlowResult>>();

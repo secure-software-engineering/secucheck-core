@@ -70,6 +70,8 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
         result.setStartTime(dateTimeFormatter.format(LocalDateTime.now()));
 
+        int totalSeedCount = 0;
+
         for (SecucheckTaintFlowQueryImpl flowQuery : flowQueries) { // for each TaintFlowQuery
 
             if (this.configuration.getListener() != null &&
@@ -82,6 +84,8 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
 
             SecucheckTaintFlowQueryResult singleResult = analysis.run();
 
+            totalSeedCount += singleResult.getTotalSeedCount();
+
             if (singleResult.size() != 0) {
                 result.addResult(flowQuery, singleResult);
             }
@@ -91,6 +95,8 @@ public abstract class SecucheckTaintAnalysisBase implements SecucheckAnalysis {
                         .reportSecucheckTaintFlowQueryResult((SecucheckTaintFlowQueryResult) singleResult);
             }
         }
+
+        result.setTotalSeedCount(totalSeedCount);
 
         result.setEndTime(dateTimeFormatter.format(LocalDateTime.now()));
 
