@@ -156,7 +156,8 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
                     SameTypedPair<LocationDetails> locationPair = getLocationDetailsPair(singleFlow, dataFlowResult);
                     SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
                             new DifferentTypedPair<>(singleFlow, locationPair),
-                            null
+                            null,
+                            false
                     );
                     reachMap.add(new DifferentTypedPair<>(singleFlow, res));
                 }
@@ -219,7 +220,10 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
 
                         originalReachMap.add(new
                                 DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>
-                                (singleFlow, new SingleTaintFlowAnalysisResult(new DifferentTypedPair<>(singleFlow, stichedPair), null)));
+                                (singleFlow, new SingleTaintFlowAnalysisResult(
+                                        new DifferentTypedPair<>(singleFlow, stichedPair),
+                                        null,
+                                        false)));
                     }
                 }
 

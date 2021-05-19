@@ -63,10 +63,11 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
             for (DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> sinkNode : boomerangGPHandler.getFoundSinks()) {
                 BackwardQuery sink = sinkNode.getFirst();
-                TaintFlowPathUtility.print(sinkNode.getSecond());
+                
                 SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
                         new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)),
-                        sinkNode.getSecond()
+                        sinkNode.getSecond(),
+                        secucheckAnalysisConfiguration.isPostProcessResult()
                 );
                 reachMap.add(new DifferentTypedPair<>(singleFlow, res));
             }

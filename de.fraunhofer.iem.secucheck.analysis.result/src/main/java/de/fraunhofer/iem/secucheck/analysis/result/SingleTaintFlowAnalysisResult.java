@@ -12,13 +12,16 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
  */
 public class SingleTaintFlowAnalysisResult {
     private final DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>> resultMap;
+    private final boolean isTaintFlowPathIncluded;
     private final TaintFlowPath path;
 
     public SingleTaintFlowAnalysisResult(
             DifferentTypedPair<TaintFlowImpl, SameTypedPair<LocationDetails>> resultMap,
-            TaintFlowPath path) {
+            TaintFlowPath path,
+            boolean isTaintFlowPathIncluded) {
         this.resultMap = resultMap;
         this.path = path;
+        this.isTaintFlowPathIncluded = isTaintFlowPathIncluded;
     }
 
 
@@ -28,5 +31,9 @@ public class SingleTaintFlowAnalysisResult {
 
     public TaintFlowPath getPath() {
         return path;
+    }
+
+    public boolean isTaintFlowPathIncluded() {
+        return  isTaintFlowPathIncluded;
     }
 }

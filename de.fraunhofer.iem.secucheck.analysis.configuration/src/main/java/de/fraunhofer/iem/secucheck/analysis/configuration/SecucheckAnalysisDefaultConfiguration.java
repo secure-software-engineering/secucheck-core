@@ -20,6 +20,7 @@ public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisC
     private List<EntryPoint> entryPoints;
     private List<MethodImpl> generalPropagators;
     private AnalysisResultListener resultListener;
+    private boolean isPostProcess;
 
     @Override
     public void setOs(OS os) {
@@ -57,6 +58,11 @@ public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisC
     }
 
     @Override
+    public void setIsPostProcessResult(boolean isPostProcessResult) {
+        this.isPostProcess = isPostProcessResult;
+    }
+
+    @Override
     public OS getOs() {
         return this.os;
     }
@@ -89,5 +95,10 @@ public class SecucheckAnalysisDefaultConfiguration implements SecucheckAnalysisC
     @Override
     public AnalysisResultListener getListener() {
         return this.resultListener;
+    }
+
+    @Override
+    public boolean isPostProcessResult() {
+        return isPostProcess;
     }
 }

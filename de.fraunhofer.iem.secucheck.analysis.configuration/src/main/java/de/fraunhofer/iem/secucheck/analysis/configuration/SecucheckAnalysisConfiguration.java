@@ -62,6 +62,14 @@ public interface SecucheckAnalysisConfiguration {
      */
     void setListener(AnalysisResultListener resultListener);
 
+    /**
+     * Sets the isPostProcess result. If set, then it process the result and add the taintflow path to the result.
+     * For now, it PostProcess result is available only to Boomerang3 solver
+     *
+     * @param isPostProcessResult is Post Process result
+     */
+    void setIsPostProcessResult(boolean isPostProcessResult);
+
     OS getOs();
 
     Solver getSolver();
@@ -75,5 +83,7 @@ public interface SecucheckAnalysisConfiguration {
     List<MethodImpl> getAnalysisGeneralPropagators();
 
     AnalysisResultListener getListener();
+
+    boolean isPostProcessResult();
 
 }

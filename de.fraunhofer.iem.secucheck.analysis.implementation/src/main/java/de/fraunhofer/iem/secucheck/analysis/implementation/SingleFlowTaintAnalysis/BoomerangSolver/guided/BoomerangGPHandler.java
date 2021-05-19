@@ -243,17 +243,22 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         Statement stmt = dataFlowEdge.getStart();
         ArrayList<Query> out = new ArrayList<Query>();
 
-        //TODO: check isPostProcessing enabled
-        BoomerangTaintFlowPath parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
+        BoomerangTaintFlowPath parentNode = null;
+        if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+            parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
+        }
 
         if (stmt.containsInvokeExpr()) {
             BackwardQuery sinkQuery = isSink(stmt, dataFlowEdge, dataFlowVal);
             if (sinkQuery != null) {
-                //TODO: check isPostProcessing enabled
-                BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
-                        sinkQuery, parentNode, false, true);
-                parentNode.addNewChild(finalSinkNode);
-                BoomerangTaintFlowPath singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSinkNode);
+                BoomerangTaintFlowPath singleTaintFlowPath = null;
+                if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                    BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                            sinkQuery, parentNode, false, true);
+                    parentNode.addNewChild(finalSinkNode);
+                    singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSinkNode);
+                }
+
                 DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> res = new DifferentTypedPair<>(sinkQuery, singleTaintFlowPath);
                 foundSinks.add(res);
                 return Collections.emptyList();
@@ -261,26 +266,30 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
 
             Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal);
 
-            for (Query propQuery : prop) {
-                //TODO: check isPostProcessing enabled
-                BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
-                        propQuery, parentNode, false, false);
-                parentNode.addNewChild(finalSinkNode);
-                out.add(propQuery);
+            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                for (Query propQuery : prop) {
+                    BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                            propQuery, parentNode, false, false);
+                    parentNode.addNewChild(finalSinkNode);
+                }
             }
+
+            out.addAll(prop);
 
             if (out.size() > 0)
                 return out;
 
             Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal);
 
-            for (Query generalPropQuery : generalProp) {
-                //TODO: check isPostProcessing enabled
-                BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
-                        generalPropQuery, parentNode, false, false);
-                parentNode.addNewChild(finalSinkNode);
-                out.add(generalPropQuery);
+            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                for (Query generalPropQuery : generalProp) {
+                    BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                            generalPropQuery, parentNode, false, false);
+                    parentNode.addNewChild(finalSinkNode);
+                }
             }
+
+            out.addAll(generalProp);
         }
 
         return out;
