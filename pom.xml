@@ -7,7 +7,7 @@
 
     <groupId>de.fraunhofer.iem.secucheck</groupId>
     <artifactId>secucheck-core</artifactId>
-    <version>SCC-1.0.0</version>
+    <version>SCC-1.1.0</version>
     <packaging>pom</packaging>
     <name>SecuCheck Analysis Core</name>
 

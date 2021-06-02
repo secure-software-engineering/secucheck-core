@@ -61,9 +61,13 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
             QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run(source);
 
+            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                System.out.println(queryGraph);
+            }
+
             for (DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> sinkNode : boomerangGPHandler.getFoundSinks()) {
                 BackwardQuery sink = sinkNode.getFirst();
-                
+
                 SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
                         new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)),
                         sinkNode.getSecond(),
