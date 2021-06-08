@@ -62,7 +62,9 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
             QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run(source);
 
             if (secucheckAnalysisConfiguration.isPostProcessResult()) {
-                System.out.println(queryGraph);
+                for (Query query : queryGraph.getNodes()) {
+                    System.out.println("---> " + query.cfgEdge());
+                }
             }
 
             for (DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> sinkNode : boomerangGPHandler.getFoundSinks()) {
