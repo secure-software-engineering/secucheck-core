@@ -8,6 +8,7 @@ import boomerang.guided.DemandDrivenGuidedAnalysis;
 import boomerang.scene.jimple.JimpleStatement;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.TaintFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
@@ -36,6 +37,19 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
 
+    public void printPath(BoomerangTaintFlowPath node) {
+        if (node == null)
+            return;
+
+        if (node.getNodeValue() == null)
+            System.out.println("--> null");
+        else
+            System.out.println("--> " + (Query) node.getNodeValue());
+
+        for (TaintFlowPath child : node.getChildrenNodes())
+            printPath((BoomerangTaintFlowPath) child);
+    }
+
     /**
      * Runs the DemandDrivenAnalysis
      *
@@ -61,12 +75,6 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
             QueryGraph<Weight.NoWeight> queryGraph = demandDrivenGuidedAnalysis.run(source);
 
-            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
-                for (Query query : queryGraph.getNodes()) {
-                    System.out.println("---> " + query.cfgEdge());
-                }
-            }
-
             for (DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> sinkNode : boomerangGPHandler.getFoundSinks()) {
                 BackwardQuery sink = sinkNode.getFirst();
 
@@ -76,6 +84,12 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
                         secucheckAnalysisConfiguration.isPostProcessResult()
                 );
                 reachMap.add(new DifferentTypedPair<>(singleFlow, res));
+
+                if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                    System.out.println("***** TaintFlow *****");
+                    printPath((BoomerangTaintFlowPath) res.getPath());
+                    System.out.println("*********************");
+                }
             }
         }
 
