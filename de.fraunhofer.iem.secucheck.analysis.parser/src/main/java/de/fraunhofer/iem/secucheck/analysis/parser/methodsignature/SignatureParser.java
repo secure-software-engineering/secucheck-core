@@ -39,16 +39,24 @@ public class SignatureParser {
 		
 		String strSignature = signature.toString();
 		ParsedMethodSignature parsedSignature = new ParsedMethodSignature();
+		String methodFullyQualifiedName;
 		
-		String[] subSignatures = strSignature.split(":");
-		if(subSignatures.length == 2) {
-			parsedSignature.setClassName(subSignatures[0].replace("\\s+", ""));
+		if(strSignature.contains(":")) {
+			String[] subSignatures = strSignature.split(":");
+			if(subSignatures.length == 2) {
+				parsedSignature.setClassName(subSignatures[0].replace("\\s+", ""));
+				methodFullyQualifiedName = subSignatures[1].trim();
+			}
+			else {
+				System.out.println("SIGNATURE: "+strSignature);
+				throw new RuntimeException("Error during method signature parsing process.");
+			}
 		}
 		else {
-			throw new RuntimeException("Error during method signature parsing process.");
+			parsedSignature.setClassName("");
+			methodFullyQualifiedName = strSignature;
 		}
 		
-		String methodFullyQualifiedName = subSignatures[1].trim();
 		String[] splittedMethodFullyQualifiedName = methodFullyQualifiedName.split("\\s+", 2);
 		parsedSignature.setReturnType(splittedMethodFullyQualifiedName[0].trim());
 		
@@ -57,10 +65,15 @@ public class SignatureParser {
 		
 		String[] methodParamArray = methodNameAndParam.substring(methodNameAndParam.indexOf("(")+1, methodNameAndParam.indexOf(")")).split(",");
 		List<String> methodArgs = new ArrayList<>();
-		for(String param : methodParamArray) {
-			methodArgs.add(param.replace("\\s+", ""));
+		if(methodParamArray.length == 0) {
+			methodArgs.add("");
+		} 
+		else {
+			for(String param : methodParamArray) {
+				methodArgs.add(param.replace("\\s+", ""));
+			}
+			parsedSignature.setMethodArguments(methodArgs);
 		}
-		parsedSignature.setMethodArguments(methodArgs);
 		
 		return parsedSignature;
 		
