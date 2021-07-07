@@ -45,6 +45,7 @@
 
     <modules>
         <module>de.fraunhofer.iem.secucheck.analysis.datastructures</module>
+        <module>de.fraunhofer.iem.secucheck.analysis.parser</module>
         <module>de.fraunhofer.iem.secucheck.analysis.query</module>
         <module>de.fraunhofer.iem.secucheck.analysis.result</module>
         <module>de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis</module>
