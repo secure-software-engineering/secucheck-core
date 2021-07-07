@@ -12,6 +12,7 @@ import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfi
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
+import de.fraunhofer.iem.secucheck.analysis.parser.methodsignature.SignatureParser;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.TaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.query.*;
 
@@ -73,11 +74,10 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      */
     private BackwardQuery isSink(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         for (Method sinkMethod : singleFlow.getTo()) {
-            String sinkSootSignature = Utility.wrapInAngularBrackets(sinkMethod.getSignature());
-
+        	
+        	// If there is a sink method call, then check is there a taintflow present
             if (statement.containsInvokeExpr() &&
-                    Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
-                            sinkSootSignature)) {   // If there is a sink method call, then check is there a taintflow present
+            		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sinkMethod.getSignature())) {
 
                 //For sinks there is always a InFlow, there is no OutFlow.
 
@@ -212,11 +212,10 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         List<Query> queryList = new ArrayList<>();
 
         for (Method requiredPropogatorMethod : propogators) {
-            String requiredPropogatorSootSignature = Utility.wrapInAngularBrackets(requiredPropogatorMethod.getSignature());
-
+        	
+        	// If there is a propagator, then check is there a tainted variable going into the method
             if (statement.containsInvokeExpr() &&
-                    Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(),
-                            requiredPropogatorSootSignature)) { // If there is a propagator, then check is there a tainted variable going into the method
+            		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), requiredPropogatorMethod.getSignature())) {
 
                 queryList.addAll(getQueriesBasedOnTheRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
 

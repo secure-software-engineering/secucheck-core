@@ -5,9 +5,10 @@ import java.util.List;
 
 public class SignatureParser {
 
-	public boolean matches(Object dslSignature, Object sootSignature) {
-		ParsedMethodSignature parsedDSLSignature = parseDSLSignature(dslSignature);
+	public static boolean matches(Object sootSignature, Object dslSignature) {
+		
 		ParsedMethodSignature parsedSootSignature = parseSootSignature(sootSignature);
+		ParsedMethodSignature parsedDSLSignature = parseDSLSignature(dslSignature);
 		if(parsedDSLSignature.getMethodArguments().size()==1 && 
 				parsedDSLSignature.getMethodArguments().get(0) == "ANY") {
 			
@@ -30,9 +31,12 @@ public class SignatureParser {
 			}
 		
 		return false;
+		
 	}
 	
-	private ParsedMethodSignature parseDSLSignature(Object signature) {
+	
+	private static ParsedMethodSignature parseDSLSignature(Object signature) {
+		
 		String strSignature = signature.toString();
 		ParsedMethodSignature parsedSignature = new ParsedMethodSignature();
 		
@@ -59,10 +63,15 @@ public class SignatureParser {
 		parsedSignature.setMethodArguments(methodArgs);
 		
 		return parsedSignature;
+		
 	}
 	
-	private ParsedMethodSignature parseSootSignature(Object signature) {
+	
+	private static ParsedMethodSignature parseSootSignature(Object signature) {
+		
 		String strSignature = signature.toString();
 		return parseDSLSignature(strSignature.substring(1, strSignature.length() - 1));
+		
 	}
+	
 }

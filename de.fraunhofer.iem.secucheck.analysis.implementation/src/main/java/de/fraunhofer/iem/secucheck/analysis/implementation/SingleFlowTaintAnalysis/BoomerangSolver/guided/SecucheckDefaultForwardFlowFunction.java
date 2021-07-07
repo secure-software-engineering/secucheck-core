@@ -7,6 +7,7 @@ import boomerang.scene.ControlFlowGraph;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
+import de.fraunhofer.iem.secucheck.analysis.parser.methodsignature.SignatureParser;
 import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.MethodImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
@@ -63,9 +64,8 @@ public class SecucheckDefaultForwardFlowFunction extends DefaultForwardFlowFunct
      */
     private boolean isSanitizer(Statement callSite, Val fact) {
         for (MethodImpl sanitizer : singleFlow.getNotThrough()) {
-            String sanitizerSootSignature = Utility.wrapInAngularBrackets(sanitizer.getSignature());
-
-            if (Utility.toStringEquals(callSite.getInvokeExpr().getMethod().getSignature(), sanitizerSootSignature)) {
+            
+        	if(SignatureParser.matches(callSite.getInvokeExpr().getMethod().getSignature(), sanitizer.getSignature())) {
                 // UnTaint the OutDeclaration.
                 if (sanitizer.getInputParameters() != null) {      // Check for the iputparameters for tainted values
                     for (InputParameter input : sanitizer.getInputParameters()) {   // for each input parameters

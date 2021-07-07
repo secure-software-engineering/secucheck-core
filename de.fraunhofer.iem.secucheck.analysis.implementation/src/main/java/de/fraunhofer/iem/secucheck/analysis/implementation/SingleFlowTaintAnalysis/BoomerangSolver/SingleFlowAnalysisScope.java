@@ -9,6 +9,8 @@ import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import boomerang.scene.jimple.SootCallGraph;
 import com.google.common.collect.Sets;
+
+import de.fraunhofer.iem.secucheck.analysis.parser.methodsignature.SignatureParser;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
@@ -51,8 +53,8 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
 
         // Find source methods. This case is, if the entry method itself is the source
         for (Method flowMethod : this.taintFlow.getFrom()) {
-            if (Utility.toStringEquals(statement.getMethod(),
-                    Utility.wrapInAngularBrackets(flowMethod.getSignature()))) { // If the entry method is source then create a ForwardQuery
+        	
+        	if(SignatureParser.matches(statement.getMethod(), flowMethod.getSignature())) { // If the entry method is source then create a ForwardQuery
 
                 // Check for OutFlow Parameter, If any then create query for respective parameter
                 if (flowMethod.getOutputParameters() != null) {
@@ -94,10 +96,10 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
         Collection<Val> out = Sets.newHashSet();
 
         for (Method sourceMethod : taintFlow.getFrom()) { // Iterate through the source in specification
-            String sourceSootSignature = Utility.wrapInAngularBrackets(sourceMethod.getSignature());
 
             if (statement.containsInvokeExpr()) {
-                if (Utility.toStringEquals(statement.getInvokeExpr().getMethod().getSignature(), sourceSootSignature)) {    // If source found, then check for OutFlows
+            	// If source found, then check for OutFlows
+            	if(SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sourceMethod.getSignature())) {
                     // Check for OutFlow return value
                     if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
                         out.add(new AllocVal(statement.getLeftOp(), statement, statement.getLeftOp()));
