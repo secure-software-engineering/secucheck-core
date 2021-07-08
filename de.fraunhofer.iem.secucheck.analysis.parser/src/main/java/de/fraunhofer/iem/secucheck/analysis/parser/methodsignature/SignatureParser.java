@@ -3,6 +3,8 @@ package de.fraunhofer.iem.secucheck.analysis.parser.methodsignature;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class SignatureParser {
 
 	public static boolean matches(Object sootSignature, Object dslSignature) {
@@ -10,7 +12,7 @@ public class SignatureParser {
 		ParsedMethodSignature parsedSootSignature = parseSootSignature(sootSignature);
 		ParsedMethodSignature parsedDSLSignature = parseDSLSignature(dslSignature);
 		if(parsedDSLSignature.getMethodArguments().size()==1 && 
-				parsedDSLSignature.getMethodArguments().get(0) == "ANY") {
+				parsedDSLSignature.getMethodArguments().get(0).equals("ANY")) {
 			
 			if( parsedDSLSignature.getClassName().equals(parsedSootSignature.getClassName()) 
 				&& parsedDSLSignature.getReturnType().equals(parsedSootSignature.getReturnType()) 
@@ -41,7 +43,7 @@ public class SignatureParser {
 		ParsedMethodSignature parsedSignature = new ParsedMethodSignature();
 		String methodFullyQualifiedName;
 		
-		if(strSignature.isBlank()) {
+		if(StringUtils.isBlank(strSignature)) {
 			return parsedSignature;
 		}
 		
@@ -68,14 +70,14 @@ public class SignatureParser {
 		
 		String methodParam = methodNameAndParam.substring(methodNameAndParam.indexOf("(")+1, methodNameAndParam.indexOf(")"));
 		List<String> methodArgs = new ArrayList<>();
-		if(methodParam.isBlank()){
+		if(StringUtils.isBlank(methodParam)){
 			methodArgs.add("");
 			parsedSignature.setMethodArguments(methodArgs);
 		} 
 		else {
 			String[] methodParamArray = methodParam.split(",");
 			for(String param : methodParamArray) {
-				methodArgs.add(param.replace("\\s+", ""));
+				methodArgs.add(param.replaceAll("\\s",""));
 			}
 			parsedSignature.setMethodArguments(methodArgs);
 		}
