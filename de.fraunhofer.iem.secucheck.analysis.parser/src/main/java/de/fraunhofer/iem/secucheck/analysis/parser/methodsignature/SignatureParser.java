@@ -66,12 +66,14 @@ public class SignatureParser {
 		String methodNameAndParam = splittedMethodFullyQualifiedName[1].trim();
 		parsedSignature.setMethodName(methodNameAndParam.substring(0, methodNameAndParam.indexOf("(")));
 		
-		String[] methodParamArray = methodNameAndParam.substring(methodNameAndParam.indexOf("(")+1, methodNameAndParam.indexOf(")")).split(",");
+		String methodParam = methodNameAndParam.substring(methodNameAndParam.indexOf("(")+1, methodNameAndParam.indexOf(")"));
 		List<String> methodArgs = new ArrayList<>();
-		if(methodParamArray.length == 0) {
+		if(methodParam.isBlank()){
 			methodArgs.add("");
+			parsedSignature.setMethodArguments(methodArgs);
 		} 
 		else {
+			String[] methodParamArray = methodParam.split(",");
 			for(String param : methodParamArray) {
 				methodArgs.add(param.replace("\\s+", ""));
 			}
