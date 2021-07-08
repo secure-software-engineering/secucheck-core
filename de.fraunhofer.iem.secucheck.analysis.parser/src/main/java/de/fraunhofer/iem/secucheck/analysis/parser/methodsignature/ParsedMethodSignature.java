@@ -11,9 +11,9 @@ public class ParsedMethodSignature {
 	private List<String> methodArguments;
 	
 	public ParsedMethodSignature() {
-		this.className = null;
-		this.returnType = null;
-		this.methodName = null;
+		this.className = "";
+		this.returnType = "";
+		this.methodName = "";
 		this.methodArguments = new ArrayList<>();
 	}
 	

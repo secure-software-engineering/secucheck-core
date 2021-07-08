@@ -41,6 +41,10 @@ public class SignatureParser {
 		ParsedMethodSignature parsedSignature = new ParsedMethodSignature();
 		String methodFullyQualifiedName;
 		
+		if(strSignature.isBlank()) {
+			return parsedSignature;
+		}
+		
 		if(strSignature.contains(":")) {
 			String[] subSignatures = strSignature.split(":");
 			if(subSignatures.length == 2) {
@@ -48,7 +52,6 @@ public class SignatureParser {
 				methodFullyQualifiedName = subSignatures[1].trim();
 			}
 			else {
-				System.out.println("SIGNATURE: "+strSignature);
 				throw new RuntimeException("Error during method signature parsing process.");
 			}
 		}
