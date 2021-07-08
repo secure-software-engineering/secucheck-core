@@ -11,29 +11,38 @@ public class SignatureParser {
 		
 		ParsedMethodSignature parsedSootSignature = parseSootSignature(sootSignature);
 		ParsedMethodSignature parsedDSLSignature = parseDSLSignature(dslSignature);
-		if(parsedDSLSignature.getMethodArguments().size()==1 && 
-				parsedDSLSignature.getMethodArguments().get(0).equals("ANY")) {
+		
+		if( parsedDSLSignature.getMethodArguments().size()==1 && 
+				parsedDSLSignature.getMethodArguments().get(0).equals("ANY") ) {
 			
-			if( parsedDSLSignature.getClassName().equals(parsedSootSignature.getClassName()) 
-				&& parsedDSLSignature.getReturnType().equals(parsedSootSignature.getReturnType()) 
-				&& parsedDSLSignature.getMethodName().equals(parsedSootSignature.getMethodName()) ) {
+			if( areEqualBesidesArgs(parsedSootSignature, parsedDSLSignature) ) {
 				return true;
 			}
-			else {
-				return false;
+			return false;
+		}
+		
+		if( parsedDSLSignature.getMethodArguments().contains("_") ) {
+			
+			if( parsedDSLSignature.getMethodArguments().size() == parsedSootSignature.getMethodArguments().size()
+				&& areEqualBesidesArgs(parsedSootSignature, parsedDSLSignature) ) {
+				
+				for(int i=0; i<parsedDSLSignature.getMethodArguments().size(); i++) {
+					if( !parsedDSLSignature.getMethodArguments().get(i).equals("_")
+						&& !parsedDSLSignature.getMethodArguments().get(i).equals(parsedSootSignature.getMethodArguments().get(i)) ) {
+						return false;
+					}
+				}
+				return true;
+				
 			}
 			
 		}
 		
-		if( parsedDSLSignature.getClassName().equals(parsedSootSignature.getClassName()) 
-				&& parsedDSLSignature.getReturnType().equals(parsedSootSignature.getReturnType()) 
-				&& parsedDSLSignature.getMethodName().equals(parsedSootSignature.getMethodName())
-				&& parsedDSLSignature.getMethodArguments().equals(parsedSootSignature.getMethodArguments()) ) {
+		if( areEqualBesidesArgs(parsedSootSignature, parsedDSLSignature)
+			&& parsedDSLSignature.getMethodArguments().equals(parsedSootSignature.getMethodArguments()) ) {
 				return true;
 			}
-		
 		return false;
-		
 	}
 	
 	
@@ -92,6 +101,18 @@ public class SignatureParser {
 		String strSignature = signature.toString();
 		return parseDSLSignature(strSignature.substring(1, strSignature.length() - 1));
 		
+	}
+	
+	
+	private static boolean areEqualBesidesArgs(ParsedMethodSignature parsedSootSignature, ParsedMethodSignature parsedDSLSignature) {
+		
+		if( parsedDSLSignature.getClassName().equals(parsedSootSignature.getClassName()) 
+				&& parsedDSLSignature.getReturnType().equals(parsedSootSignature.getReturnType()) 
+				&& parsedDSLSignature.getMethodName().equals(parsedSootSignature.getMethodName()) ) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 }
