@@ -10,7 +10,7 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
 
     private final List<TaintFlowImpl> taintFlowQueries;
     private final String id;
-
+    private List<EntryPoint> entryPoints;
     private String message;
     private ReportSite reportLocation;
 
@@ -26,20 +26,33 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
     public List<TaintFlowImpl> getTaintFlows() {
         return taintFlowQueries;
     }
+    
+    @Override
+	public List<EntryPoint> getEntryPoints() {
+		return this.entryPoints;
+	}
+    
+    public void setEntryPoint(List<EntryPoint> entryPoints) {
+    	this.entryPoints = entryPoints;
+    }
+    
+    public void addEntryPoint(EntryPoint entryPoint) {
+    	this.entryPoints.add(entryPoint);
+    }
 
     @Override
     public ReportSite getReportLocation() {
         return this.reportLocation;
     }
+    
+    @Override
+    public void setReportLocation(ReportSite loc) {
+        this.reportLocation = loc;
+    }
 
     @Override
     public String getReportMessage() {
         return this.message;
-    }
-
-    @Override
-    public void setReportLocation(ReportSite loc) {
-        this.reportLocation = loc;
     }
 
     @Override
@@ -52,10 +65,12 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
         copy.setReportLocation(this.getReportLocation());
         copy.setReportMessage(this.getReportMessage());
         copy.getTaintFlows().addAll(this.getTaintFlows());
+        copy.getEntryPoints().addAll(this.getEntryPoints());
     }
 
     @Override
     public String getId() {
         return id;
     }
+    
 }

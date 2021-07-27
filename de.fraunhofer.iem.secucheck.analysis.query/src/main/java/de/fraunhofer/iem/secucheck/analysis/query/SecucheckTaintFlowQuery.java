@@ -31,6 +31,13 @@ public interface SecucheckTaintFlowQuery extends Copyable<SecucheckTaintFlowQuer
     List<TaintFlowImpl> getTaintFlows();
 
     /**
+     * Returns the entry points
+     *
+     * @return Entry points
+     */
+    List<EntryPoint> getEntryPoints();
+    
+    /**
      * Setter for report location
      *
      * @param loc report location
