@@ -10,6 +10,7 @@ import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysi
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided.SecucheckBoomerangDemandDrivenAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
@@ -39,11 +40,17 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
      * TaintFlowResult for the single TaintFlow specification
      */
     private final TaintFlowResult result;
+    
+    /**
+     * List<EntryPoint> for holding all entry points for given single taint flow
+     */
+    private final List<EntryPoint> entryPoints;
 
-    public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration) {
+    public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration, List<EntryPoint> entryPoints) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
         this.result = new TaintFlowResult();
+        this.entryPoints = entryPoints;
     }
 
     /**
@@ -56,8 +63,13 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
     public TaintFlowResult run() throws Exception {
         String classPath = Utility.getCombinedSootClassPath(this.configuration.getOs(),
                 this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());
+        if(this.entryPoints == null) {
+            Utility.initializeSootWithEntryPoints(classPath, this.configuration.getAnalysisEntryPoints());
+        }
+        else {
+            Utility.initializeSootWithEntryPoints(classPath, this.entryPoints);
 
-        Utility.initializeSootWithEntryPoints(classPath, this.configuration.getAnalysisEntryPoints());
+        }
         Utility.loadAllParticipantMethods(singleFlow);
 
         Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());

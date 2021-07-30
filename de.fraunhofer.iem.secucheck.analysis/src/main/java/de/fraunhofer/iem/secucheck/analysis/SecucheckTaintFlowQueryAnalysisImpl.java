@@ -44,7 +44,7 @@ public class SecucheckTaintFlowQueryAnalysisImpl implements SecucheckTaintFlowQu
                 break;
             }
 
-            SingleFlowAnalysis analysis = analysisFactory.create(originalFlow);
+            SingleFlowAnalysis analysis = analysisFactory.create(originalFlow, this.flowQuery.getEntryPoints());
             TaintFlowResult returnResult = analysis.run();
 
             totalSeedCount += returnResult.getSeedCount();

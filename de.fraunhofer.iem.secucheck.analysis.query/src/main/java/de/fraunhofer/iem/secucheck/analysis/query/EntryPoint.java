@@ -1,5 +1,6 @@
 package de.fraunhofer.iem.secucheck.analysis.query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public final class EntryPoint {
     private boolean isAllMethods;
 
     public EntryPoint() {
+    	this.methods = new ArrayList<String>();
     }
 
     /**
@@ -68,6 +70,15 @@ public final class EntryPoint {
      */
     public void setMethods(List<String> methods) {
         this.methods = methods;
+    }
+    
+    /**
+     * Setter for adding a single method to the list of entry points.
+     *
+     * @param methods Single entry point method.
+     */
+    public void addMethod(String method) {
+    	this.methods.add(method);
     }
 
     /**

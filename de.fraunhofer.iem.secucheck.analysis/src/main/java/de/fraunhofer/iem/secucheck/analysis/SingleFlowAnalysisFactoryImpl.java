@@ -1,10 +1,13 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
+import java.util.List;
+
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis.SingleFlowAnalysisFactory;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.BoomerangSingleFlowAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.FlowDroidSolver.FlowDroidSingleFlowAnalysis;
+import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.Solver;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 
@@ -22,11 +25,11 @@ public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory 
     }
 
     @Override
-    public SingleFlowAnalysis create(TaintFlowImpl flowQuery) {
+    public SingleFlowAnalysis create(TaintFlowImpl flowQuery, List<EntryPoint> entryPoints) {
 
         switch (solver) {
             case BOOMERANG3:
-                return new BoomerangSingleFlowAnalysis(flowQuery, this.configuration);
+                return new BoomerangSingleFlowAnalysis(flowQuery, this.configuration, entryPoints);
 
             case FLOWDROID:
                 return new FlowDroidSingleFlowAnalysis(flowQuery, this.configuration);
