@@ -45,12 +45,18 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
      * List<EntryPoint> for holding all entry points for given single taint flow
      */
     private final List<EntryPoint> entryPoints;
+    
+    /**
+     * Boolean value of whether only DSL-specified entry points should be used
+     */
+    private final boolean DSLEntryPoints;
 
-    public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration, List<EntryPoint> entryPoints) {
+    public BoomerangSingleFlowAnalysis(TaintFlowImpl singleFlow, SecucheckAnalysisConfiguration configuration, List<EntryPoint> entryPoints, boolean DSLEntryPoints) {
         this.singleFlow = singleFlow;
         this.configuration = configuration;
         this.result = new TaintFlowResult();
         this.entryPoints = entryPoints;
+        this.DSLEntryPoints = DSLEntryPoints;
     }
 
     /**
@@ -63,13 +69,22 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
     public TaintFlowResult run() throws Exception {
         String classPath = Utility.getCombinedSootClassPath(this.configuration.getOs(),
                 this.configuration.getApplicationClassPath(), this.configuration.getSootClassPathJars());
+        
         if(this.entryPoints == null) {
             Utility.initializeSootWithEntryPoints(classPath, this.configuration.getAnalysisEntryPoints());
         }
         else {
-            Utility.initializeSootWithEntryPoints(classPath, this.entryPoints);
-
+        	if(this.DSLEntryPoints) {
+        		Utility.initializeSootWithEntryPoints(classPath, this.entryPoints);
+        	}
+        	else {
+        		List<EntryPoint> entryPoints = this.configuration.getAnalysisEntryPoints();
+        		entryPoints.addAll(this.entryPoints);
+        		List<EntryPoint> entryPointsWithoutDuplicates = new ArrayList<>(new HashSet<>(entryPoints));
+        		Utility.initializeSootWithEntryPoints(classPath, entryPointsWithoutDuplicates);
+        	}
         }
+        
         Utility.loadAllParticipantMethods(singleFlow);
 
         Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());

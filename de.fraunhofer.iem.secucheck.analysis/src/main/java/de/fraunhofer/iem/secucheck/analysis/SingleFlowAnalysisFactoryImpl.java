@@ -25,11 +25,11 @@ public class SingleFlowAnalysisFactoryImpl implements SingleFlowAnalysisFactory 
     }
 
     @Override
-    public SingleFlowAnalysis create(TaintFlowImpl flowQuery, List<EntryPoint> entryPoints) {
+    public SingleFlowAnalysis create(TaintFlowImpl flowQuery, List<EntryPoint> entryPoints, boolean DSLEntryPoints) {
 
         switch (solver) {
             case BOOMERANG3:
-                return new BoomerangSingleFlowAnalysis(flowQuery, this.configuration, entryPoints);
+                return new BoomerangSingleFlowAnalysis(flowQuery, this.configuration, entryPoints, DSLEntryPoints);
 
             case FLOWDROID:
                 return new FlowDroidSingleFlowAnalysis(flowQuery, this.configuration);

@@ -13,10 +13,12 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
     private List<EntryPoint> entryPoints;
     private String message;
     private ReportSite reportLocation;
+    private boolean DSLEntryPoints;
 
     public SecucheckTaintFlowQueryImpl(String id) {
         this.taintFlowQueries = new ArrayList<TaintFlowImpl>();
         this.id = id;
+        this.DSLEntryPoints = false;
     }
 
     public void addQuery(TaintFlowImpl query) {
@@ -59,6 +61,15 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
     public void setReportMessage(String message) {
         this.message = message;
     }
+    
+    public void setDSLEntryPoints(boolean DSLEntryPoints) {
+    	this.DSLEntryPoints = DSLEntryPoints;
+    }
+    
+    @Override
+	public boolean isDSLEntryPoints() {
+		return this.DSLEntryPoints;
+	}
 
     @Override
     public void copyTo(SecucheckTaintFlowQuery copy) {

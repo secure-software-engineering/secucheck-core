@@ -5,8 +5,19 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Parser class for parsing method, class, and package signatures
+ *
+ * @author Enri Ozuni
+ */
 public class SignatureParser {
 
+	/**
+     * Checks whether two method signatures are equal to each other
+     *
+     * @param 
+     * @return Whether two signatures are equal
+     */
 	public static boolean matches(Object sootSignature, Object dslSignature) {
 		
 		ParsedMethodSignature parsedSootSignature = parseSootSignature(sootSignature);
@@ -45,7 +56,12 @@ public class SignatureParser {
 		return false;
 	}
 	
-	
+	/**
+     * Parses method signature in a {@link ParsedMethodSignature} object
+     *
+     * @param 
+     * @return The parsed signature
+     */
 	public static ParsedMethodSignature parseDSLMethodSignature(Object signature) {
 		ParsedMethodSignature parsedSignature = new ParsedMethodSignature();
 		String strSignature = signature.toString();
@@ -97,6 +113,12 @@ public class SignatureParser {
 		
 	}
 	
+	/**
+     * Parses class or package signatures in a {@link String} object
+     *
+     * @param 
+     * @return The parsed signature
+     */
 	public static String parseDSLClassOrPackageSignature(Object signature) {
 		String strSignature = signature.toString();
 		if(StringUtils.isBlank(strSignature)) {
@@ -113,7 +135,12 @@ public class SignatureParser {
 		
 	}
 	
-	
+	/**
+     * Checks whether the parsed method signatures are equal besides their parameters
+     *
+     * @param 
+     * @return Whether they are equal besides their parameters
+     */
 	private static boolean areEqualBesidesArgs(ParsedMethodSignature parsedSootSignature, ParsedMethodSignature parsedDSLSignature) {
 		
 		if( parsedDSLSignature.getClassName().equals(parsedSootSignature.getClassName()) 

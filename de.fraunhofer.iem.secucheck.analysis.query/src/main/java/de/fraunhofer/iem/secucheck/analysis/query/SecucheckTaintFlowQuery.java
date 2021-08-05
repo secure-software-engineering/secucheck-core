@@ -57,4 +57,11 @@ public interface SecucheckTaintFlowQuery extends Copyable<SecucheckTaintFlowQuer
      * @return ID of the TaintFlowQuery
      */
     String getId();
+    
+    /**
+     * Returns the information to whether only DSL entry points will be used
+     *
+     * @return Boolean of whether DSL entry points will be used
+     */
+    boolean isDSLEntryPoints();
 }
