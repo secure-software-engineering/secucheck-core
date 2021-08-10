@@ -21,6 +21,13 @@
 
     <repositories>
         <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
             <id>soot-snapshot</id>
             <name>soot snapshot</name>
             <url>https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/</url>
