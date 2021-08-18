@@ -33,9 +33,9 @@ git clone https://github.com/secure-software-engineering/secucheck-core.git
 cd secucheck-core
 ```
 
-- change the branch to feature/paper
+- change the branch to SC-1.1.0 or SC-1.0.0
 ```shell script
-git checkout origin/feature/paper
+git checkout SC-1.1.0
 ```
 
 - build the project 
