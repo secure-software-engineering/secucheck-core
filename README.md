@@ -6,6 +6,23 @@ Boomerang 3.x tested for WebGoat, fluentTQL catalog and it finds the TaintFlows.
 under development.
 
 ## How to build secucheck-core manually?
+- secucheck-core uses Boomerang DemandDriven analysis feature which is not yet realeased. Therefore, we need to build the Boomerang manually to the local maven before building SecuCheck. 
+ 
+- Clone the Boomernag repository using the below command
+```shell script
+git clone https://github.com/CodeShield-Security/SPDS.git
+```
+
+- Change the branch to develop using the below command. Recently used boomerang commit to build SecuCheck is 361a6bc33f7e8311398532a5c444c9e9cc358b0d
+```shell script
+git checkout develop
+```
+
+- Build Boomerang using the below command
+```shell script
+mvn clean install -DskipTests
+```
+
 - Clone secuchek-core
 ```shell script
 git clone https://github.com/secure-software-engineering/secucheck-core.git
