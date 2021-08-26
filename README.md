@@ -2,7 +2,7 @@
 Secucheck-core is the taint analysis. Currently, it includes two solver, 
 Boomerang 3.x and Flowdroid.
 
-Boomerang 3.x tested for WebGoat, catalog, demo-project and spring-petclinic and it finds all the TaintFlows. Flowdroid finds 0 taintflows due to its limitations.
+Boomerang 3.x is the default solver. Boomerang 3.x tested for WebGoat, catalog, demo-project and spring-petclinic and it finds all the TaintFlows. Flowdroid finds 0 taintflows due to its limitations.
 
 ## How to build secucheck-core manually?
 - secucheck-core uses Boomerang DemandDriven analysis feature which is not yet realeased. Therefore, we need to build the Boomerang manually to the local maven before building SecuCheck. 
