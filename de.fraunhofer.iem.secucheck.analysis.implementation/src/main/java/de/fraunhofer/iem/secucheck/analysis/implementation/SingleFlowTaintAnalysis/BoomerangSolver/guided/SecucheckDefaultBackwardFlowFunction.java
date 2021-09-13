@@ -1,8 +1,10 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import boomerang.BoomerangOptions;
-import boomerang.ForwardQuery;
-import boomerang.flowfunction.DefaultForwardFlowFunction;
+import boomerang.flowfunction.DefaultBackwardFlowFunction;
 import boomerang.scene.ControlFlowGraph;
 import boomerang.scene.Statement;
 import boomerang.scene.Val;
@@ -13,22 +15,19 @@ import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import wpds.interfaces.State;
 
-import java.util.Collection;
-import java.util.Collections;
-
 /**
- * SecuCheck default forward flow function for the Boomerang DemandDriven analysis
+ * SecuCheck default backward flow function for the Boomerang DemandDriven analysis
  */
-public class SecucheckDefaultForwardFlowFunction extends DefaultForwardFlowFunction {
-    
+public class SecucheckDefaultBackwardFlowFunction extends DefaultBackwardFlowFunction {
+
 	// Current single TaintFlow specification
     private final TaintFlowImpl singleFlow;
 
-    public SecucheckDefaultForwardFlowFunction(BoomerangOptions opts, TaintFlowImpl singleFlow) {
+    public SecucheckDefaultBackwardFlowFunction(BoomerangOptions opts, TaintFlowImpl singleFlow) {
         super(opts);
         this.singleFlow = singleFlow;
     }
-
+    
     /**
      * In callToReturnFlow function, we check is there a sanitizer method call. If there is a sanitizer method call,
      * Then based on the specification, we kill the fact.
@@ -39,14 +38,14 @@ public class SecucheckDefaultForwardFlowFunction extends DefaultForwardFlowFunct
      * @return List of state based on the specification of sanitizers. If no sanitizer then call the super.callToReturnFlow
      */
     @Override
-    public Collection<State> callToReturnFlow(ForwardQuery query, ControlFlowGraph.Edge edge, Val fact) {
+    public Collection<State> callToReturnFlow(ControlFlowGraph.Edge edge, Val fact) {
         if (edge.getStart().containsInvokeExpr()) {
             if (isSanitizer(edge.getStart(), fact)) {   // If sanitizer and current fact is need to be killed by the specs then kill the fact
                 return Collections.emptyList();
             }
         }
 
-        return super.normalFlow(query, edge, fact);
+        return super.normalFlow(edge, fact);
     }
 
     /**
@@ -104,4 +103,5 @@ public class SecucheckDefaultForwardFlowFunction extends DefaultForwardFlowFunct
         }
         return false;
     }
+
 }

@@ -22,8 +22,9 @@ import java.util.Set;
 /**
  * AnalysisScope for finding the seeds---ForwardQuery for each source found
  */
-public class SingleFlowAnalysisScope extends AnalysisScope {
-    /**
+public class SingleForwardFlowAnalysisScope extends AnalysisScope {
+    
+	/**
      * Current single TaintFlow specification
      */
     private final TaintFlow taintFlow;
@@ -33,11 +34,12 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
      */
     private final Set<boomerang.scene.Method> sourceMethods = new HashSet<>();
 
-    public SingleFlowAnalysisScope(TaintFlow taintFlow, SootCallGraph sootCallGraph) {
+    public SingleForwardFlowAnalysisScope(TaintFlow taintFlow, SootCallGraph sootCallGraph) {
         super(sootCallGraph);
         this.taintFlow = taintFlow;
     }
 
+    
     @Override
     protected Collection<? extends Query> generate(Edge cfgEdge) {
         Set<Query> out = Sets.newHashSet();
@@ -78,15 +80,16 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
                     }
                 }
 
-                // Todo: check is it necessary to check for OutFlow this-object
+                // ToDo: check is it necessary to check for OutFlow this-object
             }
         }
 
         return out;
     }
 
+    
     /**
-     * It generated the source variable
+     * It generates the source variable
      *
      * @param taintFlow Current single TaintFlow
      * @param statement Current statement
@@ -95,7 +98,7 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
     private Collection<Val> generateSourceVariables(TaintFlow taintFlow, Statement statement) {
         Collection<Val> out = Sets.newHashSet();
 
-        for (Method sourceMethod : taintFlow.getFrom()) { // Iterate through the source in specification
+        for (Method sourceMethod : taintFlow.getFrom()) { // Iterate through the sources in specification
 
             if (statement.containsInvokeExpr()) {
             	// If source found, then check for OutFlows
@@ -123,6 +126,8 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
                 }
             }
         }
+        
         return out;
     }
+    
 }

@@ -1,5 +1,6 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided;
 
+import boomerang.flowfunction.IBackwardFlowFunction;
 import boomerang.flowfunction.IForwardFlowFunction;
 import boomerang.scene.jimple.IntAndStringBoomerangOptions;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
@@ -59,5 +60,10 @@ public class SecucheckDefaultBoomerangOptions extends IntAndStringBoomerangOptio
     @Override
     public IForwardFlowFunction getForwardFlowFunctions() {
         return new SecucheckDefaultForwardFlowFunction(this, singleFlow);
+    }
+    
+    @Override
+    public IBackwardFlowFunction getBackwardFlowFunction() {
+        return new SecucheckDefaultBackwardFlowFunction(this, singleFlow);
     }
 }

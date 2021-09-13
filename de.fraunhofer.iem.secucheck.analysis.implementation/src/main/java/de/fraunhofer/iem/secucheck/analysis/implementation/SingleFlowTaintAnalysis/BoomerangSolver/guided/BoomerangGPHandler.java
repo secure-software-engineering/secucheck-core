@@ -23,11 +23,18 @@ import java.util.*;
  * @author Ranjith Krishnamurthy
  */
 public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
-    /**
-     * List of found sinks. Whenever SecucheckDemandDrivenManager finds a sink with a taintflow then it creates a
+    
+	/**
+     * List of found sinks. Whenever SecucheckDemandDrivenManager finds a sink with a taint flow then it creates a
      * BackwardQuery and adds it to this list.
      */
     private final ArrayList<DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath>> foundSinks = new ArrayList<>();
+    
+    /**
+     * List of found sources. Whenever SecucheckDemandDrivenManager finds a source with a taint flow then it creates a
+     * ForwardQuery and adds it to this list.
+     */
+    private final ArrayList<DifferentTypedPair<ForwardQuery, BoomerangTaintFlowPath>> foundSources = new ArrayList<>();
 
     /**
      * Current single TaintFlow specification, that the current analysis running for.
@@ -62,6 +69,15 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     public ArrayList<DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath>> getFoundSinks() {
         return foundSinks;
     }
+    
+    /**
+     * Getter for the list of found sources
+     *
+     * @return List of found sources
+     */
+    public ArrayList<DifferentTypedPair<ForwardQuery, BoomerangTaintFlowPath>> getFoundSources() {
+        return foundSources;
+    }
 
     /**
      * This method checks whether the current statement contains the sink method call. If yes, it return true.
@@ -74,7 +90,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     private BackwardQuery isSink(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         for (Method sinkMethod : singleFlow.getTo()) {
         	
-        	// If there is a sink method call, then check is there a taintflow present
+        	// If there is a sink method call, then check is there a taint flow present
             if (statement.containsInvokeExpr() &&
             		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sinkMethod.getSignature())) {
 
@@ -99,6 +115,51 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                         return BackwardQuery.make(dataFlowEdge, statement.getInvokeExpr().getBase());
                     }
                 }
+            }
+
+        }
+
+        return null;
+    }
+    
+    /**
+     * This method checks whether the current statement contains the source method call. If yes, it return true.
+     *
+     * @param statement    Current Statement
+     * @param dataFlowEdge Dataflow edge
+     * @param dataFlowVal  Fact: dataFlowVal
+     * @return True is there is a source method call and TaintFlow exist.
+     */
+    private ForwardQuery isSource(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+        for (Method sourceMethod : singleFlow.getFrom()) {
+        	
+        	// If there is a source method call, then check is there a taint flow present
+            if (statement.containsInvokeExpr() &&
+            		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sourceMethod.getSignature())) {
+
+                //For sinks there is always a OutFlow, there is no InFlow.
+
+                // Check for the OutFlow parameters
+                if (sourceMethod.getOutputParameters() != null) {
+                    for (OutputParameter output : sourceMethod.getOutputParameters()) {
+                        int parameterIndex = output.getParamID();
+                        if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                            if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
+                                return new ForwardQuery(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex));
+                            }
+                        }
+                    }
+                }
+
+                // Check for OutFlow this-object
+                if (sourceMethod.isOutputThis() &&
+                        statement.getInvokeExpr().isInstanceInvokeExpr()) {
+                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
+                        return new ForwardQuery(dataFlowEdge, statement.getInvokeExpr().getBase());
+                    }
+                }
+                
+                //ToDo: Check for Return value
             }
 
         }
@@ -229,7 +290,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     }
 
     /**
-     * For forward Query. Out implementation uses only ForwardQuery.
+     * For forward Query.
      *
      * @param query        Forward query
      * @param dataFlowEdge Dataflow edge
@@ -294,16 +355,67 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     }
 
     /**
-     * Our Implementation does not use BackwardQuery. Therefore no implementation for onBackwardFlow
+     * For backward Query.
      *
      * @param query        BackwardQuery
      * @param dataFlowEdge Dataflow edge
      * @param dataFlowVal  fact
-     * @return Always empty list for our implementation.
+     * @return List of queries based on the current dataFlowVal---fact
      */
     @Override
-    public Collection<Query> onBackwardFlow(BackwardQuery query, ControlFlowGraph.Edge dataFlowEdge, Val
-            dataFlowVal) {
-        return Collections.emptyList();
+    public Collection<Query> onBackwardFlow(BackwardQuery query, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    	Statement stmt = dataFlowEdge.getStart();
+        ArrayList<Query> out = new ArrayList<Query>();
+
+        BoomerangTaintFlowPath parentNode = null;
+        if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+            parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
+        }
+
+        if (stmt.containsInvokeExpr()) {
+            ForwardQuery sourceQuery = isSource(stmt, dataFlowEdge, dataFlowVal);
+            if (sourceQuery != null) {
+                BoomerangTaintFlowPath singleTaintFlowPath = null;
+                if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                    BoomerangTaintFlowPath finalSourceNode = new BoomerangTaintFlowPath(
+                            sourceQuery, parentNode, false, true);
+                    parentNode.addNewChild(finalSourceNode);
+                    singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSourceNode);
+                }
+
+                DifferentTypedPair<ForwardQuery, BoomerangTaintFlowPath> res = new DifferentTypedPair<>(sourceQuery, singleTaintFlowPath);
+                foundSources.add(res);
+                return Collections.emptyList();
+            }
+
+            Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal);
+
+            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                for (Query propQuery : prop) {
+                    BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                            propQuery, parentNode, false, false);
+                    parentNode.addNewChild(finalSinkNode);
+                }
+            }
+
+            out.addAll(prop);
+
+            if (out.size() > 0)
+                return out;
+
+            Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal);
+
+            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                for (Query generalPropQuery : generalProp) {
+                    BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                            generalPropQuery, parentNode, false, false);
+                    parentNode.addNewChild(finalSinkNode);
+                }
+            }
+
+            out.addAll(generalProp);
+        }
+
+        return out;
     }
 }

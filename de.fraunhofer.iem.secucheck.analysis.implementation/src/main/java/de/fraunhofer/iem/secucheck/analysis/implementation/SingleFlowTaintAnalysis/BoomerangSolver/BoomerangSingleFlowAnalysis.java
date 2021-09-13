@@ -1,5 +1,6 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver;
 
+import boomerang.BackwardQuery;
 import boomerang.ForwardQuery;
 import boomerang.Query;
 import boomerang.scene.AnalysisScope;
@@ -119,10 +120,10 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
     /**
      * First it finds the seeds using the AnalysisScope, Then it runs the SecuchcekDemandDrivenAnalysis for finding the TaintFlows based on
-     * the Boomeranf DemandDrivenAnalysis
+     * the Boomerang DemandDrivenAnalysis
      *
      * @param singleFlow Current single TaintFlow specification
-     * @return List of Tainflow locations details for the current single TaintFlow specification
+     * @return List of Taintflow locations details for the current single TaintFlow specification
      */
     public List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
     analyzePlainFlow(TaintFlowImpl singleFlow) {
@@ -130,30 +131,50 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         List<DifferentTypedPair<TaintFlowImpl, SingleTaintFlowAnalysisResult>>
                 reachMap = new ArrayList<>();
 
-        // First get the seeds --- source ForwardQuery
         SootCallGraph callGraph = new SootCallGraph();
-        AnalysisScope analysisScope = getAnalysisScope(singleFlow, callGraph);
-
-        Set<ForwardQuery> source = computeSeeds(analysisScope);
-
-        result.setSeedCount(source.size());
-
-        if (source.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
-            reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).run(source, singleFlow));
+        
+        if(singleFlow.getFrom().size() <= singleFlow.getTo().size()) {
+        	// First get the seeds --- source ForwardQuery
+        	AnalysisScope analysisScope = getForwardAnalysisScope(singleFlow, callGraph);
+            Set<ForwardQuery> source = computeSeedsForForwardFlow(analysisScope);
+            result.setSeedCount(source.size());
+            if (source.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
+                reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForForwardFlow(source, singleFlow));
+            }
+        }
+        else {
+        	// First get the seeds --- sink BackwardQuery
+        	AnalysisScope analysisScope = getBackwardAnalysisScope(singleFlow, callGraph);
+        	Set<BackwardQuery> sink = computeSeedsForBackwardFlow(analysisScope);
+        	result.setSeedCount(sink.size());
+            if (sink.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
+                reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForBackwardFlow(sink, singleFlow));
+            }
         }
 
         return reachMap;
     }
 
     /**
-     * Returns the Analysiscope for finding the seeds
+     * Returns the analysis scope for finding the seeds in forward flow
      *
      * @param taintFlow Current single TaintFlow specification
-     * @param callGraph Soot callgraph
+     * @param callGraph Soot call graph
      * @return AnalysisScope
      */
-    private AnalysisScope getAnalysisScope(TaintFlow taintFlow, SootCallGraph callGraph) {
-        return new SingleFlowAnalysisScope(taintFlow, callGraph);
+    private AnalysisScope getForwardAnalysisScope(TaintFlow taintFlow, SootCallGraph callGraph) {
+        return new SingleForwardFlowAnalysisScope(taintFlow, callGraph);
+    }
+    
+    /**
+     * Returns the analysis scope for finding the seeds in backward flow
+     *
+     * @param taintFlow Current single TaintFlow specification
+     * @param callGraph Soot call graph
+     * @return AnalysisScope
+     */
+    private AnalysisScope getBackwardAnalysisScope(TaintFlow taintFlow, SootCallGraph callGraph) {
+        return new SingleBackwardFlowAnalysisScope(taintFlow, callGraph);
     }
 
     /**
@@ -162,7 +183,7 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
      * @param analysisScope AnalysisScope
      * @return Seeds-- ForwardQuery for each source method found in AnalysisScope
      */
-    private Set<ForwardQuery> computeSeeds(AnalysisScope analysisScope) {
+    private Set<ForwardQuery> computeSeedsForForwardFlow(AnalysisScope analysisScope) {
 
         Set<ForwardQuery> sources = Sets.newHashSet();
         Collection<Query> computeSeeds = analysisScope.computeSeeds();
@@ -174,4 +195,24 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         }
         return sources;
     }
+    
+    /**
+     * Start finding the seeds from the AnalysisScope
+     *
+     * @param analysisScope AnalysisScope
+     * @return Seeds-- BackwardQuery for each sink method found in AnalysisScope
+     */
+    private Set<BackwardQuery> computeSeedsForBackwardFlow(AnalysisScope analysisScope) {
+
+        Set<BackwardQuery> sinks = Sets.newHashSet();
+        Collection<Query> computeSeeds = analysisScope.computeSeeds();
+
+        for (Query q : computeSeeds) {
+            if (q instanceof BackwardQuery) {
+                sinks.add((BackwardQuery) q);
+            }
+        }
+        return sinks;
+    }
+    
 }
