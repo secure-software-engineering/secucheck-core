@@ -7,7 +7,7 @@
 
     <groupId>de.fraunhofer.iem.secucheck</groupId>
     <artifactId>secucheck-core</artifactId>
-    <version>SCC-1.1.0</version>
+    <version>SCC-1.2.0</version>
     <packaging>pom</packaging>
     <name>SecuCheck Analysis Core</name>
 
@@ -20,6 +20,13 @@
     </properties>
 
     <repositories>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
         <repository>
             <id>soot-snapshot</id>
             <name>soot snapshot</name>
