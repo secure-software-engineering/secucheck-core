@@ -7,9 +7,9 @@
 
     <groupId>de.fraunhofer.iem.secucheck</groupId>
     <artifactId>secucheck-core</artifactId>
-    <version>SCC-1.2.0</version>
+    <version>SCCK-1.0.0</version>
     <packaging>pom</packaging>
-    <name>SecuCheck Analysis Core</name>
+    <name>SecuCheck Analysis Core for Kotlin</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

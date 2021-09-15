@@ -32,9 +32,9 @@ git clone https://github.com/secure-software-engineering/secucheck-core.git
 cd secucheck-core
 ```
 
-- change the branch to SCC-1.2.0 or SCC-1.1.0 or SCC-1.0.0
+- change the branch to SCCK-1.0.0
 ```shell script
-git checkout SCC-1.2.0
+git checkout SCCK-1.0.0
 ```
 
 - build the project 
