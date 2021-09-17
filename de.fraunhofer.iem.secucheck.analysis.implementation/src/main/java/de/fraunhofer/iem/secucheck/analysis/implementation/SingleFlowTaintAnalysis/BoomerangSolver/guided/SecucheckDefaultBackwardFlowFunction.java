@@ -52,10 +52,10 @@ public class SecucheckDefaultBackwardFlowFunction extends DefaultBackwardFlowFun
      * Checks whether the current statement contain the sanitizer method call.
      * <p>
      * Criteria for isSanitizer to return true is:
-     * if there is a sanitizer method call and there is a tainted variable (fact) in the InFlow. Then check for the OutFlow in specs.
-     * If fact is equal to the OutFlow in the specs then returns true ( in this case it kill the fact) otherwise it return false (will not kill fact).
+     * if there is a sanitizer method call and there is a tainted variable (fact) in the OutFlow, then check for the InFlow in specs.
+     * If fact is equal to the InFlow in the specs then returns true ( in this case it kill the fact) otherwise it return false (will not kill fact).
      * <p>
-     * Note: If there is sanitizer and OutFlow is return value then it return true because there is nothing to kill the left op.
+     * Note: If there is sanitizer and InFlow is return value then it return true because there is nothing to kill the left op.
      *
      * @param callSite statement that contains the call site
      * @param fact     fact
@@ -74,9 +74,9 @@ public class SecucheckDefaultBackwardFlowFunction extends DefaultBackwardFlowFun
 
                                 if (sanitizer.getInputParameters() != null) {
                                     for (InputParameter input : sanitizer.getInputParameters()) {
-                                        int outputParameterIndex = input.getParamID();
+                                        int inputParameterIndex = input.getParamID();
 
-                                        if (parameterIndex == outputParameterIndex) {
+                                        if (parameterIndex == inputParameterIndex) {
                                             return true;
                                         }
                                     }
