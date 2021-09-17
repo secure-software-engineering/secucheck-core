@@ -15,8 +15,8 @@ import boomerang.scene.Val;
 import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.jimple.SootCallGraph;
 import de.fraunhofer.iem.secucheck.analysis.parser.methodsignature.SignatureParser;
+import de.fraunhofer.iem.secucheck.analysis.query.InputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
-import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 
 /**
@@ -58,10 +58,10 @@ public class SingleBackwardFlowAnalysisScope extends AnalysisScope {
         	
         	if(SignatureParser.matches(statement.getMethod(), flowMethod.getSignature())) { // If the entry method is sink then create a BackwardQuery
 
-                // Check for OutFlow Parameter, If any then create query for respective parameter
-                if (flowMethod.getOutputParameters() != null) {
-                    for (OutputParameter output : flowMethod.getOutputParameters()) {
-                        int parameterIndex = output.getParamID();
+                // Check for InFlow Parameter, If any then create query for respective parameter
+                if (flowMethod.getInputParameters() != null) {
+                    for (InputParameter input : flowMethod.getInputParameters()) {
+                        int parameterIndex = input.getParamID();
                         if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
                             String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
 
@@ -80,7 +80,7 @@ public class SingleBackwardFlowAnalysisScope extends AnalysisScope {
                     }
                 }
 
-                // ToDo: check is it necessary to check for OutFlow this-object
+                // ToDo: check is it necessary to check for InFlow this-object
             }
         }
 
@@ -101,25 +101,20 @@ public class SingleBackwardFlowAnalysisScope extends AnalysisScope {
         for (Method sinkMethod : taintFlow.getTo()) { // Iterate through the sinks in specification
 
             if (statement.containsInvokeExpr()) {
-            	// If sink found, then check for OutFlows
+            	// If sink found, then check for InFlows
             	if(SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sinkMethod.getSignature())) {
-                    // Check for OutFlow return value
-                    if (sinkMethod.getReturnValue() != null && statement.isAssign()) {
-                        out.add(new AllocVal(statement.getLeftOp(), statement, statement.getLeftOp()));
-                    }
-
-                    // Check for OutFlow parameter
-                    if (sinkMethod.getOutputParameters() != null) {
-                        for (OutputParameter output : sinkMethod.getOutputParameters()) {
-                            int parameterIndex = output.getParamID();
+                    // Check for InFlow parameter
+                    if (sinkMethod.getInputParameters() != null) {
+                        for (InputParameter input : sinkMethod.getInputParameters()) {
+                            int parameterIndex = input.getParamID();
                             if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
                                 out.add(statement.getInvokeExpr().getArg(parameterIndex));
                             }
                         }
                     }
 
-                    // Check for OutFlow this-object
-                    if (sinkMethod.isOutputThis() &&
+                    // Check for InFlow this-object
+                    if (sinkMethod.isInputThis() &&
                             statement.getInvokeExpr().isInstanceInvokeExpr()) {
                         out.add(new AllocVal(statement.getInvokeExpr().getBase(), statement, statement.getInvokeExpr().getBase()));
                     }

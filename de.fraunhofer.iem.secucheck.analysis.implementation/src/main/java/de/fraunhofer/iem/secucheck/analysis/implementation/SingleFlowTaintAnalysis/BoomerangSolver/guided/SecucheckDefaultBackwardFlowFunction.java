@@ -65,16 +65,16 @@ public class SecucheckDefaultBackwardFlowFunction extends DefaultBackwardFlowFun
         for (MethodImpl sanitizer : singleFlow.getNotThrough()) {
             
         	if(SignatureParser.matches(callSite.getInvokeExpr().getMethod().getSignature(), sanitizer.getSignature())) {
-                // UnTaint the OutDeclaration.
-                if (sanitizer.getInputParameters() != null) {      // Check for the input parameters for tainted values
-                    for (InputParameter input : sanitizer.getInputParameters()) {   // for each input parameters
-                        int parameterIndex = input.getParamID();
+                // UnTaint the InDeclaration since we are backward.
+                if (sanitizer.getOutputParameters() != null) {      // Check for the output parameters for tainted values
+                    for (OutputParameter output : sanitizer.getOutputParameters()) {   // for each output parameters
+                        int parameterIndex = output.getParamID();
                         if (callSite.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                            if (callSite.getInvokeExpr().getArg(parameterIndex).toString().equals(fact.toString())) {   // If the parameter is tainted, then untaint the output declaration
+                            if (callSite.getInvokeExpr().getArg(parameterIndex).toString().equals(fact.toString())) {   // If the parameter is tainted, then untaint the input declaration
 
-                                if (sanitizer.getOutputParameters() != null) {
-                                    for (OutputParameter output : sanitizer.getOutputParameters()) {
-                                        int outputParameterIndex = output.getParamID();
+                                if (sanitizer.getInputParameters() != null) {
+                                    for (InputParameter input : sanitizer.getInputParameters()) {
+                                        int outputParameterIndex = input.getParamID();
 
                                         if (parameterIndex == outputParameterIndex) {
                                             return true;
@@ -87,10 +87,10 @@ public class SecucheckDefaultBackwardFlowFunction extends DefaultBackwardFlowFun
                 }
 
                 // UnTaint this object.
-                if (sanitizer.isInputThis() &&
+                if (sanitizer.isOutputThis() &&
                         callSite.getInvokeExpr().isInstanceInvokeExpr()) {
                     if (callSite.getInvokeExpr().getBase().toString().equals(fact.toString()))
-                        if (sanitizer.isOutputThis()) {
+                        if (sanitizer.isInputThis()) {
                             return true;
                         }
                 }

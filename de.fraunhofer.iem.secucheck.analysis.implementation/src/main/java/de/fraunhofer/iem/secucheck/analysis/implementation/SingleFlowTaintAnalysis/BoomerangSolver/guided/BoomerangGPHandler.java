@@ -130,8 +130,8 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      * @param dataFlowVal  Fact: dataFlowVal
      * @return True is there is a source method call and TaintFlow exist.
      */
-    private ForwardQuery isSource(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
-        for (Method sourceMethod : singleFlow.getFrom()) {
+    private ForwardQuery isSource(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {    	
+    	for (Method sourceMethod : singleFlow.getFrom()) {
         	
         	// If there is a source method call, then check is there a taint flow present
             if (statement.containsInvokeExpr() &&
@@ -159,7 +159,32 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                     }
                 }
                 
-                //ToDo: Check for Return value
+                // Check for return value
+                if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
+                	return new ForwardQuery(dataFlowEdge, statement.getLeftOp());
+                }
+            }
+            
+            // If the entry method is source then create a ForwardQuery
+            if (SignatureParser.matches(statement.getMethod(), sourceMethod.getSignature())) {
+            	// Check for OutFlow Parameter, If any then create query for respective parameter
+                if (sourceMethod.getOutputParameters() != null) {
+                    for (OutputParameter output : sourceMethod.getOutputParameters()) {
+                        int parameterIndex = output.getParamID();
+                        if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
+                            String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
+                            if (statement.toString().contains("@parameter") && statement.toString().contains(param)) {
+                            	return new ForwardQuery(dataFlowEdge,
+                            			new AllocVal(
+                            					statement.getMethod().getParameterLocals().get(parameterIndex),
+                            					statement, 
+                            					statement.getMethod().getParameterLocals().get(parameterIndex)));
+                            }
+                        }
+                    }
+                }
+                
+                // ToDo: check is it necessary to check for OutFlow this-object
             }
 
         }
@@ -207,7 +232,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             ));
         }
 
-        // Check for the OutFlow return value
+        // Check for return value
         if (propogatorMethod.getReturnValue() != null &&
                 statement.isAssign()) { // If yes, create a query for left-op
             queryList.add(new ForwardQuery(dataFlowEdge,
@@ -221,6 +246,49 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
 
         return queryList;
     }
+    
+    /**
+     * This method returns the Collections of Query based on the InFlow for the given propagator.
+     *
+     * @param propogatorMethod propagator method that is found
+     * @param statement        Current statement
+     * @param dataFlowEdge     Dataflow edge
+     * @param dataFlowVal      Fact
+     * @return List of Query based on the InFlow of the required propagator
+     */
+    private Collection<Query> getInForPropagator(Method propogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    	List<Query> queryList = new ArrayList<>();
+    	
+    	// Check for the OutFlow
+        if (propogatorMethod.getInputParameters() != null) {
+            for (InputParameter inputParameter : propogatorMethod.getInputParameters()) {
+                int parameterIndex = inputParameter.getParamID();
+                if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) { // If InFlow present, then create a query
+                    queryList.add(BackwardQuery.make(dataFlowEdge,
+                            new AllocVal(
+                                    statement.getInvokeExpr().getArg(parameterIndex),
+                                    statement,
+                                    statement.getInvokeExpr().getArg(parameterIndex)
+                            )
+                    ));
+                }
+            }
+        }
+
+        // Check for InFlow this-object
+        if (propogatorMethod.isInputThis() &&
+                statement.getInvokeExpr().isInstanceInvokeExpr()) { // If present, then create a query for this-object
+            queryList.add(BackwardQuery.make(dataFlowEdge,
+                    new AllocVal(
+                            statement.getInvokeExpr().getBase(),
+                            statement,
+                            statement.getInvokeExpr().getBase()
+                    )
+            ));
+        }
+    	
+    	return queryList;
+    }
 
     /**
      * This method checks whether the statement inflow is tainted based on the fluentTQL specification given.
@@ -231,7 +299,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      * @param dataFlowVal              Fact
      * @return List of Query based on the OutFlow of the required propagator
      */
-    private Collection<Query> getQueriesBasedOnTheRules(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    private Collection<Query> getQueriesBasedOnTheForwardFlowRules(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         List<Query> queryList = new ArrayList<>();
 
         // Check for InFlow parameter
@@ -258,6 +326,50 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
 
         return queryList;
     }
+    
+    /**
+     * This method checks whether the statement outflow is tainted based on the fluentTQL specification given.
+     *
+     * @param requiredPropogatorMethod FluentTQL method that contains the specification
+     * @param statement                Statement
+     * @param dataFlowEdge             Dataflow edge
+     * @param dataFlowVal              Fact
+     * @return List of Query based on the InFlow of the required propagator
+     */
+    private Collection<Query> getQueriesBasedOnTheBackwardFlowRules(Method requiredPropogatorMethod, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    	List<Query> queryList = new ArrayList<>();
+    	
+    	// Check for OutFlow parameter
+        if (requiredPropogatorMethod.getOutputParameters() != null) {
+            for (OutputParameter output : requiredPropogatorMethod.getOutputParameters()) {
+                int parameterIndex = output.getParamID();
+                if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                    if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
+                        queryList.addAll(getInForPropagator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                        return queryList;
+                    }
+                }
+            }
+        }
+
+        // Check for OutFlow this-object
+        if (requiredPropogatorMethod.isOutputThis() &&
+                statement.getInvokeExpr().isInstanceInvokeExpr()) {
+            if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
+                queryList.addAll(getInForPropagator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                return queryList;
+            }
+        }
+        
+        //Check for return value
+        if (requiredPropogatorMethod.getReturnValue() != null && 
+        		statement.isAssign()) { // If yes, create a query for left-op
+        	queryList.addAll(getInForPropagator(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+            return queryList;
+        }
+        
+    	return queryList;
+    }
 
     /**
      * This method check whether the current statement contains a propagator.
@@ -266,24 +378,44 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      * @param statement    current statement
      * @param dataFlowEdge Dataflow edge
      * @param dataFlowVal  Fact
+     * @param direction The direction of flow, which is either "forward" or "backward"
      * @return Returns the List of query if there is a taintflow present in the propagators.
      */
-    private Collection<Query> isPropogator(List<MethodImpl> propogators, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
+    private Collection<Query> isPropogator(List<MethodImpl> propogators, Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal, String direction) {
         List<Query> queryList = new ArrayList<>();
 
-        for (Method requiredPropogatorMethod : propogators) {
-        	
-        	// If there is a propagator, then check is there a tainted variable going into the method
-            if (statement.containsInvokeExpr() &&
-            		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), requiredPropogatorMethod.getSignature())) {
+        if (direction.equals("forward")) {
+        	for (Method requiredPropogatorMethod : propogators) {
+            	
+            	// If there is a propagator, then check is there a tainted variable going into the method
+                if (statement.containsInvokeExpr() &&
+                		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), requiredPropogatorMethod.getSignature())) {
 
-                queryList.addAll(getQueriesBasedOnTheRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                    queryList.addAll(getQueriesBasedOnTheForwardFlowRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
 
-            } else if (statement.getInvokeExpr().getMethod().getSubSignature().equals(requiredPropogatorMethod.getSignature())) { // For Java 11
-                // Todo: Check and model it correctly to handle the Java 11 dynamic calls.
-                queryList.addAll(getQueriesBasedOnTheRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                } else if (statement.getInvokeExpr().getMethod().getSubSignature().equals(requiredPropogatorMethod.getSignature())) { // For Java 11
+                    // Todo: Check and model it correctly to handle the Java 11 dynamic calls.
+                    queryList.addAll(getQueriesBasedOnTheForwardFlowRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                }
+
             }
+        }
+        
+        if (direction.equals("backward")) {
+        	for (Method requiredPropogatorMethod : propogators) {
+            	
+            	// If there is a propagator, then check is there a tainted variable going out of the method
+                if (statement.containsInvokeExpr() &&
+                		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), requiredPropogatorMethod.getSignature())) {
 
+                    queryList.addAll(getQueriesBasedOnTheBackwardFlowRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+
+                } else if (statement.getInvokeExpr().getMethod().getSubSignature().equals(requiredPropogatorMethod.getSignature())) { // For Java 11
+                    // Todo: Check and model it correctly to handle the Java 11 dynamic calls.
+                    queryList.addAll(getQueriesBasedOnTheBackwardFlowRules(requiredPropogatorMethod, statement, dataFlowEdge, dataFlowVal));
+                }
+
+            }
         }
 
         return queryList;
@@ -323,7 +455,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 return Collections.emptyList();
             }
 
-            Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal);
+            Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal, "forward");
 
             if (secucheckAnalysisConfiguration.isPostProcessResult()) {
                 for (Query propQuery : prop) {
@@ -338,7 +470,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             if (out.size() > 0)
                 return out;
 
-            Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal);
+            Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal, "forward");
 
             if (secucheckAnalysisConfiguration.isPostProcessResult()) {
                 for (Query generalPropQuery : generalProp) {
@@ -388,7 +520,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 return Collections.emptyList();
             }
 
-            Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal);
+            Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal, "backward");
 
             if (secucheckAnalysisConfiguration.isPostProcessResult()) {
                 for (Query propQuery : prop) {
@@ -403,7 +535,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             if (out.size() > 0)
                 return out;
 
-            Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal);
+            Collection<Query> generalProp = isPropogator(secucheckAnalysisConfiguration.getAnalysisGeneralPropagators(), stmt, dataFlowEdge, dataFlowVal, "backward");
 
             if (secucheckAnalysisConfiguration.isPostProcessResult()) {
                 for (Query generalPropQuery : generalProp) {
