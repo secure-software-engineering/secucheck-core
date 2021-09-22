@@ -440,6 +440,12 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         Statement stmt = dataFlowEdge.getStart();
         ArrayList<Query> out = new ArrayList<Query>();
 
+        //TODO: Currently if the dataflow value is not matching with the previously created Forward Query val then
+        // SecuCheck does nothing. Test this extensively or confirm this is the correct step
+        if (!query.asNode().fact().toString().equals(dataFlowVal.toString())) {
+            return Collections.emptyList();
+        }
+
         BoomerangTaintFlowPath parentNode = null;
         if (secucheckAnalysisConfiguration.isPostProcessResult()) {
             parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
