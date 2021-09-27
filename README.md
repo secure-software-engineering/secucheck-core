@@ -1,8 +1,7 @@
 # What is secucheck-core?
-Secucheck-core is the taint analysis. Currently, it includes two solver, 
-Boomerang 3.x and Flowdroid.
+This is the core taint analysis of the SecuCheck tool which can be found in [this repository](https://github.com/secure-software-engineering/secucheck/) which also contains further documentation. SecuCheck integrates two data-solvers: Boomerang 3.x, an implementation of SPDS and FlowDroid, an implementation of IFDS.
 
-Boomerang 3.x is the default solver. Boomerang 3.x tested for WebGoat, catalog, demo-project and spring-petclinic and it finds all the TaintFlows. Flowdroid finds 0 taintflows due to its limitations.
+Boomerang 3.x is the default solver. Our tests are based on Boomerang 3.x. For WebGoat, the catalog, the demo-project and spring-petclinic and it finds all the TaintFlows.
 
 ## How to build secucheck-core manually?
 - secucheck-core uses Boomerang DemandDriven analysis feature which is not yet realeased. Therefore, we need to build the Boomerang manually to the local maven before building SecuCheck. 
