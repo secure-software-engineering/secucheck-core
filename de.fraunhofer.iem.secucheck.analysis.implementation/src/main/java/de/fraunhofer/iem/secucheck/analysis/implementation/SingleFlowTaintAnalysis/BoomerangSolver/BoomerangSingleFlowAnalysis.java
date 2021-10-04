@@ -17,7 +17,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 import soot.PackManager;
+import soot.Scene;
 import soot.SceneTransformer;
+import soot.SootMethod;
 import soot.Transform;
 
 import java.util.*;
@@ -95,6 +97,13 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
         BoomerangPretransformer.v().apply();
         PackManager.v().getPack("wjtp").apply();
         BoomerangPretransformer.v().reset();
+        
+        List<SootMethod> entryPointsinCallGraph = Scene.v().getEntryPoints();
+        System.out.println("The constructed call graph has "+entryPointsinCallGraph.size()+" entry points.");
+
+        int numEdgesInCallGraph = Scene.v().getCallGraph().size();
+        System.out.println("The constructed call graph has "+numEdgesInCallGraph+" edges.");
+        
         return this.result;
     }
 
