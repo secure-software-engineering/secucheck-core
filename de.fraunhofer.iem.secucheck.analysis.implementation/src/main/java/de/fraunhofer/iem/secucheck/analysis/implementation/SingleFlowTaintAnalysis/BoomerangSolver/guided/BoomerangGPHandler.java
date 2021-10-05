@@ -116,9 +116,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                     }
                 }
             }
-
         }
-
         return null;
     }
     
@@ -191,7 +189,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                 }
     		}
     		
-    		if(flowElement instanceof Variable && statement.isAssign()) {
+    		else if(flowElement instanceof Variable && statement.isAssign()) {
     			Variable sourceVariable = (Variable) flowElement;
     			if(sourceVariable.equals(Variable.HARDCODED) && statement.getRightOp().isStringConstant()) {
     				return new ForwardQuery(dataFlowEdge, statement.getLeftOp());
@@ -517,22 +515,22 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
         }
 
-        if (stmt.containsInvokeExpr() || stmt.isAssign()) {
-            ForwardQuery sourceQuery = isSource(stmt, dataFlowEdge, dataFlowVal);
-            if (sourceQuery != null) {
-                BoomerangTaintFlowPath singleTaintFlowPath = null;
-                if (secucheckAnalysisConfiguration.isPostProcessResult()) {
-                    BoomerangTaintFlowPath finalSourceNode = new BoomerangTaintFlowPath(
-                            sourceQuery, parentNode, false, true);
-                    parentNode.addNewChild(finalSourceNode);
-                    singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSourceNode);
-                }
-
-                DifferentTypedPair<ForwardQuery, BoomerangTaintFlowPath> res = new DifferentTypedPair<>(sourceQuery, singleTaintFlowPath);
-                foundSources.add(res);
-                return Collections.emptyList();
+        ForwardQuery sourceQuery = isSource(stmt, dataFlowEdge, dataFlowVal);
+        if (sourceQuery != null) {
+            BoomerangTaintFlowPath singleTaintFlowPath = null;
+            if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                BoomerangTaintFlowPath finalSourceNode = new BoomerangTaintFlowPath(
+                        sourceQuery, parentNode, false, true);
+                parentNode.addNewChild(finalSourceNode);
+                singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSourceNode);
             }
 
+            DifferentTypedPair<ForwardQuery, BoomerangTaintFlowPath> res = new DifferentTypedPair<>(sourceQuery, singleTaintFlowPath);
+            foundSources.add(res);
+            return Collections.emptyList();
+        }
+        
+        if (stmt.containsInvokeExpr()) {
             Collection<Query> prop = isPropogator(singleFlow.getThrough(), stmt, dataFlowEdge, dataFlowVal, "backward");
 
             if (secucheckAnalysisConfiguration.isPostProcessResult()) {

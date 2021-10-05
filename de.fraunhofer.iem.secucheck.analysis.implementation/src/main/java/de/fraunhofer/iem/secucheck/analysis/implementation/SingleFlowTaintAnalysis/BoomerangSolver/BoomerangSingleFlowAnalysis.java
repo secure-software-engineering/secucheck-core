@@ -12,6 +12,7 @@ import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfi
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.guided.SecucheckBoomerangDemandDrivenAnalysis;
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
+import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.query.Variable;
@@ -143,25 +144,27 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
         SootCallGraph callGraph = new SootCallGraph();
         
-        if(singleFlow.getFrom().size() == 1 && singleFlow.getFrom().get(0) instanceof Variable) {
-        	// First get the seeds --- sink BackwardQuery
-        	AnalysisScope analysisScope = getBackwardAnalysisScope(singleFlow, callGraph);
-        	Set<BackwardQuery> sink = computeSeedsForBackwardFlow(analysisScope);
-        	result.setSeedCount(sink.size());
-            if (sink.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
-                reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForBackwardFlow(sink, singleFlow));
+        if(singleFlow.getFrom().size() == 1 && singleFlow.getFrom().get(0) instanceof Method) {
+        	if(singleFlow.getFrom().size() <= singleFlow.getTo().size()) {
+            	// First get the seeds --- source ForwardQuery
+            	AnalysisScope analysisScope = getForwardAnalysisScope(singleFlow, callGraph);
+                Set<ForwardQuery> source = computeSeedsForForwardFlow(analysisScope);
+                result.setSeedCount(source.size());
+                if (source.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
+                    reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForForwardFlow(source, singleFlow));
+                }
+            }
+            else {
+            	// First get the seeds --- sink BackwardQuery
+            	AnalysisScope analysisScope = getBackwardAnalysisScope(singleFlow, callGraph);
+            	Set<BackwardQuery> sink = computeSeedsForBackwardFlow(analysisScope);
+            	result.setSeedCount(sink.size());
+                if (sink.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
+                    reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForBackwardFlow(sink, singleFlow));
+                }
             }
         }
-        else if(singleFlow.getFrom().size() <= singleFlow.getTo().size()) {
-        	// First get the seeds --- source ForwardQuery
-        	AnalysisScope analysisScope = getForwardAnalysisScope(singleFlow, callGraph);
-            Set<ForwardQuery> source = computeSeedsForForwardFlow(analysisScope);
-            result.setSeedCount(source.size());
-            if (source.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
-                reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForForwardFlow(source, singleFlow));
-            }
-        }
-        else {
+        else if(singleFlow.getFrom().size() == 1 && singleFlow.getFrom().get(0) instanceof Variable) {
         	// First get the seeds --- sink BackwardQuery
         	AnalysisScope analysisScope = getBackwardAnalysisScope(singleFlow, callGraph);
         	Set<BackwardQuery> sink = computeSeedsForBackwardFlow(analysisScope);
