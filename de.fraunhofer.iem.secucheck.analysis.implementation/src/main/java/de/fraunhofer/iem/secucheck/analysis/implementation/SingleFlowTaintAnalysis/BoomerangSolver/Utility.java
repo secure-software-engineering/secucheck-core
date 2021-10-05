@@ -12,7 +12,9 @@ import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OS;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowElement;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.Variable;
 import soot.G;
 import soot.Scene;
 import soot.SootClass;
@@ -146,8 +148,13 @@ public class Utility {
 
     public static List<de.fraunhofer.iem.secucheck.analysis.query.Method> getMethods(TaintFlow flowQuery) {
         List<de.fraunhofer.iem.secucheck.analysis.query.Method> methods = new ArrayList<>();
-        flowQuery.getFrom().forEach(y -> methods.add((Method) y));
-        flowQuery.getTo().forEach(y -> methods.add((Method) y));
+        if( (flowQuery.getFrom().size()==1) && !(flowQuery.getFrom().get(0) instanceof Variable)) {
+        	flowQuery.getFrom().forEach(y -> methods.add((Method) y));
+        }
+        
+        if( (flowQuery.getFrom().size()==1) && !(flowQuery.getFrom().get(0) instanceof Variable)) {
+        	flowQuery.getTo().forEach(y -> methods.add((Method) y));
+        }
 
         if (flowQuery.getNotThrough() != null)
             flowQuery.getNotThrough().forEach(y -> methods.add((Method) y));
@@ -175,14 +182,17 @@ public class Utility {
 
     public static SootMethod findSourceMethodDefinition(TaintFlow partialFlow,
                                                         SootMethod method, Stmt actualStatement) {
-        for (de.fraunhofer.iem.secucheck.analysis.query.Method sourceMethod : partialFlow.getFrom()) {
-            String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
-            if (method.getSignature().equals(sourceSootSignature)) {
-                return method;
-            } else if (actualStatement.containsInvokeExpr() &&
-                    actualStatement.toString().contains(sourceSootSignature)) {
-                return actualStatement.getInvokeExpr().getMethodRef().tryResolve();
-            }
+        for (TaintFlowElement flowElement : partialFlow.getFrom()) {
+        	if(flowElement instanceof de.fraunhofer.iem.secucheck.analysis.query.Method) {
+        		de.fraunhofer.iem.secucheck.analysis.query.Method sourceMethod = (de.fraunhofer.iem.secucheck.analysis.query.Method) flowElement;
+                String sourceSootSignature = "<" + sourceMethod.getSignature() + ">";
+                if (method.getSignature().equals(sourceSootSignature)) {
+                    return method;
+                } else if (actualStatement.containsInvokeExpr() &&
+                        actualStatement.toString().contains(sourceSootSignature)) {
+                    return actualStatement.getInvokeExpr().getMethodRef().tryResolve();
+                }
+        	}
         }
         return null;
     }

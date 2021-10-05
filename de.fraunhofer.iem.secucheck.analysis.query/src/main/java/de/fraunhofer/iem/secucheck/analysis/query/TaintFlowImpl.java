@@ -8,20 +8,20 @@ import java.util.List;
  */
 public final class TaintFlowImpl implements TaintFlow {
 
-    private final List<MethodImpl> froms;
+	private final List<TaintFlowElement> froms;
     private final List<MethodImpl> tos;
     private final List<MethodImpl> notThroughs;
     private final List<MethodImpl> throughs;
 
     public TaintFlowImpl() {
-        this.froms = new ArrayList<MethodImpl>();
+        this.froms = new ArrayList<TaintFlowElement>();
         this.tos = new ArrayList<MethodImpl>();
         this.notThroughs = new ArrayList<MethodImpl>();
         this.throughs = new ArrayList<MethodImpl>();
     }
 
     @Override
-    public List<MethodImpl> getFrom() {
+    public List<TaintFlowElement> getFrom() {
         return this.froms;
     }
 
@@ -40,7 +40,7 @@ public final class TaintFlowImpl implements TaintFlow {
         return this.throughs;
     }
 
-    public void addFrom(MethodImpl from) {
+    public void addFrom(TaintFlowElement from) {
         this.froms.add(from);
     }
 

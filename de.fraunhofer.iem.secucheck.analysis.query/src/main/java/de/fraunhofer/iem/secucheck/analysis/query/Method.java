@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * This represents the Method
  */
-public interface Method {
+public interface Method extends TaintFlowElement{
     /**
      * Returns true if there is a out flow this-object
      *

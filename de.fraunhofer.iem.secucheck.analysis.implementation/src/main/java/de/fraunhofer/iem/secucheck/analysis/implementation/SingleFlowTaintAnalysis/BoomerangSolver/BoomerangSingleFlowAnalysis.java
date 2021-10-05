@@ -14,6 +14,7 @@ import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalys
 import de.fraunhofer.iem.secucheck.analysis.query.EntryPoint;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
+import de.fraunhofer.iem.secucheck.analysis.query.Variable;
 import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
 import de.fraunhofer.iem.secucheck.analysis.result.TaintFlowResult;
 import soot.PackManager;
@@ -142,7 +143,16 @@ public class BoomerangSingleFlowAnalysis implements SingleFlowAnalysis {
 
         SootCallGraph callGraph = new SootCallGraph();
         
-        if(singleFlow.getFrom().size() <= singleFlow.getTo().size()) {
+        if(singleFlow.getFrom().size() == 1 && singleFlow.getFrom().get(0) instanceof Variable) {
+        	// First get the seeds --- sink BackwardQuery
+        	AnalysisScope analysisScope = getBackwardAnalysisScope(singleFlow, callGraph);
+        	Set<BackwardQuery> sink = computeSeedsForBackwardFlow(analysisScope);
+        	result.setSeedCount(sink.size());
+            if (sink.size() != 0) {   // If seeds found then run the SecucheckBoomerangDemandDrivenAnalysis
+                reachMap.addAll(new SecucheckBoomerangDemandDrivenAnalysis(this.configuration).runForBackwardFlow(sink, singleFlow));
+            }
+        }
+        else if(singleFlow.getFrom().size() <= singleFlow.getTo().size()) {
         	// First get the seeds --- source ForwardQuery
         	AnalysisScope analysisScope = getForwardAnalysisScope(singleFlow, callGraph);
             Set<ForwardQuery> source = computeSeedsForForwardFlow(analysisScope);

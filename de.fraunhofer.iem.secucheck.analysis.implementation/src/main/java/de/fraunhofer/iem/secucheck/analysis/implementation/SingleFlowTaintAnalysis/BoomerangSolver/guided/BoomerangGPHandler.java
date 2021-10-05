@@ -131,64 +131,77 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
      * @return True is there is a source method call and TaintFlow exist.
      */
     private ForwardQuery isSource(Statement statement, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {    	
-    	for (Method sourceMethod : singleFlow.getFrom()) {
-        	
-        	// If there is a source method call, then check is there a taint flow present
-            if (statement.containsInvokeExpr() &&
-            		SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sourceMethod.getSignature())) {
+    	for (TaintFlowElement flowElement : singleFlow.getFrom()) {
+    		
+    		if(flowElement instanceof Method) {
+        		Method sourceMethod = (Method) flowElement;
+        		
+        		// If there is a source method call, then check is there a taint flow present
+                if (statement.containsInvokeExpr() &&
+                	SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sourceMethod.getSignature())) {
 
-                //For sinks there is always a OutFlow, there is no InFlow.
+                    //For sinks there is always a OutFlow, there is no InFlow.
 
-                // Check for the OutFlow parameters
-                if (sourceMethod.getOutputParameters() != null) {
-                    for (OutputParameter output : sourceMethod.getOutputParameters()) {
-                        int parameterIndex = output.getParamID();
-                        if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                            if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
-                                return new ForwardQuery(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex));
+                    // Check for the OutFlow parameters
+                    if (sourceMethod.getOutputParameters() != null) {
+                        for (OutputParameter output : sourceMethod.getOutputParameters()) {
+                            int parameterIndex = output.getParamID();
+                            if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                                if (statement.getInvokeExpr().getArg(parameterIndex).toString().equals(dataFlowVal.toString())) {
+                                    return new ForwardQuery(dataFlowEdge, statement.getInvokeExpr().getArg(parameterIndex));
+                                }
                             }
                         }
                     }
-                }
 
-                // Check for OutFlow this-object
-                if (sourceMethod.isOutputThis() &&
-                        statement.getInvokeExpr().isInstanceInvokeExpr()) {
-                    if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
-                        return new ForwardQuery(dataFlowEdge, statement.getInvokeExpr().getBase());
+                    // Check for OutFlow this-object
+                    if (sourceMethod.isOutputThis() &&
+                            statement.getInvokeExpr().isInstanceInvokeExpr()) {
+                        if (statement.getInvokeExpr().getBase().toString().equals(dataFlowVal.toString())) {
+                            return new ForwardQuery(dataFlowEdge, statement.getInvokeExpr().getBase());
+                        }
+                    }
+                    
+                    // Check for return value
+                    if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
+                    	return new ForwardQuery(dataFlowEdge, statement.getLeftOp());
                     }
                 }
                 
-                // Check for return value
-                if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
-                	return new ForwardQuery(dataFlowEdge, statement.getLeftOp());
-                }
-            }
-            
-            // If the entry method is source then create a ForwardQuery
-            if (SignatureParser.matches(statement.getMethod(), sourceMethod.getSignature())) {
-            	// Check for OutFlow Parameter, If any then create query for respective parameter
-                if (sourceMethod.getOutputParameters() != null) {
-                    for (OutputParameter output : sourceMethod.getOutputParameters()) {
-                        int parameterIndex = output.getParamID();
-                        if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
-                            String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
-                            if (statement.toString().contains("@parameter") && statement.toString().contains(param)) {
-                            	return new ForwardQuery(dataFlowEdge,
-                            			new AllocVal(
-                            					statement.getMethod().getParameterLocals().get(parameterIndex),
-                            					statement, 
-                            					statement.getMethod().getParameterLocals().get(parameterIndex)));
+                // If the entry method is source then create a ForwardQuery
+                if (SignatureParser.matches(statement.getMethod(), sourceMethod.getSignature())) {
+                	// Check for OutFlow Parameter, If any then create query for respective parameter
+                    if (sourceMethod.getOutputParameters() != null) {
+                        for (OutputParameter output : sourceMethod.getOutputParameters()) {
+                            int parameterIndex = output.getParamID();
+                            if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
+                                String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
+                                if (statement.toString().contains("@parameter") && statement.toString().contains(param)) {
+                                	return new ForwardQuery(dataFlowEdge,
+                                			new AllocVal(
+                                					statement.getMethod().getParameterLocals().get(parameterIndex),
+                                					statement, 
+                                					statement.getMethod().getParameterLocals().get(parameterIndex)));
+                                }
                             }
                         }
                     }
+                    
+                    // ToDo: check is it necessary to check for OutFlow this-object
                 }
-                
-                // ToDo: check is it necessary to check for OutFlow this-object
-            }
-
+    		}
+    		
+    		if(flowElement instanceof Variable && statement.isAssign()) {
+    			Variable sourceVariable = (Variable) flowElement;
+    			if(sourceVariable.equals(Variable.HARDCODED) && statement.getRightOp().isStringConstant()) {
+    				return new ForwardQuery(dataFlowEdge, statement.getLeftOp());
+    			}
+    			else if(sourceVariable.equals(Variable.NULL) && statement.getRightOp().isNull()) {
+    				return new ForwardQuery(dataFlowEdge, statement.getLeftOp());
+    			}
+    		}
+    		        	
         }
-
         return null;
     }
 
@@ -504,7 +517,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
         }
 
-        if (stmt.containsInvokeExpr()) {
+        if (stmt.containsInvokeExpr() || stmt.isAssign()) {
             ForwardQuery sourceQuery = isSource(stmt, dataFlowEdge, dataFlowVal);
             if (sourceQuery != null) {
                 BoomerangTaintFlowPath singleTaintFlowPath = null;

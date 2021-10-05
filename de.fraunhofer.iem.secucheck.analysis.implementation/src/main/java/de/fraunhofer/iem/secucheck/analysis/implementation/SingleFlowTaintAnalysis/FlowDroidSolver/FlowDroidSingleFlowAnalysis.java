@@ -136,7 +136,7 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
                 reachMap = new ArrayList<>();
 
         List<String> sources = getCanonicalMethodSignatures(singleFlow.getFrom());
-        List<String> sinks = getCanonicalMethodSignatures(singleFlow.getTo());
+        List<String> sinks = getCanonicalMethodSignaturesForMethod(singleFlow.getTo());
 
         List<Method> sanitizers = getSanitizers(singleFlow);
         Map<SootMethod, Body> oldMethodBodies = setEmptySootBodies(sanitizers);
@@ -250,9 +250,23 @@ public class FlowDroidSingleFlowAnalysis implements SingleFlowAnalysis {
         return methodNames;
     }
 
-    private static List<String> getCanonicalMethodSignatures(List<MethodImpl> methodSpecs) {
-        List<String> methodNames = new ArrayList<>();
-        methodSpecs.forEach(
+    private static List<String> getCanonicalMethodSignatures(List<TaintFlowElement> flowElements) {
+        List<MethodImpl> methodSpecs = new ArrayList<>();
+        
+        for(TaintFlowElement flowElement : flowElements) {
+        	if(flowElement instanceof MethodImpl) {
+        		MethodImpl methodSpec = (MethodImpl) flowElement;
+        		methodSpecs.add(methodSpec);
+        	}
+        }
+        
+        return getCanonicalMethodSignaturesForMethod(methodSpecs);
+    }
+    
+    private static List<String> getCanonicalMethodSignaturesForMethod(List<MethodImpl> methodSpecs) {
+    	List<String> methodNames = new ArrayList<>();
+    	
+    	methodSpecs.forEach(
                 method -> methodNames.add(Utility.wrapInAngularBrackets(method.getSignature())));
         return methodNames;
     }

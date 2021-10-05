@@ -7,11 +7,11 @@ import java.util.List;
  */
 public interface TaintFlow {
     /**
-     * Returns the list of source methods
+     * Returns the list of source taint flow elements
      *
      * @return List of source methods
      */
-    public List<MethodImpl> getFrom();
+    public List<TaintFlowElement> getFrom();
 
     /**
      * Returns the list of sink methods

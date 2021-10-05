@@ -14,6 +14,7 @@ import de.fraunhofer.iem.secucheck.analysis.parser.methodsignature.SignaturePars
 import de.fraunhofer.iem.secucheck.analysis.query.Method;
 import de.fraunhofer.iem.secucheck.analysis.query.OutputParameter;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlow;
+import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowElement;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,34 +55,37 @@ public class SingleForwardFlowAnalysisScope extends AnalysisScope {
         sourceVariables.forEach(v -> out.add(new ForwardQuery(cfgEdge, v)));
 
         // Find source methods. This case is, if the entry method itself is the source
-        for (Method flowMethod : this.taintFlow.getFrom()) {
-        	
-        	if(SignatureParser.matches(statement.getMethod(), flowMethod.getSignature())) { // If the entry method is source then create a ForwardQuery
+        for (TaintFlowElement flowElement : this.taintFlow.getFrom()) {
+        	if(flowElement instanceof Method) {
+        		Method flowMethod = (Method) flowElement;
+        		
+        		if(SignatureParser.matches(statement.getMethod(), flowMethod.getSignature())) { // If the entry method is source then create a ForwardQuery
 
-                // Check for OutFlow Parameter, If any then create query for respective parameter
-                if (flowMethod.getOutputParameters() != null) {
-                    for (OutputParameter output : flowMethod.getOutputParameters()) {
-                        int parameterIndex = output.getParamID();
-                        if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
-                            String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
+                    // Check for OutFlow Parameter, If any then create query for respective parameter
+                    if (flowMethod.getOutputParameters() != null) {
+                        for (OutputParameter output : flowMethod.getOutputParameters()) {
+                            int parameterIndex = output.getParamID();
+                            if (statement.getMethod().getParameterLocals().size() >= parameterIndex) {
+                                String param = statement.getMethod().getParameterLocals().get(parameterIndex).toString().replaceAll("\\(.*\\)$", "").trim();
 
-                            if (statement.toString().contains("@parameter") && statement.toString().contains(param)) {
-                                if (!sourceMethods.contains(statement.getMethod())) {
-                                    out.add(new ForwardQuery(cfgEdge,
-                                            new AllocVal(
-                                                    statement.getMethod().getParameterLocals().get(parameterIndex),
-                                                    statement,
-                                                    statement.getMethod().getParameterLocals().get(parameterIndex))));
+                                if (statement.toString().contains("@parameter") && statement.toString().contains(param)) {
+                                    if (!sourceMethods.contains(statement.getMethod())) {
+                                        out.add(new ForwardQuery(cfgEdge,
+                                                new AllocVal(
+                                                        statement.getMethod().getParameterLocals().get(parameterIndex),
+                                                        statement,
+                                                        statement.getMethod().getParameterLocals().get(parameterIndex))));
 
-                                    sourceMethods.add(statement.getMethod());
+                                        sourceMethods.add(statement.getMethod());
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                // ToDo: check is it necessary to check for OutFlow this-object
-            }
+                    // ToDo: check is it necessary to check for OutFlow this-object
+                }
+        	}
         }
 
         return out;
@@ -98,33 +102,36 @@ public class SingleForwardFlowAnalysisScope extends AnalysisScope {
     private Collection<Val> generateSourceVariables(TaintFlow taintFlow, Statement statement) {
         Collection<Val> out = Sets.newHashSet();
 
-        for (Method sourceMethod : taintFlow.getFrom()) { // Iterate through the sources in specification
+        for (TaintFlowElement flowElement : taintFlow.getFrom()) { // Iterate through the sources in specification
+        	if(flowElement instanceof Method) {
+        		Method sourceMethod = (Method) flowElement;
+        		
+        		if (statement.containsInvokeExpr()) {
+                	// If source found, then check for OutFlows
+                	if(SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sourceMethod.getSignature())) {
+                        // Check for OutFlow return value
+                        if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
+                            out.add(new AllocVal(statement.getLeftOp(), statement, statement.getLeftOp()));
+                        }
 
-            if (statement.containsInvokeExpr()) {
-            	// If source found, then check for OutFlows
-            	if(SignatureParser.matches(statement.getInvokeExpr().getMethod().getSignature(), sourceMethod.getSignature())) {
-                    // Check for OutFlow return value
-                    if (sourceMethod.getReturnValue() != null && statement.isAssign()) {
-                        out.add(new AllocVal(statement.getLeftOp(), statement, statement.getLeftOp()));
-                    }
-
-                    // Check for OutFlow parameter
-                    if (sourceMethod.getOutputParameters() != null) {
-                        for (OutputParameter output : sourceMethod.getOutputParameters()) {
-                            int parameterIndex = output.getParamID();
-                            if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                                out.add(statement.getInvokeExpr().getArg(parameterIndex));
+                        // Check for OutFlow parameter
+                        if (sourceMethod.getOutputParameters() != null) {
+                            for (OutputParameter output : sourceMethod.getOutputParameters()) {
+                                int parameterIndex = output.getParamID();
+                                if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
+                                    out.add(statement.getInvokeExpr().getArg(parameterIndex));
+                                }
                             }
                         }
-                    }
 
-                    // Check for OutFlow this-object
-                    if (sourceMethod.isOutputThis() &&
-                            statement.getInvokeExpr().isInstanceInvokeExpr()) {
-                        out.add(new AllocVal(statement.getInvokeExpr().getBase(), statement, statement.getInvokeExpr().getBase()));
+                        // Check for OutFlow this-object
+                        if (sourceMethod.isOutputThis() &&
+                                statement.getInvokeExpr().isInstanceInvokeExpr()) {
+                            out.add(new AllocVal(statement.getInvokeExpr().getBase(), statement, statement.getInvokeExpr().getBase()));
+                        }
                     }
                 }
-            }
+        	}
         }
         
         return out;
