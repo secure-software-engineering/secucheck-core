@@ -1,11 +1,10 @@
 package de.fraunhofer.iem.secucheck.analysis;
 
-import java.security.Permission;
-import java.util.List;
-
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.query.SecucheckTaintFlowQueryImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.SecucheckTaintAnalysisResult;
+
+import java.util.List;
 
 /**
  * Second level implementation of the SecucheckAnalysis. This sets the enviornment for the analysis.
@@ -32,27 +31,32 @@ public final class SecucheckTaintAnalysis extends SecucheckTaintAnalysisBase {
     public SecucheckTaintAnalysisResult run(List<SecucheckTaintFlowQueryImpl> flowQueries)
             throws Exception {
         super.lock.lock();
-        try {
-            SecurityManager previousManager = System.getSecurityManager();
-            try {
-                System.setSecurityManager(new SecurityManager() {
-                    public void checkPermission(Permission perm) {
-                    }
+        SecucheckTaintAnalysisResult secucheckTaintAnalysis = super.run(flowQueries);
+        super.lock.unlock();
 
-                    public void checkExit(int status) {
-                        super.checkExit(status);
-                        throw new RuntimeException(
-                                "System.exit() is not allowed during analysis.");
-                    }
-                });
+        //TODO: Check is the below code required
 
-                return super.run(flowQueries);
+//        try {
+//            SecurityManager previousManager = System.getSecurityManager();
+//            try {
+//                System.setSecurityManager(new SecurityManager() {
+//                    public void checkPermission(Permission perm) {
+//                    }
+//
+//                    public void checkExit(int status) {
+//                        super.checkExit(status);
+//                        throw new RuntimeException(
+//                                "System.exit() is not allowed during analysis.");
+//                    }
+//                });
+//
+//            } finally {
+//                System.setSecurityManager(previousManager);
+//            }
+//        } finally {
+//            super.lock.unlock();
+//        }
 
-            } finally {
-                System.setSecurityManager(previousManager);
-            }
-        } finally {
-            super.lock.unlock();
-        }
+        return secucheckTaintAnalysis;
     }
 }
