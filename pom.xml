@@ -7,9 +7,19 @@
 
     <groupId>de.fraunhofer.iem.secucheck</groupId>
     <artifactId>secucheck-core</artifactId>
-    <version>SCC-1.1.0</version>
+    <version>1.3.0</version>
     <packaging>pom</packaging>
     <name>SecuCheck Analysis Core</name>
+
+    <modules>
+        <module>data-structures</module>
+        <module>query</module>
+        <module>result</module>
+        <module>single-flow-analysis</module>
+        <module>configuration</module>
+        <module>implementation</module>
+        <module>api</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,13 +53,4 @@
         </repository>
     </repositories>
 
-    <modules>
-        <module>de.fraunhofer.iem.secucheck.analysis.datastructures</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.query</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.result</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.configuration</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.implementation</module>
-        <module>de.fraunhofer.iem.secucheck.analysis</module>
-    </modules>
 </project>
