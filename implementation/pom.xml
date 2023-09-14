@@ -65,22 +65,29 @@
         <dependency>
             <groupId>de.fraunhofer.iem</groupId>
             <artifactId>boomerangScope</artifactId>
-            <version>3.1.2-SNAPSHOT</version>
+            <version>3.1.2</version>
         </dependency>
 
         <dependency>
             <groupId>de.fraunhofer.iem</groupId>
             <artifactId>boomerangPDS</artifactId>
-            <version>3.1.2-SNAPSHOT</version>
+            <version>3.1.2</version>
         </dependency>
 
         <dependency>
             <groupId>de.fraunhofer.iem</groupId>
-            <artifactId>wpds</artifactId>
-            <version>3.1.2-SNAPSHOT</version>
+            <artifactId>WPDS</artifactId>
+            <version>3.1.2</version>
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+
+            <url>https://maven.pkg.github.com/CodeShield-Security/SPDS/</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>

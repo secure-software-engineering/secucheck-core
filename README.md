@@ -42,15 +42,15 @@ mvn clean install
 ```
 
 ## secucheck-core structure
-| Project              | Description | can use in client side? |
-|----------------------| ----------- | ----------------------- |
-| api                  | Core analysis API to use secucheck-core analysis | Yes |
-| configuration        | Lets the client configure secucheck-core analysis | Yes |
-| data-structures      | used to represent the analysis results | Yes |
-| implementation       | Implements the different solver (internal to secucheck-core) | No |
-| query                | TaintFlow query independent of other TaintFlowQuery language | Yes | 
-| result               | Taint analysis results classes | Yes | 
-| single-flow-analysis | Interface for taint analysis for single taintflow specification | No
+| Project              | Description                                                     | can use in client side? |
+|----------------------|-----------------------------------------------------------------|-------------------------|
+| api                  | Core analysis API to use secucheck-core analysis                | Yes                     |
+| configuration        | Lets the client configure secucheck-core analysis               | Yes                     |
+| data-structures      | used to represent the analysis results                          | Yes                     |
+| implementation       | Implements the different solver (internal to secucheck-core)    | No                      |
+| query                | TaintFlow query independent of other TaintFlowQuery language    | Yes                     | 
+| result               | Taint analysis results classes                                  | Yes                     | 
+| single-flow-analysis | Interface for taint analysis for single taintflow specification | No                      |
 
 ## Required maven dependency to use secucheck-core at client side.
 - de.fraunhofer.iem.secucheck.analysis
