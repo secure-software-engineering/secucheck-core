@@ -8,7 +8,7 @@ Boomerang 3.x is the default solver. Our tests are based on Boomerang 3.x. For W
  
 - Clone the Boomernag repository using the below command
 ```shell script
-git clone https://github.com/CodeShield-Security/SPDS.git
+git clone --recurse-submodules https://github.com/CodeShield-Security/SPDS.git
 ```
 
 - Change the branch to develop using the below command. Recently used boomerang commit to build SecuCheck is 361a6bc33f7e8311398532a5c444c9e9cc358b0d
