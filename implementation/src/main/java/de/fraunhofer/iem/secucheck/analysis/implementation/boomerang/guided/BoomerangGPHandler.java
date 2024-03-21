@@ -243,12 +243,21 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
         Statement stmt = dataFlowEdge.getStart();
         ArrayList<Query> out = new ArrayList<Query>();
 
+        if (query.toString().contains("BenchmarkTest00032")) {
+            System.out.println("----------------> " + query);
+            System.out.println("         ----------> " + stmt.containsInvokeExpr() + " : " + stmt);
+        }
+
         BoomerangTaintFlowPath parentNode = null;
         if (secucheckAnalysisConfiguration.isPostProcessResult()) {
             parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
         }
 
         if (stmt.containsInvokeExpr()) {
+            if (query.toString().contains("BenchmarkTest00032")) {
+                System.out.println("         ----------> " + stmt.getInvokeExpr().getMethod().getSignature());
+            }
+
             BackwardQuery sinkQuery = isSink(stmt, dataFlowEdge, dataFlowVal);
             if (sinkQuery != null) {
                 BoomerangTaintFlowPath singleTaintFlowPath = null;
@@ -290,6 +299,23 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
             }
 
             out.addAll(generalProp);
+        } else if (stmt.isAssign() && stmt.getRightOp().isArrayRef()) {
+            if (stmt.getRightOp().getArrayBase().getX().toString().equals(dataFlowVal.toString())) {
+                Query queryForArrayLoad = new ForwardQuery(dataFlowEdge,
+                        new AllocVal(stmt.getLeftOp(),
+                                stmt,
+                                stmt.getLeftOp()
+                        )
+                );
+
+                out.add(queryForArrayLoad);
+
+                if (secucheckAnalysisConfiguration.isPostProcessResult()) {
+                    BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
+                            queryForArrayLoad, parentNode, false, false);
+                    parentNode.addNewChild(finalSinkNode);
+                }
+            }
         }
 
         return out;
