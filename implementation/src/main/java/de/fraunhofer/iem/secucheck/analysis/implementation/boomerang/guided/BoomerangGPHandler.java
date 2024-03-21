@@ -242,22 +242,13 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     public Collection<Query> onForwardFlow(ForwardQuery query, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         Statement stmt = dataFlowEdge.getStart();
         ArrayList<Query> out = new ArrayList<Query>();
-
-        if (query.toString().contains("BenchmarkTest00032")) {
-            System.out.println("----------------> " + query);
-            System.out.println("         ----------> " + stmt.containsInvokeExpr() + " : " + stmt);
-        }
-
+        
         BoomerangTaintFlowPath parentNode = null;
         if (secucheckAnalysisConfiguration.isPostProcessResult()) {
             parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
         }
 
         if (stmt.containsInvokeExpr()) {
-            if (query.toString().contains("BenchmarkTest00032")) {
-                System.out.println("         ----------> " + stmt.getInvokeExpr().getMethod().getSignature());
-            }
-
             BackwardQuery sinkQuery = isSink(stmt, dataFlowEdge, dataFlowVal);
             if (sinkQuery != null) {
                 BoomerangTaintFlowPath singleTaintFlowPath = null;
