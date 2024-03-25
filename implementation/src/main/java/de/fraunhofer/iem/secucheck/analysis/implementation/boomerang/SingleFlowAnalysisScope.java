@@ -108,7 +108,13 @@ public class SingleFlowAnalysisScope extends AnalysisScope {
                         for (OutputParameter output : sourceMethod.getOutputParameters()) {
                             int parameterIndex = output.getParamID();
                             if (statement.getInvokeExpr().getArgs().size() >= parameterIndex) {
-                                out.add(statement.getInvokeExpr().getArg(parameterIndex));
+                                out.add(
+                                        new AllocVal(
+                                                statement.getInvokeExpr().getArg(parameterIndex),
+                                                statement,
+                                                statement.getInvokeExpr().getArg(parameterIndex)
+                                        )
+                                );
                             }
                         }
                     }
