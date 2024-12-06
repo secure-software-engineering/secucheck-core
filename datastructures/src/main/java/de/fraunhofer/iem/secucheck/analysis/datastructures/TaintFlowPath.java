@@ -1,52 +1,61 @@
 package de.fraunhofer.iem.secucheck.analysis.datastructures;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TaintFlowPath
- *
- * @author Ranjith Krishnamurthy
- */
-public interface TaintFlowPath {
-    /**
-     * Nodes value
-     *
-     * @return Nodes value
-     */
-    public Object getNodeValue();
+public class TaintFlowPath implements DataFlowPath<TaintFlowPathNode> {
+    private final TaintFlowPathNode query;
+    private final List<DataFlowPath<TaintFlowPathNode>> childrenNodes;
+    private final TaintFlowPath parentNode;
+    private final boolean isRootNode;
+    private final boolean isNodeSink;
+    private boolean isLeafNode;
 
-    /**
-     * List of children node
-     *
-     * @return Children node
-     */
-    public List<TaintFlowPath> getChildrenNodes();
+    public TaintFlowPath(
+            TaintFlowPathNode query,
+            TaintFlowPath parentNode,
+            boolean isRootNode,
+            boolean isNodeSink) {
+        this.query = query;
+        this.childrenNodes = new ArrayList<DataFlowPath<TaintFlowPathNode>>();
+        this.parentNode = parentNode;
+        this.isRootNode = isRootNode;
+        this.isNodeSink = isNodeSink;
+        this.isLeafNode = true;
+    }
 
-    /**
-     * Parent node
-     *
-     * @return Parent node
-     */
-    public TaintFlowPath getParentNode();
+    public void addNewChild(TaintFlowPath nextNode) {
+        childrenNodes.add(nextNode);
+        isLeafNode = false;
+    }
 
-    /**
-     * Is Root node otherwise false
-     *
-     * @return Root node or not
-     */
-    public boolean isRootNode();
+    @Override
+    public TaintFlowPathNode getNodeValue() {
+        return query;
+    }
 
-    /**
-     * Is sink node otherwise false
-     *
-     * @return Sink node or not
-     */
-    public boolean isNodeSink();
+    @Override
+    public List<DataFlowPath<TaintFlowPathNode>> getChildrenNodes() {
+        return childrenNodes;
+    }
 
-    /**
-     * Is leaf node otherwise false
-     *
-     * @return Leaf node or not
-     */
-    public boolean isLeafNode();
+    @Override
+    public DataFlowPath<TaintFlowPathNode> getParentNode() {
+        return parentNode;
+    }
+
+    @Override
+    public boolean isRootNode() {
+        return isRootNode;
+    }
+
+    @Override
+    public boolean isNodeSink() {
+        return isNodeSink;
+    }
+
+    @Override
+    public boolean isLeafNode() {
+        return isLeafNode;
+    }
 }

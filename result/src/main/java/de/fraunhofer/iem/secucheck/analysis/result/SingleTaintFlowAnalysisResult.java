@@ -2,6 +2,7 @@ package de.fraunhofer.iem.secucheck.analysis.result;
 
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.DataFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.TaintFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 

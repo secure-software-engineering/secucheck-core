@@ -1,6 +1,8 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure;
 
+import boomerang.ForwardQuery;
 import boomerang.Query;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.DataFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.TaintFlowPath;
 
 import java.util.ArrayList;
@@ -11,9 +13,9 @@ import java.util.List;
  *
  * @author Ranjith Krishnamurthy
  */
-public class BoomerangTaintFlowPath implements TaintFlowPath {
+public class BoomerangTaintFlowPath implements DataFlowPath<Query> {
     private final Query query;
-    private final List<TaintFlowPath> childrenNodes;
+    private final List<DataFlowPath<Query>> childrenNodes;
     private final BoomerangTaintFlowPath parentNode;
     private final boolean isRootNode;
     private final boolean isNodeSink;
@@ -25,7 +27,7 @@ public class BoomerangTaintFlowPath implements TaintFlowPath {
             boolean isRootNode,
             boolean isNodeSink) {
         this.query = query;
-        this.childrenNodes = new ArrayList<TaintFlowPath>();
+        this.childrenNodes = new ArrayList<DataFlowPath<Query>>();
         this.parentNode = parentNode;
         this.isRootNode = isRootNode;
         this.isNodeSink = isNodeSink;
@@ -38,17 +40,17 @@ public class BoomerangTaintFlowPath implements TaintFlowPath {
     }
 
     @Override
-    public Object getNodeValue() {
+    public Query getNodeValue() {
         return query;
     }
 
     @Override
-    public List<TaintFlowPath> getChildrenNodes() {
+    public List<DataFlowPath<Query>> getChildrenNodes() {
         return childrenNodes;
     }
 
     @Override
-    public TaintFlowPath getParentNode() {
+    public DataFlowPath<Query> getParentNode() {
         return parentNode;
     }
 

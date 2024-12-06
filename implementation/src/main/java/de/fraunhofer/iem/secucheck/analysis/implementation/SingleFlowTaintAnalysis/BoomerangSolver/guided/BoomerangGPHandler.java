@@ -10,10 +10,12 @@ import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.BoomerangTaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.TaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.query.*;
+import lombok.val;
 
 import java.util.*;
 
@@ -242,10 +244,11 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
     public Collection<Query> onForwardFlow(ForwardQuery query, ControlFlowGraph.Edge dataFlowEdge, Val dataFlowVal) {
         Statement stmt = dataFlowEdge.getStart();
         ArrayList<Query> out = new ArrayList<Query>();
+        val taintFlowPathUtility = new BoomerangTaintFlowPathUtility();
 
         BoomerangTaintFlowPath parentNode = null;
         if (secucheckAnalysisConfiguration.isPostProcessResult()) {
-            parentNode = (BoomerangTaintFlowPath) TaintFlowPathUtility.findNodeUsingDFS(tempPath, query);
+            parentNode = (BoomerangTaintFlowPath) taintFlowPathUtility.findNodeUsingDFS(tempPath, query);
         }
 
         if (stmt.containsInvokeExpr()) {
@@ -256,7 +259,7 @@ public class BoomerangGPHandler implements IDemandDrivenGuidedManager {
                     BoomerangTaintFlowPath finalSinkNode = new BoomerangTaintFlowPath(
                             sinkQuery, parentNode, false, true);
                     parentNode.addNewChild(finalSinkNode);
-                    singleTaintFlowPath = TaintFlowPathUtility.createSinglePathFromRootNode(finalSinkNode);
+                    singleTaintFlowPath = taintFlowPathUtility.createSinglePathFromRootNode(finalSinkNode);
                 }
 
                 DifferentTypedPair<BackwardQuery, BoomerangTaintFlowPath> res = new DifferentTypedPair<>(sinkQuery, singleTaintFlowPath);

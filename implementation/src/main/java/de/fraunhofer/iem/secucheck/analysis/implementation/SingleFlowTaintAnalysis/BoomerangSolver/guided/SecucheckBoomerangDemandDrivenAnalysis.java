@@ -7,16 +7,15 @@ import boomerang.QueryGraph;
 import boomerang.guided.DemandDrivenGuidedAnalysis;
 import boomerang.scene.jimple.JimpleStatement;
 import de.fraunhofer.iem.secucheck.analysis.configuration.SecucheckAnalysisConfiguration;
-import de.fraunhofer.iem.secucheck.analysis.datastructures.SameTypedPair;
-import de.fraunhofer.iem.secucheck.analysis.datastructures.TaintFlowPath;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.*;
+import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.BoomerangTaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.BoomerangSolver.Utility;
-import de.fraunhofer.iem.secucheck.analysis.datastructures.DifferentTypedPair;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
-import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.TaintFlowPathUtility;
 import de.fraunhofer.iem.secucheck.analysis.query.TaintFlowImpl;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationDetails;
 import de.fraunhofer.iem.secucheck.analysis.result.LocationType;
 import de.fraunhofer.iem.secucheck.analysis.result.SingleTaintFlowAnalysisResult;
+import lombok.val;
 import soot.SootMethod;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
@@ -37,17 +36,17 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
         this.secucheckAnalysisConfiguration = secucheckAnalysisConfiguration;
     }
 
-    public void printPath(BoomerangTaintFlowPath node) {
+    public void printPath(DataFlowPath<TaintFlowPathNode> node) {
         if (node == null)
             return;
 
         if (node.getNodeValue() == null)
             System.out.println("--> null");
         else
-            System.out.println("--> " + (Query) node.getNodeValue());
+            System.out.println("--> " + node.getNodeValue());
 
-        for (TaintFlowPath child : node.getChildrenNodes())
-            printPath((BoomerangTaintFlowPath) child);
+        for (val child : node.getChildrenNodes())
+            printPath(child);
     }
 
     /**
@@ -80,14 +79,14 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
                 SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
                         new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)),
-                        sinkNode.getSecond(),
+                        new BoomerangTaintFlowPathUtility().getTaintFlowPathFromRootNode(sinkNode.getSecond()),
                         secucheckAnalysisConfiguration.isPostProcessResult()
                 );
                 reachMap.add(new DifferentTypedPair<>(singleFlow, res));
 
                 if (secucheckAnalysisConfiguration.isPostProcessResult()) {
                     System.out.println("***** TaintFlow *****");
-                    printPath((BoomerangTaintFlowPath) res.getPath());
+                    printPath((TaintFlowPath) res.getPath());
                     System.out.println("*********************");
                 }
             }

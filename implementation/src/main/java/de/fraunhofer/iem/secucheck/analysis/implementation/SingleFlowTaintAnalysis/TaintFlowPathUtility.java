@@ -1,15 +1,18 @@
 package de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis;
 
 import boomerang.Query;
+import de.fraunhofer.iem.secucheck.analysis.datastructures.DataFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.datastructures.TaintFlowPath;
 import de.fraunhofer.iem.secucheck.analysis.implementation.SingleFlowTaintAnalysis.datastructure.BoomerangTaintFlowPath;
+
+import javax.xml.crypto.Data;
 
 /**
  * Utility for the TaintFlowPath
  *
  * @author Ranjith Krishnamurthy
  */
-public class TaintFlowPathUtility {
+public abstract class TaintFlowPathUtility<T> {
     /**
      * Finds the given Query in the given TaintFlowPath and returns the node if found otherwise returns nulll
      *
@@ -17,7 +20,7 @@ public class TaintFlowPathUtility {
      * @param value    Value to find in root node
      * @return Returns the found node otherwise null
      */
-    public static TaintFlowPath findNodeUsingDFS(TaintFlowPath rootNode, Query value) {
+    public DataFlowPath<T> findNodeUsingDFS(DataFlowPath<T> rootNode, Query value) {
         if (rootNode.isLeafNode()) {
             if (rootNode.getNodeValue().equals(value)) {
                 return rootNode;
@@ -26,8 +29,8 @@ public class TaintFlowPathUtility {
             }
         }
 
-        for (TaintFlowPath child : rootNode.getChildrenNodes()) {
-            TaintFlowPath isFound = findNodeUsingDFS(child, value);
+        for (DataFlowPath<T> child : rootNode.getChildrenNodes()) {
+            DataFlowPath<T> isFound = findNodeUsingDFS(child, value);
 
             if (isFound == null) {
                 if (rootNode.getNodeValue().equals(value)) {
@@ -42,46 +45,16 @@ public class TaintFlowPathUtility {
     }
 
     /**
-     * Creates a single path from the source to given sink node and returns its sink node
-     *
-     * @param leafNode Sink node
-     * @return Single path but returns the sink node
-     */
-    private static TaintFlowPath createSinglePath(TaintFlowPath leafNode) {
-        if (leafNode.isRootNode()) {
-            return new BoomerangTaintFlowPath((Query) leafNode.getNodeValue(), null, true, false);
-        }
-
-
-        BoomerangTaintFlowPath parentNode = (BoomerangTaintFlowPath) createSinglePath(leafNode.getParentNode());
-        BoomerangTaintFlowPath childNode = new BoomerangTaintFlowPath((Query) leafNode.getNodeValue(), parentNode, false, leafNode.isNodeSink());
-        parentNode.addNewChild(childNode);
-        return childNode;
-    }
-
-    /**
      * Get the root node of the given leaf node
      *
      * @param leafNode leaf node
      * @return Root node
      */
-    private static TaintFlowPath getRootNode(TaintFlowPath leafNode) {
+    protected DataFlowPath<T> getRootNode(DataFlowPath<T> leafNode) {
         if (leafNode.isRootNode())
             return leafNode;
 
         return getRootNode(leafNode.getParentNode());
-    }
-
-    /**
-     * Creates a single path from the source to given sink node and returns its root node
-     *
-     * @param leafNode Sink node
-     * @return Single path
-     */
-    public static BoomerangTaintFlowPath createSinglePathFromRootNode(TaintFlowPath leafNode) {
-        BoomerangTaintFlowPath singleTaintFlowLeafNode = (BoomerangTaintFlowPath) createSinglePath(leafNode);
-
-        return (BoomerangTaintFlowPath) getRootNode(singleTaintFlowLeafNode);
     }
 
     /**
@@ -90,12 +63,12 @@ public class TaintFlowPathUtility {
      * @param rootNode Node
      * @param indent   Indent spaces
      */
-    private static void printIndent(TaintFlowPath rootNode, String indent) {
+    private void printIndent(DataFlowPath<T> rootNode, String indent) {
         System.out.println(indent + rootNode.getNodeValue());
 
         if (!rootNode.isLeafNode()) {
             indent += "  ";
-            for (TaintFlowPath query : rootNode.getChildrenNodes()) {
+            for (DataFlowPath<T> query : rootNode.getChildrenNodes()) {
                 printIndent(query, indent);
             }
         }
@@ -106,7 +79,11 @@ public class TaintFlowPathUtility {
      *
      * @param rootNode Node
      */
-    public static void print(TaintFlowPath rootNode) {
+    public void print(DataFlowPath<T> rootNode) {
         printIndent(rootNode, "");
     }
+
+    public abstract DataFlowPath<T> createSinglePathFromRootNode(DataFlowPath<T> leafNode);
+
+    public abstract TaintFlowPath getTaintFlowPathFromRootNode(DataFlowPath<T> leafNode);
 }
