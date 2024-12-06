@@ -11,7 +11,7 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
     private final List<TaintFlowImpl> taintFlowQueries;
     private final String id;
 
-    private String message;
+    private ReportMessageWithCwe reportMessage;
     private ReportSite reportLocation;
 
     public SecucheckTaintFlowQueryImpl(String id) {
@@ -33,8 +33,8 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
     }
 
     @Override
-    public String getReportMessage() {
-        return this.message;
+    public ReportMessageWithCwe getReportMessage() {
+        return this.reportMessage;
     }
 
     @Override
@@ -43,8 +43,8 @@ public final class SecucheckTaintFlowQueryImpl implements SecucheckTaintFlowQuer
     }
 
     @Override
-    public void setReportMessage(String message) {
-        this.message = message;
+    public void setReportMessage(ReportMessageWithCwe reportMessage) {
+        this.reportMessage = reportMessage;
     }
 
     @Override

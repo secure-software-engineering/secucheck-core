@@ -21,7 +21,7 @@ public interface SecucheckTaintFlowQuery extends Copyable<SecucheckTaintFlowQuer
      *
      * @return Report message
      */
-    String getReportMessage();
+    ReportMessageWithCwe getReportMessage();
 
     /**
      * Returns the Taintflows
@@ -42,7 +42,7 @@ public interface SecucheckTaintFlowQuery extends Copyable<SecucheckTaintFlowQuer
      *
      * @param message report message
      */
-    void setReportMessage(String message);
+    void setReportMessage(ReportMessageWithCwe message);
 
     /**
      * Returns the ID of the TaintFlowQuery
