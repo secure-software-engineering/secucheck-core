@@ -9,37 +9,67 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>de.fraunhofer.iem.secucheck.analysis</artifactId>
+    <artifactId>implementation</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.configuration</artifactId>
+            <artifactId>configuration</artifactId>
             <version>${secucheck.core.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.implementation</artifactId>
+            <artifactId>singleFlowAnalysis</artifactId>
             <version>${secucheck.core.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis</artifactId>
+            <artifactId>query</artifactId>
             <version>${secucheck.core.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.query</artifactId>
+            <artifactId>result</artifactId>
             <version>${secucheck.core.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.result</artifactId>
-            <version>${secucheck.core.version}</version>
+            <groupId>org.soot-oss</groupId>
+            <artifactId>soot</artifactId>
+            <version>4.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <version>2.17.1</version>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <version>2.17.1</version>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.tud.sse</groupId>
+            <artifactId>soot-infoflow</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.fraunhofer.iem</groupId>
+            <artifactId>boomerangScope</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.fraunhofer.iem</groupId>
+            <artifactId>boomerangPDS</artifactId>
+            <version>3.1.2</version>
         </dependency>
     </dependencies>
 

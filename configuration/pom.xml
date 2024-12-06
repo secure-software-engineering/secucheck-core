@@ -9,13 +9,19 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>de.fraunhofer.iem.secucheck.analysis.query</artifactId>
+    <artifactId>configuration</artifactId>
 
 
     <dependencies>
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.datastructures</artifactId>
+            <artifactId>query</artifactId>
+            <version>${secucheck.core.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.fraunhofer.iem.secucheck</groupId>
+            <artifactId>result</artifactId>
             <version>${secucheck.core.version}</version>
         </dependency>
     </dependencies>

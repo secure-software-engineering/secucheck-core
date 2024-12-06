@@ -9,12 +9,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>de.fraunhofer.iem.secucheck.analysis.result</artifactId>
+    <artifactId>query</artifactId>
+
 
     <dependencies>
         <dependency>
             <groupId>de.fraunhofer.iem.secucheck</groupId>
-            <artifactId>de.fraunhofer.iem.secucheck.analysis.query</artifactId>
+            <artifactId>datastructures</artifactId>
             <version>${secucheck.core.version}</version>
         </dependency>
     </dependencies>
@@ -22,6 +23,7 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>

@@ -44,12 +44,12 @@
     </repositories>
 
     <modules>
-        <module>de.fraunhofer.iem.secucheck.analysis.datastructures</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.query</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.result</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.SingleFlowAnalysis</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.configuration</module>
-        <module>de.fraunhofer.iem.secucheck.analysis.implementation</module>
-        <module>de.fraunhofer.iem.secucheck.analysis</module>
+        <module>datastructures</module>
+        <module>query</module>
+        <module>result</module>
+        <module>singleFlowAnalysis</module>
+        <module>configuration</module>
+        <module>implementation</module>
+        <module>analysis</module>
     </modules>
 </project>
