@@ -58,6 +58,12 @@
             <groupId>de.tud.sse</groupId>
             <artifactId>soot-infoflow</artifactId>
             <version>2.9.0</version>
+	    <exclusions>
+	        <exclusion>
+        	    <groupId>org.soot-oss</groupId>
+	            <artifactId>soot</artifactId>
+        	</exclusion>
+	    </exclusions>
         </dependency>
 
         <dependency>
