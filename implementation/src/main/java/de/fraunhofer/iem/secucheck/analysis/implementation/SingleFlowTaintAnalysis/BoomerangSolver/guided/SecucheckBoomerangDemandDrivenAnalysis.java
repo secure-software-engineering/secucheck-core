@@ -79,7 +79,7 @@ public class SecucheckBoomerangDemandDrivenAnalysis {
 
                 SingleTaintFlowAnalysisResult res = new SingleTaintFlowAnalysisResult(
                         new DifferentTypedPair<>(singleFlow, getLocationDetailsPair(source, sink)),
-                        new BoomerangTaintFlowPathUtility().getTaintFlowPathFromRootNode(sinkNode.getSecond()),
+                        secucheckAnalysisConfiguration.isPostProcessResult() ? new BoomerangTaintFlowPathUtility().getTaintFlowPathFromRootNode(sinkNode.getSecond()) : null,
                         secucheckAnalysisConfiguration.isPostProcessResult()
                 );
                 reachMap.add(new DifferentTypedPair<>(singleFlow, res));
